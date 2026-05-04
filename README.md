@@ -12,6 +12,12 @@ A [Toolforge Build Service][] container that installs [Bun][] for running JavaSc
 toolforge build start -i web https://github.com/DaxServer/containers-bun.git -L
 ```
 
+To build from a specific branch:
+
+```bash
+toolforge build start -i web https://github.com/DaxServer/containers-bun.git -L --ref <branch-name>
+```
+
 ### Webservice
 
 When deploying for the first time:
