@@ -1,0 +1,10 @@
+*.egg-info/
+*.pyc
+.cache/
+.coverage
+.eggs/
+.env
+.tox/
+.vscode/
+build/
+dist/
