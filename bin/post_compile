@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BUILD_DIR=${1:-}
+
+echo "-----> Installing Bun"
+curl -fsSL https://bun.com/install | BUN_INSTALL="${BUILD_DIR}/.bun" bash
+echo "-----> Bun installed: $(${BUILD_DIR}/.bun/bin/bun --version)"

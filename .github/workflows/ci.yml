@@ -42,3 +42,13 @@ jobs:
         with:
           name: coverage
           path: dist/coverage.xml
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: buildpacks/github-actions/setup-pack@v5
+
+      - name: Build container image
+        run: pack build containers-bun --builder tools-harbor.wmcloud.org/toolforge/heroku-builder:24_0.21.5
