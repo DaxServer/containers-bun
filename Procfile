@@ -1,1 +1,1 @@
-bun: containers-bun
+web: containers-bun run index.js
