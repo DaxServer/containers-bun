@@ -1,1 +1,1 @@
-bun: containers-bun bun
+bun: containers-bun
