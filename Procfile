@@ -1,1 +1,1 @@
-# https://devcenter.heroku.com/articles/procfile
+bun: containers-bun bun

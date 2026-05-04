@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.urls]
-"Source code" = "https://gitlab.wikimedia.org/toolforge-repos/containers-bun"
+"Source code" = "https://github.com/DaxServer/containers-bun"
 
 [project.scripts]
 containers-bun = "containers.bun.cli:main"
@@ -41,10 +41,6 @@ source = "vcs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/containers"]
-
-[tool.black]
-line-length = 78
-target_version = ["py313"]
 
 [tool.isort]
 src_paths = ["src", "tests"]

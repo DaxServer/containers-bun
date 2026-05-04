@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LAYER_DIR="${CNB_LAYERS_DIR}/bun"
+mkdir -p "${LAYER_DIR}/bin"
+
+echo "---> Installing Bun"
+curl -fsSL https://bun.sh/install | BUN_INSTALL="${LAYER_DIR}" bash
+
+echo "---> Bun installed: $("${LAYER_DIR}/bin/bun" --version)"
+
+cat > "${CNB_LAYERS_DIR}/bun.toml" <<'EOF'
+[types]
+launch = true
+build = false
+cache = true
+EOF
