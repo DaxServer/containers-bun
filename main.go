@@ -31,8 +31,6 @@ func ensureBun() string {
 	slog.Info("bun not found, installing")
 	cmd := exec.Command("bash", "-c", "curl -fsSL https://bun.sh/install | bash")
 	cmd.Env = append(os.Environ(), "BUN_INSTALL="+bunInstallDir)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		slog.Error("failed to install bun", "error", err)
 		os.Exit(1)
