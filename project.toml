@@ -1,9 +1,0 @@
-[[build.buildpacks]]
-uri = "./buildpacks/bun"
-
-[[build.buildpacks]]
-id = "heroku/go"
-version = "2.2.2"
-
-[[build.buildpacks]]
-id = "heroku/procfile"
