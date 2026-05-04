@@ -36,19 +36,39 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage
-          path: dist/coverage.xml
-
   build:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     steps:
       - uses: actions/checkout@v6
 
       - uses: buildpacks/github-actions/setup-pack@v5.12.0
 
-      - name: Build container image
-        run: pack build containers-bun --builder tools-harbor.wmcloud.org/toolforge/heroku-builder:24_0.21.5
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish container image
+        id: build
+        run: |
+          IMAGE="ghcr.io/${{ github.repository }}:pr-${{ github.event.number }}"
+          pack build "${IMAGE}" \
+            --builder tools-harbor.wmcloud.org/toolforge/heroku-builder:24_0.21.5 \
+            --publish
+          DIGEST=$(docker buildx imagetools inspect "${IMAGE}" --format '{{json .Manifest}}' | jq -r '.digest')
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
