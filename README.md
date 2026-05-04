@@ -1,22 +1,47 @@
-Toolforge bun container
-=======================
+![GitHub License](https://img.shields.io/github/license/DaxServer/containers-bun?link=https%3A%2F%2Fopensource.org%2Flicense%2FMIT)
 
-[Build Service][] project creating a container running bun
+# Bun Container for Toolforge
 
-Publish a new container
------------------------
+A [Toolforge Build Service][] container that installs [Bun][] for running JavaScript/TypeScript web services.
+
+## Deployment
+
+### Build
+
+```bash
+toolforge build start -i web https://github.com/DaxServer/containers-bun.git -L
 ```
-$ ssh dev.toolforge.org
-$ become containers
-$ toolforge build start --image-name bun \
-  https://gitlab.wikimedia.org/toolforge-repos/containers-bun
+
+To build from a specific branch:
+
+```bash
+toolforge build start -i web https://github.com/DaxServer/containers-bun.git -L --ref <branch-name>
 ```
 
-License
--------
-Licensed under the [GPL-3.0-or-later][] license. See [COPYING][] for the full
-license.
+### Webservice
 
-[Build Service]: https://wikitech.wikimedia.org/wiki/Help:Toolforge/Build_Service
-[GPL-3.0-or-later]: https://www.gnu.org/licenses/gpl-3.0.html
-[COPYING]: COPYING
+When deploying for the first time:
+
+```bash
+toolforge webservice buildservice start --buildservice-image tool-<toolname>/web:latest --mount=none
+```
+
+For subsequent deployments:
+
+```bash
+toolforge webservice restart
+```
+
+## Development
+
+```bash
+go build ./...
+go test ./...
+```
+
+## License
+
+[MIT](./LICENSE)
+
+[Toolforge Build Service]: https://wikitech.wikimedia.org/wiki/Help:Toolforge/Build_Service
+[Bun]: https://bun.sh

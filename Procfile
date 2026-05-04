@@ -1,1 +1,1 @@
-bun: containers-bun
+web: bun run app.js

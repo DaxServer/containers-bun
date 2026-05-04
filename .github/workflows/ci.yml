@@ -49,7 +49,6 @@ jobs:
           echo "REPO_LOWER=${REPO_LOWER}" >> $GITHUB_ENV
           pack build "${IMAGE}" \
             --builder tools-harbor.wmcloud.org/toolforge/heroku-builder:24_0.21.5 \
-            --buildpack ./buildpacks/bun \
             --buildpack heroku/go@2.2.2 \
             --buildpack heroku/procfile \
             --publish

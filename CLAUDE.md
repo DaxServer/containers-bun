@@ -5,16 +5,11 @@ go build ./...
 go test ./...
 ```
 
-## Container Build
+## Toolforge Build Notes
 
-Local pack build (Docker Desktop for Mac mangles apt traffic without NO_PROXY):
-```bash
-pack build containers-bun \
-  --builder tools-harbor.wmcloud.org/toolforge/heroku-builder:24_0.21.5 \
-  --trust-builder \
-  --buildpack ./buildpacks/bun \
-  --buildpack heroku/go@2.2.2 \
-  --buildpack heroku/procfile \
-  --env NO_PROXY=archive.ubuntu.com,security.ubuntu.com \
-  --env no_proxy=archive.ubuntu.com,security.ubuntu.com
-```
+- `heroku/go` buildpack only builds the root package — Go files must be at repo root, not `cmd/`
+- `heroku/go` names the binary after the last segment of the module path in `go.mod`
+- Toolforge's `step-inject-buildpacks` rewrites `order.toml` before detect — `project.toml` buildpack overrides are ignored
+- `heroku/nodejs` v5.5.5 detects on `index.js` or `server.js`, not just `package.json`
+- Container filesystem is read-only except `/tmp` — runtime installs must target `/tmp`
+- `heroku/go` buildpack version on Toolforge may lag behind latest release — check supported Go versions before updating `go.mod`

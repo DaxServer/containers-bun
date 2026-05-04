@@ -1,3 +1,3 @@
-module gitlab.wikimedia.org/toolforge-repos/containers-bun
+module github.com/DaxServer/bun
 
-go 1.26.2
+go 1.26.1

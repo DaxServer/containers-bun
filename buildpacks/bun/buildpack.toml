@@ -1,6 +1,0 @@
-api = "0.8"
-
-[buildpack]
-id = "local/bun"
-version = "0.0.1"
-name = "Bun"
