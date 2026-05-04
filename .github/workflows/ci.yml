@@ -11,30 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-go@v6
         with:
-          python-version: "3.13"
+          go-version-file: go.mod
 
-      - uses: actions/cache@v5
-        with:
-          path: ~/.cache/pip
-          key: pip-3.13-${{ hashFiles('requirements.txt', 'tox.ini') }}
-          restore-keys: pip-3.13-
+      - name: Build
+        run: go build ./...
 
-      - name: Install tox
-        run: pip install --upgrade pip wheel tox
-
-      - name: Run tox
-        run: tox -v
-        env:
-          PYTHONDONTWRITEBYTECODE: "1"
-          PYTHONUNBUFFERED: "1"
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: dist
-          path: dist/
+      - name: Test
+        run: go test ./...
 
   build:
     runs-on: ubuntu-latest
@@ -50,7 +35,7 @@ jobs:
       - uses: buildpacks/github-actions/setup-pack@v5.12.0
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -65,14 +50,14 @@ jobs:
           pack build "${IMAGE}" \
             --builder tools-harbor.wmcloud.org/toolforge/heroku-builder:24_0.21.5 \
             --buildpack ./buildpacks/bun \
-            --buildpack heroku/python \
+            --buildpack heroku/go@2.2.2 \
             --buildpack heroku/procfile \
             --publish
           DIGEST=$(docker buildx imagetools inspect "${IMAGE}" --format '{{json .Manifest}}' | jq -r '.digest')
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
 
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-name: ghcr.io/${{ env.REPO_LOWER }}
           subject-digest: ${{ steps.build.outputs.digest }}
