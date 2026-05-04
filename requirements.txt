@@ -1,0 +1,5 @@
+# T353762: requirements.txt for heroku/python 0.8.0 buildpack
+# Install our local package in the container.
+# Additional dependencies will be installed by the hatchling backend when
+# pip invokes it to build our package.
+--editable .
