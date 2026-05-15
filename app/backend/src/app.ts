@@ -2,7 +2,7 @@ import { Elysia } from "elysia"
 import { staticPlugin } from "@elysiajs/static"
 import path from "node:path"
 
-const FRONTEND_DIST = process.env.STATIC_DIR ?? "./frontend/dist"
+const FRONTEND_DIST = process.env.STATIC_DIR ?? path.resolve(import.meta.dir, "../../frontend/dist")
 const INDEX_HTML = path.join(FRONTEND_DIST, "index.html")
 
 export const app = new Elysia()
