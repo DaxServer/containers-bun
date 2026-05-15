@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/stores/auth.store'
+import { useAuthStore } from '@frontend/stores/auth.store'
 import { computed } from 'vue'
 
 export const useFeatureFlags = () => {

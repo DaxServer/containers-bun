@@ -1,5 +1,5 @@
-import type { GeoLocation } from '@/types/asyncapi'
-import type { Image } from '@/types/image'
+import type { GeoLocation } from '@frontend/types/asyncapi'
+import type { Image } from '@frontend/types/image'
 import Handlebars from 'handlebars'
 
 interface FieldDefinition {

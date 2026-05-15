@@ -1,6 +1,6 @@
-import { useCollectionsStore } from '@/stores/collections.store'
-import type { Item } from '@/types/image'
-import { TITLE_STATUS } from '@/types/image'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import type { Item } from '@frontend/types/image'
+import { TITLE_STATUS } from '@frontend/types/image'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import {
   afterAll,

@@ -1,12 +1,12 @@
-import { useAdminStore } from '@/stores/admin.store'
+import { useAdminStore } from '@frontend/stores/admin.store'
 import type {
   AdminBatch,
   AdminPreset,
   AdminUploadRequest,
   AdminUser,
   PaginatedResponse,
-} from '@/types/admin'
-import { UPLOAD_STATUS } from '@/types/image'
+} from '@frontend/types/admin'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 
 const fetchData = async <T>(
   endpoint: string,

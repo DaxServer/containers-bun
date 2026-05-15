@@ -1,4 +1,4 @@
-import { useCollectionsStore } from '@/stores/collections.store'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 import { computed, ref } from 'vue'
 
 export const useBatchSelection = () => {

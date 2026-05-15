@@ -1,8 +1,8 @@
-import { useTitleBlacklist } from '@/composables/useTitleBlacklist'
-import { useCollectionsStore } from '@/stores/collections.store'
-import type { Image, TitleStatus } from '@/types/image'
-import { TITLE_STATUS } from '@/types/image'
-import { applyTitleTemplate, isValidExtension } from '@/utils/titleTemplate'
+import { useTitleBlacklist } from '@frontend/composables/useTitleBlacklist'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import type { Image, TitleStatus } from '@frontend/types/image'
+import { TITLE_STATUS } from '@frontend/types/image'
+import { applyTitleTemplate, isValidExtension } from '@frontend/utils/titleTemplate'
 import { debounce } from 'ts-debounce'
 
 let titleVerificationAbortController: AbortController | null = null

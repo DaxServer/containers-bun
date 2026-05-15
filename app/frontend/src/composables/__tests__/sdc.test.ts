@@ -1,4 +1,4 @@
-import { WikidataEntity, WikidataProperty } from '@/components/wikidata/useWikidata'
+import { WikidataEntity, WikidataProperty } from '@frontend/components/wikidata/useWikidata'
 import {
   createCopyrightLicenseClaim,
   createCopyrightStatusClaim,
@@ -15,8 +15,14 @@ import {
   createWidthClaim,
   createWikibaseItemSnak,
   getNumericId,
-} from '@/composables/sdc'
-import { DataValueType, Rank, SnakDataType, SnakType, WikibaseEntityType } from '@/types/asyncapi'
+} from '@frontend/composables/sdc'
+import {
+  DataValueType,
+  Rank,
+  SnakDataType,
+  SnakType,
+  WikibaseEntityType,
+} from '@frontend/types/asyncapi'
 import { describe, expect, it } from 'bun:test'
 
 describe('SDC Builders', () => {

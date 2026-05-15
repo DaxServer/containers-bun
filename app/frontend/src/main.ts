@@ -1,4 +1,4 @@
-import '@/assets/tailwind.css'
+import '@frontend/assets/tailwind.css'
 
 // PrimeVue
 import 'primeicons/primeicons.css'
@@ -7,8 +7,8 @@ import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
 import ToastService from 'primevue/toastservice'
 
-import App from '@/App.vue'
-import router from '@/router'
+import App from '@frontend/App.vue'
+import router from '@frontend/router'
 
 // Create app
 const app = createApp(App)

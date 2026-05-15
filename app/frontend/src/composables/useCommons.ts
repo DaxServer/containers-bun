@@ -1,4 +1,4 @@
-import { WikidataEntity, WikidataProperty } from '@/components/wikidata/useWikidata'
+import { WikidataEntity, WikidataProperty } from '@frontend/components/wikidata/useWikidata'
 import {
   createCopyrightLicenseClaim,
   createCopyrightStatusClaim,
@@ -11,11 +11,11 @@ import {
   createSourceOfFileClaim,
   createWidthClaim,
   createWikibaseItemStatement,
-} from '@/composables/sdc'
-import { useTitleVerification } from '@/composables/useTitleVerification'
-import { useCollectionsStore } from '@/stores/collections.store'
-import type { Image, Item, Metadata } from '@/types/image'
-import { applyFieldTemplate } from '@/utils/titleTemplate'
+} from '@frontend/composables/sdc'
+import { useTitleVerification } from '@frontend/composables/useTitleVerification'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import type { Image, Item, Metadata } from '@frontend/types/image'
+import { applyFieldTemplate } from '@frontend/utils/titleTemplate'
 
 export const useCommons = () => {
   const store = useCollectionsStore()

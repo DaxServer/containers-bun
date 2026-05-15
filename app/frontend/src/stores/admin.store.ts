@@ -1,5 +1,5 @@
-import type { AdminBatch, AdminPreset, AdminUploadRequest, AdminUser } from '@/types/admin'
-import { UPLOAD_STATUS } from '@/types/image'
+import type { AdminBatch, AdminPreset, AdminUploadRequest, AdminUser } from '@frontend/types/admin'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 

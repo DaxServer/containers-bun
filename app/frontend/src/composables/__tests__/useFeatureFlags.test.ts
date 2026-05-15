@@ -1,5 +1,5 @@
-import { useFeatureFlags } from '@/composables/useFeatureFlags'
-import { useAuthStore } from '@/stores/auth.store'
+import { useFeatureFlags } from '@frontend/composables/useFeatureFlags'
+import { useAuthStore } from '@frontend/stores/auth.store'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
 

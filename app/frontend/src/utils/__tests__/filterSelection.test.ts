@@ -1,10 +1,10 @@
-import type { FilterItem } from '@/utils/filterSelection'
+import type { FilterItem } from '@frontend/utils/filterSelection'
 import {
   selectByMinInterval,
   selectByStraightLineDistance,
   selectByTraversalDistance,
   selectEveryNth,
-} from '@/utils/filterSelection'
+} from '@frontend/utils/filterSelection'
 import { describe, expect, it } from 'bun:test'
 
 // 0.001 deg lat ≈ 111m — items spaced ~55m apart along a straight line

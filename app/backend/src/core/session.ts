@@ -1,0 +1,58 @@
+import { Elysia } from 'elysia'
+import { randomUUID } from 'node:crypto'
+
+export type SessionUser = {
+  username: string
+  sub: string
+  editcount: number
+  rights: string[]
+}
+
+export type SessionData = {
+  user?: SessionUser
+  access_token?: [string, string]
+  request_token?: [string, string]
+}
+
+export type Session = SessionData & {
+  save(): Promise<void>
+  clear(): void
+}
+
+export interface SessionStore {
+  get(key: string): Promise<string | null>
+  set(key: string, value: string, ex: 'EX', ttl: number): Promise<void>
+  del(key: string): Promise<void>
+}
+
+const SESSION_TTL = 86400
+const COOKIE_NAME = 'session_id'
+
+export const createSessionPlugin = (store: SessionStore) =>
+  new Elysia({ name: 'session' }).derive({ as: 'global' }, async ({ cookie }) => {
+    const id = cookie[COOKIE_NAME]?.value ?? randomUUID()
+    const raw = await store.get(`session:${id}`)
+    const stored: SessionData = raw ? JSON.parse(raw) : {}
+
+    const session: Session = {
+      ...stored,
+      async save() {
+        const { save: _s, clear: _c, ...plain } = session
+        await store.set(`session:${id}`, JSON.stringify(plain), 'EX', SESSION_TTL)
+        cookie[COOKIE_NAME]!.set({
+          value: id,
+          httpOnly: true,
+          sameSite: 'lax',
+          maxAge: SESSION_TTL,
+          path: '/',
+        })
+      },
+      clear() {
+        delete session.user
+        delete session.access_token
+        delete session.request_token
+      },
+    }
+
+    return { session }
+  })

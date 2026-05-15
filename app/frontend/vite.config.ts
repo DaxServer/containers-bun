@@ -9,6 +9,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 export default defineConfig((): import('vite').UserConfig => {
   return {
+    clearScreen: false,
     plugins: [
       vue(),
       vueDevTools(),

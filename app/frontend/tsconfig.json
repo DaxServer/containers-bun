@@ -1,5 +1,5 @@
 {
-  "extends": ["@tsconfig/bun/tsconfig.json", "@vue/tsconfig/tsconfig.dom.json"],
+  "extends": ["../tsconfig.base.json", "@tsconfig/bun/tsconfig.json", "@vue/tsconfig/tsconfig.dom.json"],
   "include": ["*.d.ts", "src/**/*"],
   "compilerOptions": {
     // Some stricter flags (disabled by default)
@@ -19,10 +19,9 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "types": ["vite/client", "bun", "node"],
-
-    // Path aliases
     "paths": {
-      "@/*": ["./src/*"]
+      "@frontend/*": ["./src/*"],
+      "@backend/*": ["../backend/src/*"]
     }
   }
 }

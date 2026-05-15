@@ -1,4 +1,4 @@
-import { parseCategoryNames } from '@/utils/categoryParsing'
+import { parseCategoryNames } from '@frontend/utils/categoryParsing'
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
 import type { QueryNormalized, QueryPage } from '../useCategoryValidation'

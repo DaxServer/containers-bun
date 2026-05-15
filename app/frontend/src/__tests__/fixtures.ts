@@ -1,5 +1,5 @@
-import type { PresetItem } from '@/types/asyncapi'
-import type { Item } from '@/types/image'
+import type { PresetItem } from '@frontend/types/asyncapi'
+import type { Item } from '@frontend/types/image'
 
 export const makeItem = (
   index: number,

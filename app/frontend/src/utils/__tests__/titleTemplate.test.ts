@@ -1,4 +1,4 @@
-import type { Image } from '@/types/image'
+import type { Image } from '@frontend/types/image'
 import { describe, expect, it } from 'bun:test'
 import {
   applyTitleTemplate,

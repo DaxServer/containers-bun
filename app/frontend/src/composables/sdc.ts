@@ -1,5 +1,11 @@
-import { WikidataEntity, WikidataProperty } from '@/components/wikidata/useWikidata'
-import { DataValueType, Rank, SnakDataType, SnakType, WikibaseEntityType } from '@/types/asyncapi'
+import { WikidataEntity, WikidataProperty } from '@frontend/components/wikidata/useWikidata'
+import {
+  DataValueType,
+  Rank,
+  SnakDataType,
+  SnakType,
+  WikibaseEntityType,
+} from '@frontend/types/asyncapi'
 
 // ============================================================================
 // Low-level builders for creating snaks and statements

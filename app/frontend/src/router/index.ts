@@ -1,8 +1,8 @@
-import MapillaryCollections from '@/components/mapillary/MapillaryCollections.vue'
-import AdminView from '@/components/views/AdminView.vue'
-import BatchesView from '@/components/views/BatchesView.vue'
-import BatchUploadsView from '@/components/views/BatchUploadsView.vue'
-import FailedUploadsView from '@/components/views/FailedUploadsView.vue'
+import MapillaryCollections from '@frontend/components/mapillary/MapillaryCollections.vue'
+import AdminView from '@frontend/components/views/AdminView.vue'
+import BatchesView from '@frontend/components/views/BatchesView.vue'
+import BatchUploadsView from '@frontend/components/views/BatchUploadsView.vue'
+import FailedUploadsView from '@frontend/components/views/FailedUploadsView.vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes = [

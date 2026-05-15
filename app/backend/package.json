@@ -1,26 +1,31 @@
 {
   "name": "@curator/backend",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "bun --watch src/index.ts",
+    "dev": "bun --watch --no-clear-screen src/index.ts",
     "build": "bun build --compile --minify src/index.ts --outfile ../../curator-server",
     "test": "bun test",
     "lint": "bunx biome lint .",
-    "check": "bunx biome check .",
+    "format": "prettier --cache --log-level warn --write src",
     "typecheck": "tsc --noEmit",
     "db:generate": "bunx drizzle-kit generate",
     "db:migrate": "bunx drizzle-kit migrate"
   },
   "dependencies": {
-    "elysia": "catalog:",
+    "@elysiajs/eden": "catalog:",
     "@elysiajs/static": "catalog:",
     "drizzle-orm": "catalog:",
+    "elysia": "catalog:",
+    "ioredis": "catalog:",
     "mysql2": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@types/bun": "catalog:",
     "drizzle-kit": "catalog:",
+    "prettier": "catalog:",
+    "prettier-plugin-organize-imports": "catalog:",
     "typescript": "catalog:"
   },
   "engines": {
