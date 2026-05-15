@@ -1,3 +1,4 @@
+import type { ClientMessage } from '@backend/types/ws'
 import { type Mock, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { effectScope, ref } from 'vue'
 
@@ -185,7 +186,7 @@ describe('usePresetManager', () => {
       await handlePresetSave({ title: 'My Preset', setAsDefault: false })
 
       expect(mockSend).toHaveBeenCalledTimes(1)
-      const sent = mockSend.mock.calls[0]![0] as any
+      const sent = mockSend.mock.calls[0]![0] as Extract<ClientMessage, { type: 'SAVE_PRESET' }>
       expect(sent.data.preset_id).toBe(4)
     })
 
@@ -210,7 +211,7 @@ describe('usePresetManager', () => {
       await handlePresetSave({ title: 'New Preset', setAsDefault: false })
 
       expect(mockSend).toHaveBeenCalledTimes(1)
-      const sent = mockSend.mock.calls[0]![0] as any
+      const sent = mockSend.mock.calls[0]![0] as Extract<ClientMessage, { type: 'SAVE_PRESET' }>
       expect(sent.data.preset_id).toBeUndefined()
     })
   })

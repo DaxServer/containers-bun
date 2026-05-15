@@ -9,6 +9,7 @@ import type {
 
 type BatchesListData = Extract<ServerMessage, { type: 'BATCHES_LIST' }>['data']
 type BatchUploadsListData = Extract<ServerMessage, { type: 'BATCH_UPLOADS_LIST' }>['data']
+type UploadSliceMsg = Extract<ClientMessage, { type: 'UPLOAD_SLICE' }>
 import { type Image, type Item, UPLOAD_STATUS } from '@frontend/types/image'
 import { type Mock, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { ref } from 'vue'
@@ -16,7 +17,7 @@ import { ref } from 'vue'
 import { UPLOAD_SLICE_SIZE } from '../useCollections'
 
 // Mock useSocket
-export const mockSocketData = ref(null)
+export const mockSocketData = ref<ServerMessage | null>(null)
 export const mockSend = mock(() => {})
 
 const mockSocketImpl = () => ({
@@ -554,6 +555,7 @@ describe('useCollections Listeners', () => {
             updated_at: '',
             username: '',
             userid: '',
+            edit_group_id: null,
             stats: {
               cancelled: 0,
               completed: 0,
@@ -570,6 +572,7 @@ describe('useCollections Listeners', () => {
             updated_at: '',
             username: '',
             userid: '',
+            edit_group_id: null,
             stats: {
               cancelled: 0,
               completed: 0,
@@ -636,6 +639,7 @@ describe('useCollections Listeners', () => {
             updated_at: '',
             username: '',
             userid: '',
+            edit_group_id: null,
             stats: {
               cancelled: 0,
               completed: 0,
@@ -652,6 +656,7 @@ describe('useCollections Listeners', () => {
             updated_at: '',
             username: '',
             userid: '',
+            edit_group_id: null,
             stats: {
               cancelled: 0,
               completed: 0,
@@ -700,6 +705,7 @@ describe('useCollections Listeners', () => {
           updated_at: '',
           username: '',
           userid: '',
+          edit_group_id: null,
           stats: {
             cancelled: 0,
             completed: 0,
@@ -710,7 +716,7 @@ describe('useCollections Listeners', () => {
             total: 0,
           },
         },
-        uploads: [{ id: 1, status: '', filename: '', wikitext: '' }],
+        uploads: [{ id: 1, status: '', filename: '', wikitext: '', batchid: 0, userid: '', key: '', handler: '', created_at: '', updated_at: '' }],
       }
 
       listeners.onBatchUploadsList(data)
@@ -749,6 +755,7 @@ describe('useCollections Listeners', () => {
           updated_at: '',
           username: '',
           userid: '',
+          edit_group_id: null,
           stats: {
             cancelled: 0,
             completed: 0,
@@ -759,7 +766,7 @@ describe('useCollections Listeners', () => {
             total: 0,
           },
         },
-        uploads: [{ id: 2, status: '', filename: '', wikitext: '' }],
+        uploads: [{ id: 2, status: '', filename: '', wikitext: '', batchid: 0, userid: '', key: '', handler: '', created_at: '', updated_at: '' }],
       }
 
       listeners.onBatchUploadsList(data)
@@ -779,6 +786,7 @@ describe('useCollections Listeners', () => {
           updated_at: '',
           username: '',
           userid: '',
+          edit_group_id: null,
           stats: {
             cancelled: 0,
             completed: 0,
@@ -789,7 +797,7 @@ describe('useCollections Listeners', () => {
             total: 0,
           },
         },
-        uploads: [{ id: 1, status: '', filename: '', wikitext: '' }],
+        uploads: [{ id: 1, status: '', filename: '', wikitext: '', batchid: 0, userid: '', key: '', handler: '', created_at: '', updated_at: '' }],
       }
 
       listeners.onBatchUploadsList(data)
@@ -1132,7 +1140,7 @@ describe('useCollections Listeners', () => {
           sliceid: 0,
         },
       })
-      expect((sentMsg as any).data.items).toHaveLength(UPLOAD_SLICE_SIZE)
+      expect((sentMsg as UploadSliceMsg).data.items).toHaveLength(UPLOAD_SLICE_SIZE)
 
       // After ACK, isBatchCreated should be true
       listeners.onUploadSliceAck(0, [])
@@ -1162,7 +1170,7 @@ describe('useCollections Listeners', () => {
       const calls = (mockSend as Mock<(data: unknown) => void>).mock.calls
       const arg = calls[0]![0]
       const sentMsg = arg as ClientMessage
-      expect((sentMsg as any).data.items).toHaveLength(UPLOAD_SLICE_SIZE)
+      expect((sentMsg as UploadSliceMsg).data.items).toHaveLength(UPLOAD_SLICE_SIZE)
     })
   })
 
@@ -1279,16 +1287,16 @@ describe('useCollections Listeners', () => {
       expect(calls.length).toBeGreaterThan(0)
       const arg = calls[0]![0]
       const sentMsg = arg as ClientMessage
-      expect((sentMsg as any).data.batchid).toBe(100)
-      expect((sentMsg as any).data.handler).toBe('mapillary')
-      expect((sentMsg as any).data.items).toHaveLength(UPLOAD_SLICE_SIZE)
-      expect((sentMsg as any).data.items[0]).toMatchObject({
+      expect((sentMsg as UploadSliceMsg).data.batchid).toBe(100)
+      expect((sentMsg as UploadSliceMsg).data.handler).toBe('mapillary')
+      expect((sentMsg as UploadSliceMsg).data.items).toHaveLength(UPLOAD_SLICE_SIZE)
+      expect((sentMsg as UploadSliceMsg).data.items[0]).toMatchObject({
         input: 'input',
         labels: { value: 'd', language: 'en' },
         copyright_override: false,
       })
-      expect(typeof (sentMsg as any).data.items[0].title).toBe('string')
-      expect(typeof (sentMsg as any).data.items[0].wikitext).toBe('string')
+      expect(typeof (sentMsg as UploadSliceMsg).data.items[0]!.title).toBe('string')
+      expect(typeof (sentMsg as UploadSliceMsg).data.items[0]!.wikitext).toBe('string')
     })
 
     it('should handle undefined slice ID', () => {
@@ -1384,8 +1392,8 @@ describe('useCollections Listeners', () => {
 
       // With UPLOAD_SLICE_SIZE + 5 items, slice index 2 means start at UPLOAD_SLICE_SIZE * 2,
       // which is >= UPLOAD_SLICE_SIZE + 5, so it should complete
-      if ((sentMsg as any).type === 'UPLOAD_SLICE') {
-        expect((sentMsg as any).data.items).toHaveLength(0) // Empty slice, should trigger subscription
+      if (sentMsg.type === 'UPLOAD_SLICE') {
+        expect(sentMsg.data.items).toHaveLength(0) // Empty slice, should trigger subscription
       }
     })
 
@@ -1418,12 +1426,12 @@ describe('useCollections Listeners', () => {
       // Get the first UPLOAD_SLICE message
       const uploadSliceCall = calls.find((call) => {
         const msg = call[0] as ClientMessage
-        return (msg as any).type === 'UPLOAD_SLICE'
+        return msg.type === 'UPLOAD_SLICE'
       })
       expect(uploadSliceCall).toBeDefined()
-      const sentMsg = uploadSliceCall![0] as ClientMessage
-      expect((sentMsg as any).data.items.length).toBeGreaterThan(0)
-      expect((sentMsg as any).data.items[0].copyright_override).toBe(true)
+      const sentMsg = uploadSliceCall![0] as UploadSliceMsg
+      expect(sentMsg.data.items.length).toBeGreaterThan(0)
+      expect(sentMsg.data.items[0]!.copyright_override).toBe(true)
     })
 
     it('should handle copyright_override when globalLicense is set', () => {
@@ -1455,12 +1463,12 @@ describe('useCollections Listeners', () => {
       // Get the first UPLOAD_SLICE message
       const uploadSliceCall = calls.find((call) => {
         const msg = call[0] as ClientMessage
-        return (msg as any).type === 'UPLOAD_SLICE'
+        return msg.type === 'UPLOAD_SLICE'
       })
       expect(uploadSliceCall).toBeDefined()
-      const sentMsg = uploadSliceCall![0] as ClientMessage
-      expect((sentMsg as any).data.items.length).toBeGreaterThan(0)
-      expect((sentMsg as any).data.items[0].copyright_override).toBe(true)
+      const sentMsg = uploadSliceCall![0] as UploadSliceMsg
+      expect(sentMsg.data.items.length).toBeGreaterThan(0)
+      expect(sentMsg.data.items[0]!.copyright_override).toBe(true)
     })
   })
 })

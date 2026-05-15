@@ -10,6 +10,7 @@ const data = ref<ServerMessage | null>(null)
 let _ws: ReturnType<ReturnType<typeof treaty<App>>['ws']['subscribe']> | null = null
 
 const open = () => {
+  if (_ws) close()
   const client = treaty<App>(getOrigin())
   _ws = client.ws.subscribe()
   _ws.on('message', (event) => {
