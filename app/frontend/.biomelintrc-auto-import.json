@@ -241,6 +241,7 @@
       "defineAsyncComponent",
       "defineComponent",
       "defineStore",
+      "delay",
       "eagerComputed",
       "effectScope",
       "extendRef",

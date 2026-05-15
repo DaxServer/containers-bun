@@ -1,30 +1,27 @@
-const redisHost = process.env.REDIS_HOST ?? "localhost";
-const redisPort = parseInt(process.env.REDIS_PORT ?? "6379", 10);
-const redisPassword = process.env.REDIS_PASSWORD;
+const redisHost = Bun.env.REDIS_HOST ?? "localhost";
+const redisPort = Bun.env.REDIS_PORT ?? 6379;
+const redisPassword = Bun.env.REDIS_PASSWORD;
 const redisUrl = redisPassword
   ? `redis://:${redisPassword}@${redisHost}:${redisPort}`
   : `redis://${redisHost}:${redisPort}`;
 
 export const config = {
-  port: parseInt(process.env.PORT ?? "8000", 10),
-  oauthKey: process.env.CURATOR_OAUTH1_KEY ?? "",
-  oauthSecret: process.env.CURATOR_OAUTH1_SECRET ?? "",
-  tokenEncryptionKey: process.env.TOKEN_ENCRYPTION_KEY ?? "",
-  sessionSecretKey: process.env.SESSION_SECRET_KEY ?? "",
-  wcqsOauthToken: process.env.WCQS_OAUTH_TOKEN ?? "WCQS_OAUTH_TOKEN",
-  mapillaryApiToken: process.env.MAPILLARY_API_TOKEN ?? "MAPILLARY_API_TOKEN",
+  port: Bun.env.PORT ?? 8000,
+  oauthKey: Bun.env.CURATOR_OAUTH1_KEY ?? "",
+  oauthSecret: Bun.env.CURATOR_OAUTH1_SECRET ?? "",
+  tokenEncryptionKey: Bun.env.TOKEN_ENCRYPTION_KEY ?? "",
+  sessionSecretKey: Bun.env.SESSION_SECRET_KEY ?? "",
+  wcqsOauthToken: Bun.env.WCQS_OAUTH_TOKEN ?? "WCQS_OAUTH_TOKEN",
+  mapillaryApiToken: Bun.env.MAPILLARY_API_TOKEN ?? "MAPILLARY_API_TOKEN",
   redisUrl,
-  dbUrl: process.env.DB_URL ?? "",
-  workerConcurrency: parseInt(process.env.CELERY_CONCURRENCY ?? "2", 10),
-  workerMaxWaitTime: parseInt(process.env.CELERY_MAXIMUM_WAIT_TIME ?? "240", 10),
-  rateLimitNormal: parseInt(process.env.RATE_LIMIT_DEFAULT_NORMAL ?? "4", 10),
-  rateLimitPeriod: parseInt(process.env.RATE_LIMIT_DEFAULT_PERIOD ?? "60", 10),
+  dbUrl: Bun.env.DB_URL ?? "",
+  workerConcurrency: Bun.env.CELERY_CONCURRENCY ?? 2,
+  workerMaxWaitTime: Bun.env.CELERY_MAXIMUM_WAIT_TIME ?? 240,
+  rateLimitNormal: Bun.env.RATE_LIMIT_DEFAULT_NORMAL ?? 4,
+  rateLimitPeriod: Bun.env.RATE_LIMIT_DEFAULT_PERIOD ?? 60,
   geocodingApiUrl:
-    process.env.GEOCODING_API_URL ?? "https://geocoding.daxserver.com/reverse",
-  geocodingConcurrencyLimit: parseInt(
-    process.env.GEOCODING_CONCURRENCY_LIMIT ?? "10",
-    10,
-  ),
+    Bun.env.GEOCODING_API_URL ?? "https://geocoding.daxserver.com/reverse",
+  geocodingConcurrencyLimit: Bun.env.GEOCODING_CONCURRENCY_LIMIT ?? 10,
   userAgent:
     "Curator / Toolforge curator.toolforge.org / Wikimedia Commons User:DaxServer",
   wikimediaUrls: {
