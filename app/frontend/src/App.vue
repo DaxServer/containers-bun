@@ -16,8 +16,6 @@ onMounted(() => {
     <Toast />
     <Header />
 
-    
-
     <template v-if="auth.isAuthenticated">
       <div
         v-if="store.error"
