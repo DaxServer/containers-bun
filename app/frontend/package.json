@@ -36,6 +36,7 @@
     "@tsconfig/bun": "catalog:",
     "@tsconfig/node22": "catalog:",
     "@types/bun": "catalog:",
+    "@types/geojson": "catalog:",
     "@types/handlebars": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
