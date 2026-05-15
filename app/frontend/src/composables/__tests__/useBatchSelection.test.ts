@@ -2,7 +2,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
 import { useCollectionsStore } from '../../stores/collections.store'
-import type { BatchUploadItem } from '../../types/asyncapi'
+import type { BatchUploadItem } from '@backend/types/ws'
 import { UPLOAD_STATUS } from '../../types/image'
 import { useBatchSelection } from '../useBatchSelection'
 
@@ -17,6 +17,9 @@ describe('useBatchSelection', () => {
     success: '',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    userid: '',
+    batchid: 1,
+    handler: 'mapillary',
   })
 
   beforeAll(() => {

@@ -1,10 +1,7 @@
-import {
-  ImageHandler,
-  type BatchItem,
-  type BatchUploadItem,
-  type Creator,
-  type PresetItem,
-} from '@frontend/types/asyncapi'
+import type { BatchItem, BatchUploadItem, Creator, PresetItem } from '@backend/types/ws'
+
+const ImageHandler = { MAPILLARY: 'mapillary' } as const
+type ImageHandler = (typeof ImageHandler)[keyof typeof ImageHandler]
 import type { Layout } from '@frontend/types/collections'
 import type { Item, Metadata, MetadataKey } from '@frontend/types/image'
 import { TITLE_ERROR_STATUSES } from '@frontend/types/image'

@@ -4,27 +4,16 @@ import { useUploadStatus } from '@frontend/composables/useUploadStatus'
 import { useAuthStore } from '@frontend/stores/auth.store'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
 import type {
+  BatchItem,
   BatchUploadItem,
-  CancelBatch,
-  CreateBatch,
-  DeletePreset,
-  FetchBatches,
-  FetchBatchUploads,
-  FetchImages,
-  FetchPresets,
+  Creator,
   MediaImage,
   PresetsList,
-  RetryUploads,
   SavePreset,
-  ServerMessage,
-  SubscribeBatch,
-  SubscribeBatchesList,
-  UnsubscribeBatch,
-  UnsubscribeBatchesList,
   UploadCreatedItem,
-  UploadSlice,
+  UploadSliceAckItem,
   UploadUpdateItem,
-} from '@frontend/types/asyncapi'
+} from '@backend/types/ws'
 import type { Image } from '@frontend/types/image'
 import { UPLOAD_STATUS, type UploadStatus } from '@frontend/types/image'
 import { markRaw, watch } from 'vue'
@@ -98,7 +87,7 @@ export const initCollectionsListeners = () => {
   const sendSubscribeBatch = (batchId: number) => {
     if (store.isStatusChecking) return
     store.isStatusChecking = true
-    send(JSON.stringify({ type: 'SUBSCRIBE_BATCH', data: batchId } as SubscribeBatch))
+    send({ type: 'SUBSCRIBE_BATCH', data: batchId })
   }
 
   const onUploadsUpdate = (data: UploadUpdateItem[]) => {
@@ -121,7 +110,7 @@ export const initCollectionsListeners = () => {
           store.updateItem(update.key, 'errorInfo', update.error)
         }
         if (update.status === UPLOAD_STATUS.Completed) {
-          store.updateItem(update.key, 'successUrl', update.success)
+          store.updateItem(update.key, 'successUrl', update.success ?? undefined)
         }
       }
 
@@ -202,7 +191,7 @@ export const initCollectionsListeners = () => {
     store.isLoading = false
   }
 
-  const onBatchesList = (partial: boolean, data: BatchesListData) => {
+  const onBatchesList = (partial: boolean, data: { items: BatchItem[]; total: number }) => {
     if (partial) {
       // Partial update: update existing items instead of full replace
       const existingBatches = [...store.batches]
@@ -224,7 +213,7 @@ export const initCollectionsListeners = () => {
     store.batchesLoading = false
   }
 
-  const onBatchUploadsList = (data: BatchUploadsListData) => {
+  const onBatchUploadsList = (data: { batch: BatchItem; uploads: BatchUploadItem[] }) => {
     if (Number(data.batch.id) === Number(store.currentBatchId)) {
       store.batch = data.batch
       store.batchUploads = data.uploads
@@ -301,9 +290,8 @@ export const initCollectionsListeners = () => {
     }
   }
 
-  watch(data, (raw) => {
-    if (!raw) return
-    const msg = JSON.parse(raw as string) as ServerMessage
+  watch(data, (msg) => {
+    if (!msg) return
 
     switch (msg.type) {
       case 'UPLOADS_UPDATE':
@@ -374,17 +362,15 @@ export const initCollectionsListeners = () => {
       copyright_override: (item.meta.license?.trim() || store.globalLicense.trim()) !== '',
     }))
 
-    send(
-      JSON.stringify({
-        type: 'UPLOAD_SLICE',
-        data: {
-          batchid: store.batchId,
-          sliceid: store.uploadSliceIndex,
-          handler: store.handler,
-          items: sliceItems,
-        },
-      } as UploadSlice),
-    )
+    send({
+      type: 'UPLOAD_SLICE',
+      data: {
+        batchid: store.batchId,
+        sliceid: store.uploadSliceIndex,
+        handler: store.handler,
+        items: sliceItems,
+      },
+    })
   }
 
   return {
@@ -412,55 +398,49 @@ export const useCollections = () => {
   const sendSubscribeBatch = (batchId: number) => {
     if (store.isStatusChecking) return
     store.isStatusChecking = true
-    send(JSON.stringify({ type: 'SUBSCRIBE_BATCH', data: batchId } as SubscribeBatch))
+    send({ type: 'SUBSCRIBE_BATCH', data: batchId })
   }
 
   const sendUnsubscribeBatch = () => {
     store.isStatusChecking = false
-    send(JSON.stringify({ type: 'UNSUBSCRIBE_BATCH' } as UnsubscribeBatch))
+    send({ type: 'UNSUBSCRIBE_BATCH' })
   }
 
   const subscribeBatchesList = (userid?: string, filter?: string) => {
-    send(
-      JSON.stringify({
-        type: 'SUBSCRIBE_BATCHES_LIST',
-        data: { userid, filter },
-      } as SubscribeBatchesList),
-    )
+    send({
+      type: 'SUBSCRIBE_BATCHES_LIST',
+      data: { userid, filter },
+    })
   }
 
   const unsubscribeBatchesList = () => {
-    send(JSON.stringify({ type: 'UNSUBSCRIBE_BATCHES_LIST' } as UnsubscribeBatchesList))
+    send({ type: 'UNSUBSCRIBE_BATCHES_LIST' })
   }
 
   const loadCollection = () => {
     store.$reset()
     fetchPresets()
     store.isLoading = true
-    send(
-      JSON.stringify({
-        type: 'FETCH_IMAGES',
-        data: store.input,
-        handler: store.handler,
-      } as FetchImages),
-    )
+    send({
+      type: 'FETCH_IMAGES',
+      data: store.input,
+      handler: store.handler,
+    })
   }
 
   const loadBatches = (page: number, rows: number, userid?: string, filter?: string) => {
     store.batchesLoading = true
     store.batches = []
     store.batchesTotal = 0
-    send(
-      JSON.stringify({
-        type: 'FETCH_BATCHES',
-        data: {
-          page: page / rows + 1,
-          limit: rows,
-          userid,
-          filter,
-        },
-      } as FetchBatches),
-    )
+    send({
+      type: 'FETCH_BATCHES',
+      data: {
+        page: page / rows + 1,
+        limit: rows,
+        userid,
+        filter,
+      },
+    })
   }
 
   const refreshBatches = () => {
@@ -480,30 +460,24 @@ export const useCollections = () => {
     store.batch = undefined
     store.batchUploads = []
     store.currentBatchId = batchId
-    send(
-      JSON.stringify({
-        type: 'FETCH_BATCH_UPLOADS',
-        data: batchId,
-      } as FetchBatchUploads),
-    )
+    send({
+      type: 'FETCH_BATCH_UPLOADS',
+      data: batchId,
+    })
   }
 
   const retryUploads = (batchId: number) => {
-    send(
-      JSON.stringify({
-        type: 'RETRY_UPLOADS',
-        data: batchId,
-      } as RetryUploads),
-    )
+    send({
+      type: 'RETRY_UPLOADS',
+      data: batchId,
+    })
   }
 
   const cancelBatch = (batchId: number) => {
-    send(
-      JSON.stringify({
-        type: 'CANCEL_BATCH',
-        data: batchId,
-      } as CancelBatch),
-    )
+    send({
+      type: 'CANCEL_BATCH',
+      data: batchId,
+    })
   }
 
   const adminRetrySelectedUploads = async (uploadIds: number[], batchId: number) => {
@@ -535,7 +509,7 @@ export const useCollections = () => {
 
   const startUploadProcess = () => {
     store.isLoading = true
-    send(JSON.stringify({ type: 'CREATE_BATCH' } as CreateBatch))
+    send({ type: 'CREATE_BATCH' })
   }
 
   const submitUpload = () => {
@@ -548,30 +522,24 @@ export const useCollections = () => {
   }
 
   const fetchPresets = () => {
-    send(
-      JSON.stringify({
-        type: 'FETCH_PRESETS',
-        data: { handler: store.handler },
-      } as FetchPresets),
-    )
+    send({
+      type: 'FETCH_PRESETS',
+      data: { handler: store.handler },
+    })
   }
 
   const savePreset = (preset: SavePreset['data']) => {
-    send(
-      JSON.stringify({
-        type: 'SAVE_PRESET',
-        data: preset,
-      } as SavePreset),
-    )
+    send({
+      type: 'SAVE_PRESET',
+      data: preset,
+    })
   }
 
   const deletePreset = (presetId: number) => {
-    send(
-      JSON.stringify({
-        type: 'DELETE_PRESET',
-        data: { preset_id: presetId },
-      } as DeletePreset),
-    )
+    send({
+      type: 'DELETE_PRESET',
+      data: { preset_id: presetId },
+    })
   }
 
   return {
