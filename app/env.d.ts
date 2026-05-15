@@ -6,8 +6,8 @@ declare module "bun" {
     REDIS_PASSWORD?: string
     CURATOR_OAUTH1_KEY: string
     CURATOR_OAUTH1_SECRET: string
-    TOKEN_ENCRYPTION_KEY?: string
-    SESSION_SECRET_KEY?: string
+    TOKEN_ENCRYPTION_KEY: string
+    SESSION_SECRET_KEY: string
     WCQS_OAUTH_TOKEN?: string
     MAPILLARY_API_TOKEN: string
     DB_URL?: string

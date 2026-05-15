@@ -1,7 +1,0 @@
-.DS_Store
-dist
-node_modules
-.claude/
-.code-review-graph/
-.superpowers/
-bun.lock

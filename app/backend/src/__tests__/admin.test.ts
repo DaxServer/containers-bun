@@ -1,0 +1,281 @@
+import { createSessionPlugin, type SessionStore } from '@backend/core/session'
+import type * as batchesDal from '@backend/db/dal/batches'
+import type * as presetsDal from '@backend/db/dal/presets'
+import type * as uploadsDal from '@backend/db/dal/uploads'
+import type * as usersDal from '@backend/db/dal/users'
+import { createAdminRoutes } from '@backend/routes/admin'
+import { beforeAll, describe, expect, it, mock } from 'bun:test'
+import { Elysia } from 'elysia'
+
+const TEST_ENCRYPTION_KEY = 'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE'
+
+beforeAll(() => {
+  process.env.TOKEN_ENCRYPTION_KEY = TEST_ENCRYPTION_KEY
+})
+
+function makeStore() {
+  const m = new Map<string, string>()
+  const store: SessionStore = {
+    async get(k) {
+      return m.get(k) ?? null
+    },
+    async set(k, v, _ex, _ttl) {
+      m.set(k, v)
+    },
+    async del(k) {
+      m.delete(k)
+    },
+  }
+  return { m, store }
+}
+
+function seedSession(m: Map<string, string>, username = 'DaxServer', sub = '1'): string {
+  const id = 'test-session'
+  m.set(`session:${id}`, JSON.stringify({ user: { username, sub } }))
+  return `session_id=${id}`
+}
+
+function seedSessionWithToken(m: Map<string, string>): string {
+  const id = 'test-token-session'
+  m.set(
+    `session:${id}`,
+    JSON.stringify({
+      user: { username: 'DaxServer', sub: '1' },
+      access_token: ['tok', 'secret'],
+    }),
+  )
+  return `session_id=${id}`
+}
+
+function makeTestApp(
+  overrides: {
+    uploads?: object
+    batches?: object
+    users?: object
+    presets?: object
+  } = {},
+) {
+  const { m, store } = makeStore()
+  const session = createSessionPlugin(store)
+
+  const mockBatches = {
+    getBatches: mock(async () => []),
+    countBatches: mock(async () => 0),
+  }
+
+  const mockUsers = {
+    getUsers: mock(async () => []),
+    countUsers: mock(async () => 0),
+  }
+
+  const mockPresets = {
+    getAllPresets: mock(async () => []),
+    countAllPresets: mock(async () => 0),
+  }
+
+  const mockUploads = {
+    getAllUploadRequests: mock(async () => []),
+    countAllUploadRequests: mock(async () => 0),
+    cancelUploadRequests: mock(async () => 0),
+    failUploadRequests: mock(async () => 0),
+    getFailedUploadsGrouped: mock(async () => ({ items: [], total: 0 })),
+    updateUploadFields: mock(async () => true),
+    retrySelectedUploadsToNewBatch: mock(async () => ({
+      newUploadIds: [10],
+      editGroupId: 'eg-123',
+      newBatchId: 5,
+    })),
+  }
+
+  const adminRoutes = createAdminRoutes({
+    users: { ...mockUsers, ...(overrides.users ?? {}) } as unknown as typeof usersDal,
+    batches: { ...mockBatches, ...(overrides.batches ?? {}) } as unknown as typeof batchesDal,
+    presets: { ...mockPresets, ...(overrides.presets ?? {}) } as unknown as typeof presetsDal,
+    uploads: { ...mockUploads, ...(overrides.uploads ?? {}) } as unknown as typeof uploadsDal,
+  })
+  const app = new Elysia().use(session).use(adminRoutes)
+  return { app, m }
+}
+
+describe('admin auth guard', () => {
+  it('returns 401 for unauthenticated request', async () => {
+    const { app } = makeTestApp()
+    const res = await app.handle(new Request('http://localhost/api/admin/batches'))
+    expect(res.status).toBe(401)
+  })
+
+  it('returns 403 for non-admin authenticated request', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m, 'OtherUser', '99')
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/batches', { headers: { cookie } }),
+    )
+    expect(res.status).toBe(403)
+  })
+})
+
+describe('GET /api/admin/batches', () => {
+  it('returns 200 with items and total for admin', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/batches', { headers: { cookie } }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: unknown[]; total: number }
+    expect(body.items).toEqual([])
+    expect(body.total).toBe(0)
+  })
+})
+
+describe('GET /api/admin/users', () => {
+  it('returns 200 with items and total for admin', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/users', { headers: { cookie } }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: unknown[]; total: number }
+    expect(body.items).toEqual([])
+    expect(body.total).toBe(0)
+  })
+})
+
+describe('GET /api/admin/upload_requests', () => {
+  it('returns 200 with items and total for admin', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/upload_requests', { headers: { cookie } }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: unknown[]; total: number }
+    expect(body.items).toEqual([])
+    expect(body.total).toBe(0)
+  })
+})
+
+describe('POST /api/admin/upload_requests/bulk-cancel', () => {
+  it('returns 200 with cancelled_count for admin', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/upload_requests/bulk-cancel', {
+        method: 'POST',
+        headers: { cookie, 'content-type': 'application/json' },
+        body: JSON.stringify({ ids: [1, 2] }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { cancelled_count: number }
+    expect(typeof body.cancelled_count).toBe('number')
+  })
+})
+
+describe('POST /api/admin/upload_requests/bulk-fail', () => {
+  it('returns 200 with failed_count for admin', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/upload_requests/bulk-fail', {
+        method: 'POST',
+        headers: { cookie, 'content-type': 'application/json' },
+        body: JSON.stringify({ ids: [3, 4] }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { failed_count: number }
+    expect(typeof body.failed_count).toBe('number')
+  })
+})
+
+describe('GET /api/admin/presets', () => {
+  it('returns 200 with items and total for admin', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/presets', { headers: { cookie } }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: unknown[]; total: number }
+    expect(body.items).toEqual([])
+    expect(body.total).toBe(0)
+  })
+})
+
+describe('GET /api/admin/failed_uploads', () => {
+  it('returns 200 with items and total for admin', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/failed_uploads', { headers: { cookie } }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: unknown[]; total: number }
+    expect(body.items).toEqual([])
+    expect(body.total).toBe(0)
+  })
+})
+
+describe('PUT /api/admin/upload_requests/:id', () => {
+  it('returns 200 when upload is found and updated', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/upload_requests/42', {
+        method: 'PUT',
+        headers: { cookie, 'content-type': 'application/json' },
+        body: JSON.stringify({ status: 'queued' }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { message: string }
+    expect(body.message).toContain('updated')
+  })
+
+  it('returns 404 when upload is not found', async () => {
+    const { app, m } = makeTestApp({
+      uploads: { updateUploadFields: mock(async () => false) },
+    })
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/upload_requests/999', {
+        method: 'PUT',
+        headers: { cookie, 'content-type': 'application/json' },
+        body: JSON.stringify({ status: 'queued' }),
+      }),
+    )
+    expect(res.status).toBe(404)
+  })
+})
+
+describe('POST /api/admin/retry', () => {
+  it('returns 200 with new_batch_id when access token present', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSessionWithToken(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/retry', {
+        method: 'POST',
+        headers: { cookie, 'content-type': 'application/json' },
+        body: JSON.stringify({ upload_ids: [1, 2] }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { new_batch_id: number }
+    expect(typeof body.new_batch_id).toBe('number')
+  })
+
+  it('returns 401 when no access token in session', async () => {
+    const { app, m } = makeTestApp()
+    const cookie = seedSession(m)
+    const res = await app.handle(
+      new Request('http://localhost/api/admin/retry', {
+        method: 'POST',
+        headers: { cookie, 'content-type': 'application/json' },
+        body: JSON.stringify({ upload_ids: [1, 2] }),
+      }),
+    )
+    expect(res.status).toBe(401)
+  })
+})
