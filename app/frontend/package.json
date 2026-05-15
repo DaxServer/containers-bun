@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "generate": "bun scripts/asyncapi.ts",
     "typecheck": "vue-tsc",
     "lint": "biome lint .",
     "format": "prettier --cache --log-level warn --write src scripts"
@@ -28,7 +27,6 @@
   },
   "devDependencies": {
     "@elysiajs/eden": "catalog:",
-    "@asyncapi/modelina": "catalog:",
     "@biomejs/biome": "catalog:",
     "@happy-dom/global-registrator": "catalog:",
     "@pinia/testing": "catalog:",

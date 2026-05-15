@@ -1,12 +1,7 @@
 // Types matching backend admin endpoints
 
-import type {
-  BatchItem,
-  Label,
-  PresetItem,
-  StructuredError,
-  UploadUpdateItem,
-} from '@frontend/types/asyncapi'
+import type { BatchItem, Label, PresetItem, UploadUpdateItem } from '@backend/types/ws'
+import type { StructuredError } from './error'
 
 export type AdminUser = {
   userid: string

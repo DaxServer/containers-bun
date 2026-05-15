@@ -22,7 +22,7 @@ import {
   SnakDataType,
   SnakType,
   WikibaseEntityType,
-} from '@frontend/types/asyncapi'
+} from '@frontend/types/wikidata'
 import { describe, expect, it } from 'bun:test'
 
 describe('SDC Builders', () => {

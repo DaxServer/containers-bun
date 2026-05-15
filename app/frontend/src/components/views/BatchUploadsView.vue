@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { BatchStats } from '@backend/types/ws'
+
 const batchId = useRouteParams<number>('id')
 const router = useRouter()
 

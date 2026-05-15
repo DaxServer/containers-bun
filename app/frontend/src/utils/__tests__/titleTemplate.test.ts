@@ -43,7 +43,7 @@ describe('titleTemplate utils', () => {
 
     it('handles missing values', () => {
       const image = createMockImage('1')
-      // @ts-expect-error - forcing missing prop for test
+      // @ts-ignore - forcing missing prop for test
       image.creator.username = undefined
       const template = 'Photo by {{mapillary.user.username}}'
       const result = applyTitleTemplate(template, image, 'seq123')

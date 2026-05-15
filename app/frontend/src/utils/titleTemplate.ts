@@ -1,4 +1,4 @@
-import type { GeoLocation } from '@frontend/types/asyncapi'
+import type { GeoLocation } from '@backend/types/ws'
 import type { Image } from '@frontend/types/image'
 import Handlebars from 'handlebars'
 

@@ -1,11 +1,26 @@
 import { WikidataEntity, WikidataProperty } from '@frontend/components/wikidata/useWikidata'
+import type { GeoLocation } from '@backend/types/ws'
 import {
   DataValueType,
   Rank,
   SnakDataType,
   SnakType,
   WikibaseEntityType,
-} from '@frontend/types/asyncapi'
+} from '@frontend/types/wikidata'
+import type {
+  EntityIdValueSnak,
+  ExternalIdValueSnak,
+  GlobeCoordinateValueSnak,
+  ItemId,
+  PropertyId,
+  QuantityValueSnak,
+  Snak,
+  SomeValueSnak,
+  Statement,
+  StringValueSnak,
+  TimeValueSnak,
+  UrlValueSnak,
+} from '@frontend/types/wikidata'
 
 // ============================================================================
 // Low-level builders for creating snaks and statements
@@ -207,7 +222,7 @@ export const createHeightClaim = (height: number): Statement => {
 
 export const createPointOfViewClaim = (location: GeoLocation): Statement => {
   const qualifiers: Snak[] = []
-  if (location.compass_angle !== undefined) {
+  if (location.compass_angle != null) {
     qualifiers.push(
       createQuantitySnak(WikidataProperty.Heading, location.compass_angle, WikidataEntity.Degree),
     )

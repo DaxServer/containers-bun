@@ -2,8 +2,8 @@ import { type Mock, afterEach, beforeEach, describe, expect, it, mock } from 'bu
 import { effectScope, ref } from 'vue'
 
 // Mock useSocket before any imports that depend on it
-export const mockSocketData = ref<string | null>(null)
-export const mockSend: Mock<(data: string) => void> = mock(() => {})
+export const mockSocketData = ref(null)
+export const mockSend: Mock<(data: unknown) => void> = mock(() => {})
 
 const mockSocketImpl = () => ({
   useSocket: {
@@ -185,7 +185,7 @@ describe('usePresetManager', () => {
       await handlePresetSave({ title: 'My Preset', setAsDefault: false })
 
       expect(mockSend).toHaveBeenCalledTimes(1)
-      const sent = JSON.parse(mockSend.mock.calls[0]![0])
+      const sent = mockSend.mock.calls[0]![0] as any
       expect(sent.data.preset_id).toBe(4)
     })
 
@@ -210,7 +210,7 @@ describe('usePresetManager', () => {
       await handlePresetSave({ title: 'New Preset', setAsDefault: false })
 
       expect(mockSend).toHaveBeenCalledTimes(1)
-      const sent = JSON.parse(mockSend.mock.calls[0]![0])
+      const sent = mockSend.mock.calls[0]![0] as any
       expect(sent.data.preset_id).toBeUndefined()
     })
   })

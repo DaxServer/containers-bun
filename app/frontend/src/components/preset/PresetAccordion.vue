@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { PresetItem } from '@backend/types/ws'
+
 defineProps<{
   isOpen: boolean
   presets: PresetItem[]

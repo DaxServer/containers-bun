@@ -1,4 +1,4 @@
-import type { PresetItem } from '@frontend/types/asyncapi'
+import type { PresetItem } from '@backend/types/ws'
 import type { Item } from '@frontend/types/image'
 
 export const makeItem = (
