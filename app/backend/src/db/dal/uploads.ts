@@ -1,6 +1,7 @@
 import { generateEditGroupId } from '@backend/core/crypto'
 import { db } from '@backend/db/client'
 import { batches, uploadRequests, users } from '@backend/db/schema'
+import type { UploadItem } from '@backend/types/ws'
 import type { SQL } from 'drizzle-orm'
 import { and, asc, count, desc, eq, gt, inArray, like, lt, or, sql } from 'drizzle-orm'
 
@@ -282,6 +283,43 @@ export async function retrySelectedUploadsToNewBatch(
     .orderBy(asc(uploadRequests.id))
   // TODO Phase 4: enqueue each inserted upload ID into BullMQ
   return { newUploadIds: inserted.map((r) => r.id), editGroupId, newBatchId }
+}
+
+export async function createUploadRequestsForBatch({
+  userid,
+  username: _username,
+  batchid,
+  items,
+  handler,
+  encryptedAccessToken,
+}: {
+  userid: string
+  username: string
+  batchid: number
+  items: UploadItem[]
+  handler: string
+  encryptedAccessToken: string
+}): Promise<{ key: string; status: string }[]> {
+  if (items.length === 0) return []
+  const rows = items.map((it) => ({
+    batchid,
+    userid,
+    status: 'queued' as const,
+    key: it.id,
+    handler,
+    collection: it.input,
+    access_token: encryptedAccessToken,
+    filename: it.title,
+    wikitext: it.wikitext,
+    copyright_override: it.copyright_override ?? false,
+    labels: it.labels ?? null,
+    result: null,
+    error: null,
+    success: null,
+    celery_task_id: null,
+  }))
+  await db.insert(uploadRequests).values(rows)
+  return rows.map((r) => ({ key: r.key, status: r.status }))
 }
 
 export async function markUploadsExpired(ids: number[]): Promise<void> {
