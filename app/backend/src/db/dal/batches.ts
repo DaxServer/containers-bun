@@ -104,7 +104,7 @@ export async function createBatch(userid: string, _username: string): Promise<Ba
     .from(batches)
     .innerJoin(users, eq(batches.userid, users.userid))
     .where(eq(batches.id, insertId))
-    .then(r => r[0])
+    .then(r => r[0]!)
   return toItem(row, EMPTY_STATS)
 }
 
