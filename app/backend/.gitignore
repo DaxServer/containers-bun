@@ -1,2 +1,2 @@
 drizzle/
-.bun-build*
+*.bun-build*

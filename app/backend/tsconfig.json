@@ -5,11 +5,11 @@
     "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
-    "types": ["bun-types"],
+    "types": ["bun"],
     "noEmit": true,
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "drizzle.config.ts"]
 }
