@@ -11,7 +11,7 @@ declare global {
   const COLOR_VARIANTS: typeof import('./src/composables/useUploadStatus').COLOR_VARIANTS
   const DEMO_ITEMS: typeof import('./src/utils/filterSelection').DEMO_ITEMS
   const DISTANCE_UNITS: typeof import('./src/types/collections').DISTANCE_UNITS
-  const DataValueType: typeof import('./src/types/asyncapi').DataValueType
+  const DataValueType: typeof import('./src/types/wikidata').DataValueType
   const EffectScope: typeof import('vue').EffectScope
   const FIELD_PATH_TO_NAME: typeof import('./src/utils/titleTemplate').FIELD_PATH_TO_NAME
   const FilterMatchMode: typeof import('@primevue/core/api').FilterMatchMode
@@ -20,16 +20,16 @@ declare global {
   const Noir: typeof import('./src/assets/Noir').default
   const OPTIONAL_FIELD_PATHS: typeof import('./src/utils/titleTemplate').OPTIONAL_FIELD_PATHS
   const OPTIONAL_LOCATION_FIELD_PATHS: typeof import('./src/utils/titleTemplate').OPTIONAL_LOCATION_FIELD_PATHS
-  const Rank: typeof import('./src/types/asyncapi').Rank
-  const SnakDataType: typeof import('./src/types/asyncapi').SnakDataType
-  const SnakType: typeof import('./src/types/asyncapi').SnakType
+  const Rank: typeof import('./src/types/wikidata').Rank
+  const SnakDataType: typeof import('./src/types/wikidata').SnakDataType
+  const SnakType: typeof import('./src/types/wikidata').SnakType
   const TITLE_ERROR_LABELS: typeof import('./src/types/image').TITLE_ERROR_LABELS
   const TITLE_ERROR_STATUSES: typeof import('./src/types/image').TITLE_ERROR_STATUSES
   const TITLE_STATUS: typeof import('./src/types/image').TITLE_STATUS
   const UPLOAD_SLICE_SIZE: typeof import('./src/composables/useCollections').UPLOAD_SLICE_SIZE
   const UPLOAD_STATUS: typeof import('./src/types/image').UPLOAD_STATUS
   const VALID_EXTENSIONS: typeof import('./src/utils/titleTemplate').VALID_EXTENSIONS
-  const WikibaseEntityType: typeof import('./src/types/asyncapi').WikibaseEntityType
+  const WikibaseEntityType: typeof import('./src/types/wikidata').WikibaseEntityType
   const WikidataEntity: typeof import('./src/components/wikidata/useWikidata').WikidataEntity
   const WikidataProperty: typeof import('./src/components/wikidata/useWikidata').WikidataProperty
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
@@ -441,14 +441,17 @@ declare global {
   export type { AdminUser, AdminBatch, AdminUploadRequest, AdminPreset, FailedUpload, BatchFailureGroup, PaginatedResponse, FailedUploadsResponse } from './src/types/admin'
   import('./src/types/admin')
   // @ts-ignore
-  export type { ImageHandler, WikibaseEntityType, DataValueType, Rank, SnakDataType, SnakType, StructuredError, DataValue, Snak, ValueSnak, CancelBatch, CreateBatch, CreateCategory, CreateCategoryData, DeletePreset, DeletePresetData, FetchBatches, FetchBatchesData, FetchBatchUploads, FetchImages, FetchPresets, FetchPresetsData, CheckCategoriesDeleted, CheckCategoriesDeletedData, RetryUploads, SavePreset, SavePresetData, Label, SubscribeBatch, SubscribeBatchesList, SubscribeBatchesListData, UnsubscribeBatch, UnsubscribeBatchesList, Upload, UploadData, UploadItem, UploadSlice, UploadSliceData, RecategorizeFiles, RecategorizeFilesData, BatchCreated, BatchesList, BatchesListData, BatchItem, BatchStats, BatchUploadsList, BatchUploadsListData, BatchUploadItem, DuplicateError, ErrorLink, DuplicatedSdcNotUpdatedError, DuplicatedSdcUpdatedError, GenericError, TitleBlacklistedError, CollectionImageIds, CollectionImages, CollectionImagesData, MediaImage, CameraInfo, Creator, Dates, ImageDimensions, ExistingPage, GeoLocation, ImageUrls, Error, PartialCollectionImages, PartialCollectionImagesData, PresetsList, PresetsListData, PresetItem, CategoriesDeletedResponse, CategoriesDeletedResponseData, CategoryCreatedResponse, CategoryCreatedResponseData, RetryUploadsResponse, Subscribed, TryBatchRetrieval, UploadCreated, UploadCreatedItem, UploadsComplete, UploadsUpdate, UploadUpdateItem, UploadSliceAck, UploadSliceAckItem, RecategorizeFilesResponse, RecategorizeFilesResponseData, Claims, NoValueSnak, SomeValueSnak, EntityIdValueSnak, EntityIdDataValue, DataValueEntityId, ExternalIdValueSnak, StringDataValue, GlobeCoordinateValueSnak, GlobeCoordinateDataValue, DataValueGlobeCoordinate, QuantityValueSnak, QuantityDataValue, DataValueQuantity, StringValueSnak, TimeValueSnak, TimeDataValue, DataValueTime, UrlValueSnak, UrlDataValue, ItemId, PropertyId, Reference, Statement, ClientMessage, ServerMessage } from './src/types/asyncapi'
-  import('./src/types/asyncapi')
-  // @ts-ignore
   export type { Handler, Layout, IntervalUnit, DistanceUnit, BatchStatsCard } from './src/types/collections'
   import('./src/types/collections')
   // @ts-ignore
+  export type { DuplicateError, DuplicatedSdcNotUpdatedError, DuplicatedSdcUpdatedError, GenericError, TitleBlacklistedError, StructuredError } from './src/types/error'
+  import('./src/types/error')
+  // @ts-ignore
   export type { Image, Metadata, MetadataKey, MetadataValue, Item, TitleStatus, UploadStatus, UploadStatusUpdate } from './src/types/image'
   import('./src/types/image')
+  // @ts-ignore
+  export type { WikibaseEntityType, DataValueType, Rank, SnakDataType, SnakType, DataValue, Snak, ValueSnak, Claims, NoValueSnak, SomeValueSnak, EntityIdValueSnak, EntityIdDataValue, DataValueEntityId, ExternalIdValueSnak, StringDataValue, GlobeCoordinateValueSnak, GlobeCoordinateDataValue, DataValueGlobeCoordinate, QuantityValueSnak, QuantityDataValue, DataValueQuantity, StringValueSnak, TimeValueSnak, TimeDataValue, DataValueTime, UrlValueSnak, UrlDataValue, ItemId, PropertyId, Reference, Statement } from './src/types/wikidata'
+  import('./src/types/wikidata')
   // @ts-ignore
   export type { FilterItem } from './src/utils/filterSelection'
   import('./src/utils/filterSelection')
@@ -467,25 +470,24 @@ declare module 'vue' {
     readonly COLOR_VARIANTS: UnwrapRef<typeof import('./src/composables/useUploadStatus')['COLOR_VARIANTS']>
     readonly DEMO_ITEMS: UnwrapRef<typeof import('./src/utils/filterSelection')['DEMO_ITEMS']>
     readonly DISTANCE_UNITS: UnwrapRef<typeof import('./src/types/collections')['DISTANCE_UNITS']>
-    readonly DataValueType: UnwrapRef<typeof import('./src/types/asyncapi')['DataValueType']>
+    readonly DataValueType: UnwrapRef<typeof import('./src/types/wikidata')['DataValueType']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly FIELD_PATH_TO_NAME: UnwrapRef<typeof import('./src/utils/titleTemplate')['FIELD_PATH_TO_NAME']>
     readonly FilterMatchMode: UnwrapRef<typeof import('@primevue/core/api')['FilterMatchMode']>
     readonly INTERVAL_UNITS: UnwrapRef<typeof import('./src/types/collections')['INTERVAL_UNITS']>
-    readonly ImageHandler: UnwrapRef<typeof import('./src/types/asyncapi')['ImageHandler']>
     readonly Noir: UnwrapRef<typeof import('./src/assets/Noir')['default']>
     readonly OPTIONAL_FIELD_PATHS: UnwrapRef<typeof import('./src/utils/titleTemplate')['OPTIONAL_FIELD_PATHS']>
     readonly OPTIONAL_LOCATION_FIELD_PATHS: UnwrapRef<typeof import('./src/utils/titleTemplate')['OPTIONAL_LOCATION_FIELD_PATHS']>
-    readonly Rank: UnwrapRef<typeof import('./src/types/asyncapi')['Rank']>
-    readonly SnakDataType: UnwrapRef<typeof import('./src/types/asyncapi')['SnakDataType']>
-    readonly SnakType: UnwrapRef<typeof import('./src/types/asyncapi')['SnakType']>
+    readonly Rank: UnwrapRef<typeof import('./src/types/wikidata')['Rank']>
+    readonly SnakDataType: UnwrapRef<typeof import('./src/types/wikidata')['SnakDataType']>
+    readonly SnakType: UnwrapRef<typeof import('./src/types/wikidata')['SnakType']>
     readonly TITLE_ERROR_LABELS: UnwrapRef<typeof import('./src/types/image')['TITLE_ERROR_LABELS']>
     readonly TITLE_ERROR_STATUSES: UnwrapRef<typeof import('./src/types/image')['TITLE_ERROR_STATUSES']>
     readonly TITLE_STATUS: UnwrapRef<typeof import('./src/types/image')['TITLE_STATUS']>
     readonly UPLOAD_SLICE_SIZE: UnwrapRef<typeof import('./src/composables/useCollections')['UPLOAD_SLICE_SIZE']>
     readonly UPLOAD_STATUS: UnwrapRef<typeof import('./src/types/image')['UPLOAD_STATUS']>
     readonly VALID_EXTENSIONS: UnwrapRef<typeof import('./src/utils/titleTemplate')['VALID_EXTENSIONS']>
-    readonly WikibaseEntityType: UnwrapRef<typeof import('./src/types/asyncapi')['WikibaseEntityType']>
+    readonly WikibaseEntityType: UnwrapRef<typeof import('./src/types/wikidata')['WikibaseEntityType']>
     readonly WikidataEntity: UnwrapRef<typeof import('./src/components/wikidata/useWikidata')['WikidataEntity']>
     readonly WikidataProperty: UnwrapRef<typeof import('./src/components/wikidata/useWikidata')['WikidataProperty']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
@@ -542,7 +544,6 @@ declare module 'vue' {
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
-    readonly delay: UnwrapRef<typeof import('./src/composables/useSocket')['delay']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>

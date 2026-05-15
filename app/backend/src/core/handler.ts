@@ -1,6 +1,7 @@
 import { config } from '@backend/config'
 import { encryptAccessToken } from '@backend/core/crypto'
 import type { SessionUser } from '@backend/core/session'
+import type { BatchItem as DalBatchItem } from '@backend/db/dal/batches'
 import {
   countBatches,
   countUploadsInBatch,
@@ -36,7 +37,6 @@ import type {
   UploadItem,
   UploadUpdateItem,
 } from '@backend/types/ws'
-import type { BatchItem as DalBatchItem } from '@backend/db/dal/batches'
 
 const UPLOAD_DONE_STATUSES = new Set([
   'completed',
@@ -397,10 +397,7 @@ export class Handler {
     })
   }
 
-  private async fetchImagesInBatches(
-    collection: string,
-    handler: MapillaryHandler,
-  ): Promise<void> {
+  private async fetchImagesInBatches(collection: string, handler: MapillaryHandler): Promise<void> {
     this.sender.send({
       type: 'TRY_BATCH_RETRIEVAL',
       data: 'Large collection detected. Loading in batches...',
@@ -553,8 +550,7 @@ export class Handler {
         try {
           const wd = new WikidataClient(this.user.access_token)
           const entity = await wd.fetchItem(wikidataQid)
-          const existingClaims =
-            (entity.claims as Record<string, unknown[]>)?.P373 ?? []
+          const existingClaims = (entity.claims as Record<string, unknown[]>)?.P373 ?? []
           const categoryName = title.replace(/_/g, ' ')
           const newClaim = {
             mainsnak: {
@@ -566,7 +562,9 @@ export class Handler {
             rank: 'normal',
           }
           const alreadyExists = existingClaims.some(
-            (c) => (c as { mainsnak?: { datavalue?: { value?: unknown } } }).mainsnak?.datavalue?.value === categoryName,
+            (c) =>
+              (c as { mainsnak?: { datavalue?: { value?: unknown } } }).mainsnak?.datavalue
+                ?.value === categoryName,
           )
           const claims = alreadyExists ? existingClaims : [...existingClaims, newClaim]
           const sitelinks = {

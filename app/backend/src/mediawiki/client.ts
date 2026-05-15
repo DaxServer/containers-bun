@@ -39,23 +39,23 @@ export class MediaWikiClient {
 
   private async getCsrfToken(): Promise<string> {
     const result = await this.apiRequest({ action: 'query', meta: 'tokens' })
-    return ((result.query as Record<string, unknown>).tokens as Record<string, string>).csrftoken as string
+    return ((result.query as Record<string, unknown>).tokens as Record<string, string>)
+      .csrftoken as string
   }
 
   async createPage(title: string, text: string): Promise<string> {
     const token = await this.getCsrfToken()
-    const result = await this.apiRequest(
-      { action: 'edit' },
-      'POST',
-      { title, text, createonly: '1', token },
-    )
+    const result = await this.apiRequest({ action: 'edit' }, 'POST', {
+      title,
+      text,
+      createonly: '1',
+      token,
+    })
     if (result.error) {
       if ((result.error as Record<string, string>).code === 'articleexists') return title
-      throw new Error(
-        (result.error as Record<string, string>).info ?? 'Edit failed',
-      )
+      throw new Error((result.error as Record<string, string>).info ?? 'Edit failed')
     }
-    return ((result.edit as Record<string, string>).title) as string
+    return (result.edit as Record<string, string>).title as string
   }
 
   async isCategoryDeleted(title: string): Promise<boolean> {
@@ -83,12 +83,18 @@ export class MediaWikiClient {
       const result = await this.apiRequest(params)
       if (result.error)
         throw new Error(
-          ((result.error as Record<string, string>).info) ?? 'Failed to fetch category members',
+          (result.error as Record<string, string>).info ?? 'Failed to fetch category members',
         )
-      const members = ((result.query as Record<string, unknown>).categorymembers as Array<Record<string, string>>) ?? []
+      const members =
+        ((result.query as Record<string, unknown>).categorymembers as Array<
+          Record<string, string>
+        >) ?? []
       for (const m of members) titles.push(m.title!)
       if (!result.continue) break
-      params = { ...baseParams, cmcontinue: (result.continue as Record<string, string>).cmcontinue as string }
+      params = {
+        ...baseParams,
+        cmcontinue: (result.continue as Record<string, string>).cmcontinue as string,
+      }
     }
     return titles
   }
@@ -112,25 +118,26 @@ export class MediaWikiClient {
 
     const sourceNormalized = source.replace(/_/g, ' ')
     const targetNormalized = target.replace(/_/g, ' ')
-    const sourceWords = sourceNormalized.split(' ').map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    const sourceWords = sourceNormalized
+      .split(' ')
+      .map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
     const sourceRegex = sourceWords.join('(?:_| )')
     const pattern = new RegExp(`\\[\\[Category:${sourceRegex}(\\|[^\\]]+)?\\]\\]`, 'gi')
 
     if (!pattern.test(wikitext)) return false
     pattern.lastIndex = 0
-    const newText = wikitext.replace(pattern, (_match, alias) => `[[Category:${targetNormalized}${alias ?? ''}]]`)
+    const newText = wikitext.replace(
+      pattern,
+      (_match, alias) => `[[Category:${targetNormalized}${alias ?? ''}]]`,
+    )
 
     const token = await this.getCsrfToken()
-    const editResult = await this.apiRequest(
-      { action: 'edit' },
-      'POST',
-      {
-        title,
-        text: newText,
-        summary: `Recategorize: [[Category:${sourceNormalized}]] → [[Category:${targetNormalized}]]`,
-        token,
-      },
-    )
+    const editResult = await this.apiRequest({ action: 'edit' }, 'POST', {
+      title,
+      text: newText,
+      summary: `Recategorize: [[Category:${sourceNormalized}]] → [[Category:${targetNormalized}]]`,
+      token,
+    })
     if (editResult.error) return false
     return true
   }

@@ -8,7 +8,7 @@
     "build": "vite build",
     "typecheck": "vue-tsc",
     "lint": "biome lint .",
-    "format": "prettier --cache --log-level warn --write src scripts"
+    "format": "prettier --cache --log-level warn --write src"
   },
   "dependencies": {
     "@primeuix/themes": "catalog:",

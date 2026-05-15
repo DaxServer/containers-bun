@@ -6,13 +6,13 @@ import type {
   UploadCreatedItem,
   UploadUpdateItem,
 } from '@backend/types/ws'
+import { type Image, type Item, UPLOAD_STATUS } from '@frontend/types/image'
+import { type Mock, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { ref } from 'vue'
 
 type BatchesListData = Extract<ServerMessage, { type: 'BATCHES_LIST' }>['data']
 type BatchUploadsListData = Extract<ServerMessage, { type: 'BATCH_UPLOADS_LIST' }>['data']
 type UploadSliceMsg = Extract<ClientMessage, { type: 'UPLOAD_SLICE' }>
-import { type Image, type Item, UPLOAD_STATUS } from '@frontend/types/image'
-import { type Mock, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { ref } from 'vue'
 
 import { UPLOAD_SLICE_SIZE } from '../useCollections'
 
@@ -716,7 +716,20 @@ describe('useCollections Listeners', () => {
             total: 0,
           },
         },
-        uploads: [{ id: 1, status: '', filename: '', wikitext: '', batchid: 0, userid: '', key: '', handler: '', created_at: '', updated_at: '' }],
+        uploads: [
+          {
+            id: 1,
+            status: '',
+            filename: '',
+            wikitext: '',
+            batchid: 0,
+            userid: '',
+            key: '',
+            handler: '',
+            created_at: '',
+            updated_at: '',
+          },
+        ],
       }
 
       listeners.onBatchUploadsList(data)
@@ -746,7 +759,9 @@ describe('useCollections Listeners', () => {
           total: 0,
         },
       }
-      store.batchUploads = [{ id: 1, status: '', filename: '', wikitext: '' } as unknown as BatchUploadItem]
+      store.batchUploads = [
+        { id: 1, status: '', filename: '', wikitext: '' } as unknown as BatchUploadItem,
+      ]
 
       const data: BatchUploadsListData = {
         batch: {
@@ -766,7 +781,20 @@ describe('useCollections Listeners', () => {
             total: 0,
           },
         },
-        uploads: [{ id: 2, status: '', filename: '', wikitext: '', batchid: 0, userid: '', key: '', handler: '', created_at: '', updated_at: '' }],
+        uploads: [
+          {
+            id: 2,
+            status: '',
+            filename: '',
+            wikitext: '',
+            batchid: 0,
+            userid: '',
+            key: '',
+            handler: '',
+            created_at: '',
+            updated_at: '',
+          },
+        ],
       }
 
       listeners.onBatchUploadsList(data)
@@ -797,7 +825,20 @@ describe('useCollections Listeners', () => {
             total: 0,
           },
         },
-        uploads: [{ id: 1, status: '', filename: '', wikitext: '', batchid: 0, userid: '', key: '', handler: '', created_at: '', updated_at: '' }],
+        uploads: [
+          {
+            id: 1,
+            status: '',
+            filename: '',
+            wikitext: '',
+            batchid: 0,
+            userid: '',
+            key: '',
+            handler: '',
+            created_at: '',
+            updated_at: '',
+          },
+        ],
       }
 
       listeners.onBatchUploadsList(data)
