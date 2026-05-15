@@ -566,7 +566,7 @@ export class Handler {
             rank: 'normal',
           }
           const alreadyExists = existingClaims.some(
-            (c: any) => c.mainsnak?.datavalue?.value === categoryName,
+            (c) => (c as { mainsnak?: { datavalue?: { value?: unknown } } }).mainsnak?.datavalue?.value === categoryName,
           )
           const claims = alreadyExists ? existingClaims : [...existingClaims, newClaim]
           const sitelinks = {
