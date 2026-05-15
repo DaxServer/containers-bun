@@ -1,5 +1,6 @@
+import { api } from '@frontend/lib/apiClient'
 import { useFailedUploadsStore } from '@frontend/stores/failedUploads.store'
-import type { FailedUploadsResponse } from '@frontend/types/admin'
+import type { BatchFailureGroup, FailedUploadsResponse } from '@frontend/types/admin'
 import { watch } from 'vue'
 
 export const useFailedUploads = () => {
@@ -12,30 +13,20 @@ export const useFailedUploads = () => {
     store.loading = true
 
     try {
-      const queryParams = new URLSearchParams({
-        page: String(page),
-        limit: String(store.params.rows),
-        sort_by: store.sortBy,
+      const { data, status } = await api.api.admin.failed_uploads.get({
+        query: {
+          page,
+          limit: store.params.rows,
+          sort_by: store.sortBy,
+          error_type: store.errorTypeFilter ?? undefined,
+          handler: store.handlerFilter ?? undefined,
+          search_text: store.searchText || undefined,
+        },
       })
-
-      if (store.errorTypeFilter !== null) {
-        queryParams.set('error_type', store.errorTypeFilter)
-      }
-      if (store.handlerFilter !== null) {
-        queryParams.set('handler', store.handlerFilter)
-      }
-      if (store.searchText) {
-        queryParams.set('search_text', store.searchText)
-      }
-
-      const response = await fetch(`/api/admin/failed_uploads?${queryParams}`)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch failed uploads: ${response.status} ${response.statusText}`)
-      }
-
-      const data: FailedUploadsResponse = await response.json()
-      store.batches = data.items
-      store.total = data.total
+      if (status !== 200 || !data) throw new Error(`Failed to fetch failed uploads: ${status}`)
+      const result = data as unknown as FailedUploadsResponse
+      store.batches = result.items as BatchFailureGroup[]
+      store.total = result.total
     } finally {
       store.loading = false
     }

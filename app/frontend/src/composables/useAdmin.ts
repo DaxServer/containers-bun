@@ -1,108 +1,86 @@
+import { api } from '@frontend/lib/apiClient'
 import { useAdminStore } from '@frontend/stores/admin.store'
-import type {
-  AdminBatch,
-  AdminPreset,
-  AdminUploadRequest,
-  AdminUser,
-  PaginatedResponse,
-} from '@frontend/types/admin'
+import type { AdminBatch, AdminPreset, AdminUploadRequest, AdminUser } from '@frontend/types/admin'
 import { UPLOAD_STATUS } from '@frontend/types/image'
 
-const fetchData = async <T>(
-  endpoint: string,
-  page: number,
-  limit: number,
-  filterText?: string,
-  extraParams?: Record<string, string | string[]>,
-): Promise<PaginatedResponse<T>> => {
-  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
-  if (filterText) params.set('filter_text', filterText)
-  if (extraParams) {
-    for (const [key, value] of Object.entries(extraParams)) {
-      if (Array.isArray(value)) {
-        for (const v of value) {
-          params.append(key, v)
-        }
-      } else {
-        params.set(key, value)
-      }
-    }
-  }
-  const response = await fetch(`/api/admin/${endpoint}?${params}`)
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${endpoint}`)
-  }
-  return response.json()
-}
+type PaginatedResult<T> = { items: T[]; total: number }
+
+type UploadRequestsEden = {
+  get: (opts: { query: Record<string, unknown> }) => Promise<{ data: unknown; status: number }>
+  'bulk-cancel': { post: (b: { ids: number[] }) => Promise<{ data: { cancelled_count: number } | null; status: number }> }
+  'bulk-fail': { post: (b: { ids: number[] }) => Promise<{ data: { failed_count: number } | null; status: number }> }
+} & ((p: { id: number }) => { put: (b: Record<string, string>) => Promise<{ status: number }> })
 
 export const useAdmin = () => {
   const store = useAdminStore()
 
-  const updateAdminUploadRequest = async (
-    id: number,
-    field: string,
-    value: string,
-  ): Promise<void> => {
-    const response = await fetch(`/api/admin/upload_requests/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ [field]: value }),
-    })
-    if (!response.ok) {
-      throw new Error('Failed to update upload request')
-    }
+  const uploadRequestsEden = api.api.admin.upload_requests as unknown as UploadRequestsEden
+
+  const updateAdminUploadRequest = async (id: number, field: string, value: string): Promise<void> => {
+    const { status } = await uploadRequestsEden({ id }).put({ [field]: value })
+    if (status !== 200) throw new Error('Failed to update upload request')
   }
 
   const refreshAdminData = async () => {
     const { adminTable, adminParams, adminFilterText } = store
     const page = Math.floor(adminParams.first / adminParams.rows) + 1
-    const filterText = adminFilterText || undefined
+    const limit = adminParams.rows
 
     store.adminLoading = true
 
     try {
       switch (adminTable) {
         case 'batches': {
-          const data = await fetchData<AdminBatch>('batches', page, adminParams.rows, filterText)
-          store.adminBatches = data.items
-          store.adminTotal = data.total
+          const { data } = await api.api.admin.batches.get({
+            query: { page, limit, filter_text: adminFilterText || undefined },
+          })
+          if (data) {
+            const result = data as unknown as PaginatedResult<AdminBatch>
+            store.adminBatches = result.items
+            store.adminTotal = result.total
+          }
           break
         }
         case 'users': {
-          const data = await fetchData<AdminUser>('users', page, adminParams.rows, filterText)
-          store.adminUsers = data.items
-          store.adminTotal = data.total
+          const { data } = await api.api.admin.users.get({
+            query: { page, limit, filter_text: adminFilterText || undefined },
+          })
+          if (data) {
+            const result = data as unknown as PaginatedResult<AdminUser>
+            store.adminUsers = result.items
+            store.adminTotal = result.total
+          }
           break
         }
         case 'upload_requests': {
-          const extraParams: Record<string, string | string[]> = {}
-          if (store.adminStatusFilter.length > 0) {
-            extraParams.status = store.adminStatusFilter
+          const statusFilter = store.adminStatusFilter.length ? store.adminStatusFilter : undefined
+          const [dateFrom, dateTo] = store.adminDateRange ?? [null, null]
+          const { data } = await api.api.admin.upload_requests.get({
+            query: {
+              page,
+              limit,
+              filter_text: adminFilterText || undefined,
+              status: statusFilter,
+              date_from: dateFrom?.toISOString().split('T')[0],
+              date_to: dateTo?.toISOString().split('T')[0],
+            },
+          })
+          if (data) {
+            const result = data as unknown as PaginatedResult<AdminUploadRequest>
+            store.adminUploadRequests = result.items
+            store.adminTotal = result.total
           }
-          if (store.adminDateRange?.[0]) {
-            // Use ISO format (UTC) to match backend timestamps - all dates are stored in UTC
-            extraParams.date_from = store.adminDateRange[0].toISOString().split('T')[0]!
-            if (store.adminDateRange[1]) {
-              extraParams.date_to = store.adminDateRange[1].toISOString().split('T')[0]!
-            }
-          }
-          const data = await fetchData<AdminUploadRequest>(
-            'upload_requests',
-            page,
-            adminParams.rows,
-            filterText,
-            extraParams,
-          )
-          store.adminUploadRequests = data.items
-          store.adminTotal = data.total
           break
         }
         case 'presets': {
-          const data = await fetchData<AdminPreset>('presets', page, adminParams.rows, filterText)
-          store.adminPresets = data.items
-          store.adminTotal = data.total
+          const { data } = await api.api.admin.presets.get({
+            query: { page, limit, filter_text: adminFilterText || undefined },
+          })
+          if (data) {
+            const result = data as unknown as PaginatedResult<AdminPreset>
+            store.adminPresets = result.items
+            store.adminTotal = result.total
+          }
           break
         }
       }
@@ -115,30 +93,18 @@ export const useAdmin = () => {
     const ids = store.selectedUploadRequests
       .filter((r) => r.status === UPLOAD_STATUS.Queued || r.status === UPLOAD_STATUS.InProgress)
       .map((r) => r.id)
-    const response = await fetch('/api/admin/upload_requests/bulk-cancel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids }),
-    })
-    if (!response.ok) {
-      throw new Error('Failed to cancel upload requests')
-    }
-    return response.json()
+    const { data, status } = await uploadRequestsEden['bulk-cancel'].post({ ids })
+    if (status !== 200 || !data) throw new Error('Failed to cancel upload requests')
+    return data
   }
 
   const markSelectedAsFailed = async (): Promise<{ failed_count: number }> => {
     const ids = store.selectedUploadRequests
       .filter((r) => r.status !== UPLOAD_STATUS.Failed)
       .map((r) => r.id)
-    const response = await fetch('/api/admin/upload_requests/bulk-fail', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids }),
-    })
-    if (!response.ok) {
-      throw new Error('Failed to mark upload requests as failed')
-    }
-    return response.json()
+    const { data, status } = await uploadRequestsEden['bulk-fail'].post({ ids })
+    if (status !== 200 || !data) throw new Error('Failed to mark upload requests as failed')
+    return data
   }
 
   const clearText = () => {
