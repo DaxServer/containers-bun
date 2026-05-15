@@ -9,28 +9,37 @@ import (
 )
 
 func main() {
-	bunPath := ensureBun()
-	args := append([]string{"bun"}, os.Args[1:]...)
-	slog.Info("starting bun")
-	if err := syscall.Exec(bunPath, args, os.Environ()); err != nil {
-		slog.Error("failed to exec bun", "error", err)
+	serverPath := findServer()
+	slog.Info("starting curator-server", "path", serverPath)
+	if err := syscall.Exec(serverPath, append([]string{"curator-server"}, os.Args[1:]...), os.Environ()); err != nil {
+		slog.Error("failed to exec curator-server", "error", err)
 		os.Exit(1)
 	}
 }
 
-const bunInstallDir = "/tmp/.bun"
+func findServer() string {
+	// 1. Same directory as this binary
+	if exe, err := os.Executable(); err == nil {
+		candidate := filepath.Join(filepath.Dir(exe), "curator-server")
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
 
-func ensureBun() string {
-	bunPath := filepath.Join(bunInstallDir, "bin", "bun")
-	if _, err := os.Stat(bunPath); err == nil {
-		return bunPath
+	// 2. Current working directory (go run . sets CWD to repo root)
+	if cwd, err := os.Getwd(); err == nil {
+		candidate := filepath.Join(cwd, "curator-server")
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
 	}
-	slog.Info("bun not found, installing")
-	cmd := exec.Command("bash", "-c", "curl -fsSL https://bun.sh/install | bash")
-	cmd.Env = append(os.Environ(), "BUN_INSTALL="+bunInstallDir)
-	if err := cmd.Run(); err != nil {
-		slog.Error("failed to install bun", "error", err)
-		os.Exit(1)
+
+	// 3. PATH
+	if path, err := exec.LookPath("curator-server"); err == nil {
+		return path
 	}
-	return bunPath
+
+	slog.Error("curator-server binary not found — run 'cd app && bun run build' first")
+	os.Exit(1)
+	return ""
 }
