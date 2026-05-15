@@ -4,6 +4,7 @@ import path from 'node:path'
 import type { createSessionPlugin } from './core/session'
 import { adminRoutes } from './routes/admin'
 import { authRoutes } from './routes/auth'
+import { wsRoutes } from './routes/ws'
 
 type SessionPlugin = ReturnType<typeof createSessionPlugin>
 
@@ -13,6 +14,7 @@ const buildApi = (session: SessionPlugin) =>
     .get('/health', () => ({ status: 'ok' }))
     .use(authRoutes)
     .use(adminRoutes)
+    .use(wsRoutes)
 
 export type App = ReturnType<typeof buildApi>
 
