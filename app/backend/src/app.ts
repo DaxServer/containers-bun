@@ -2,6 +2,7 @@ import { staticPlugin } from '@elysiajs/static'
 import { Elysia } from 'elysia'
 import path from 'node:path'
 import type { createSessionPlugin } from './core/session'
+import { adminRoutes } from './routes/admin'
 import { authRoutes } from './routes/auth'
 
 type SessionPlugin = ReturnType<typeof createSessionPlugin>
@@ -11,6 +12,7 @@ const buildApi = (session: SessionPlugin) =>
     .use(session)
     .get('/health', () => ({ status: 'ok' }))
     .use(authRoutes)
+    .use(adminRoutes)
 
 export type App = ReturnType<typeof buildApi>
 

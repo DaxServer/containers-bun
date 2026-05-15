@@ -1,4 +1,3 @@
-import { config } from '@backend/config'
 import { encryptAccessToken } from '@backend/core/crypto'
 import { createSessionPlugin } from '@backend/core/session'
 import * as batchesDal from '@backend/db/dal/batches'
@@ -16,14 +15,15 @@ const _noopStore = {
 // Mirrors requireAuth in core/auth.ts — adds admin username check
 const requireAdmin = new Elysia({ name: 'require-admin' })
   .use(createSessionPlugin(_noopStore))
-  .derive({ as: 'local' }, ({ session }) => {
+  .derive({ as: 'scoped' }, ({ session }) => {
     if (!session.user) {
       throw new Response(JSON.stringify({ message: 'Unauthorized' }), {
         status: 401,
         headers: { 'content-type': 'application/json' },
       })
     }
-    if (session.user.username !== config.xUsername) {
+    // Read live from env so tests can inject values via process.env
+    if (session.user.username !== (Bun.env.X_USERNAME ?? '')) {
       throw new Response(JSON.stringify({ message: 'Forbidden' }), {
         status: 403,
         headers: { 'content-type': 'application/json' },
