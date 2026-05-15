@@ -1,4 +1,7 @@
+.claude
+.code-review-graph
 .env
-.vscode/
-.code-review-graph/
+.vscode
 bun
+node_modules
+curator-server

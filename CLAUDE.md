@@ -5,6 +5,22 @@ go build ./...
 go test ./...
 ```
 
+```bash
+# TypeScript backend — run from app/
+bun install          # install workspace deps
+bun test             # run backend + frontend tests
+bun typecheck        # tsc on both packages (authoritative — LSP warnings may be stale)
+bun lint             # biome lint on both packages
+bun run build        # compile curator-server binary at repo root
+bun db:generate      # generate Drizzle migrations (requires DB_URL)
+```
+
+## TypeScript Backend Notes
+
+- `@elysiajs/static` default prefix is `/public` — use `prefix: "/"` to serve assets at root
+- Drizzle `datetime` has no `.onUpdateNow()` — use `timestamp` for auto-update columns
+- `bun install` from `app/` hard-errors if a workspace member in `"workspaces"` doesn't exist yet
+
 ## Toolforge Build Notes
 
 - `heroku/go` buildpack only builds the root package — Go files must be at repo root, not `cmd/`

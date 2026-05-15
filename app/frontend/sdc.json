@@ -1,0 +1,626 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "SDC models",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "Claims": {
+        "type": "object",
+        "description": "Claims",
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Snak"
+          }
+        },
+        "default": {}
+      },
+      "DataValue": {
+        "oneOf": [
+          { "$ref": "#/components/schemas/EntityIdDataValue" },
+          { "$ref": "#/components/schemas/GlobeCoordinateDataValue" },
+          { "$ref": "#/components/schemas/QuantityDataValue" },
+          { "$ref": "#/components/schemas/TimeDataValue" },
+          { "$ref": "#/components/schemas/StringDataValue" },
+          { "$ref": "#/components/schemas/UrlDataValue" }
+        ]
+      },
+      "DataValueEntityId": {
+        "type": "object",
+        "description": "Data value entity ID",
+        "required": [
+          "entity-type",
+          "numeric-id"
+        ],
+        "properties": {
+          "entity-type": {
+            "$ref": "#/components/schemas/WikibaseEntityType"
+          },
+          "numeric-id": {
+            "type": "integer",
+            "description": "Numeric ID"
+          }
+        }
+      },
+      "DataValueGlobeCoordinate": {
+        "type": "object",
+        "description": "Data value globe coordinate",
+        "required": [
+          "latitude",
+          "longitude",
+          "altitude",
+          "precision",
+          "globe"
+        ],
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "description": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Longitude"
+          },
+          "altitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Altitude",
+            "default": null
+          },
+          "precision": {
+            "type": "number",
+            "description": "Precision"
+          },
+          "globe": {
+            "type": "string",
+            "description": "Globe"
+          }
+        }
+      },
+      "DataValueQuantity": {
+        "type": "object",
+        "description": "Data value quantity",
+        "required": [
+          "amount",
+          "unit"
+        ],
+        "properties": {
+          "amount": {
+            "type": "string",
+            "description": "Amount"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit"
+          },
+          "upperBound": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Upper bound",
+            "default": null
+          },
+          "lowerBound": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Lower bound",
+            "default": null
+          }
+        }
+      },
+      "DataValueTime": {
+        "type": "object",
+        "description": "Data value time",
+        "required": [
+          "time"
+        ],
+        "properties": {
+          "time": {
+            "type": "string",
+            "description": "Time"
+          },
+          "timezone": {
+            "type": "integer",
+            "description": "Timezone"
+          },
+          "before": {
+            "type": "integer",
+            "description": "Before"
+          },
+          "after": {
+            "type": "integer",
+            "description": "After"
+          },
+          "precision": {
+            "type": "integer",
+            "description": "Precision"
+          },
+          "calendarmodel": {
+            "type": "string",
+            "description": "Calendar model"
+          }
+        }
+      },
+      "DataValueType": {
+        "type": "string",
+        "description": "Data value type",
+        "enum": [
+          "external-id",
+          "globecoordinate",
+          "quantity",
+          "string",
+          "time",
+          "wikibase-entityid"
+        ]
+      },
+      "EntityIdDataValue": {
+        "type": "object",
+        "description": "Entity ID data value",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "const": "wikibase-entityid"
+          },
+          "value": {
+            "$ref": "#/components/schemas/DataValueEntityId"
+          }
+        }
+      },
+      "EntityIdValueSnak": {
+        "type": "object",
+        "description": "Entity ID value snak",
+        "required": [
+          "snaktype",
+          "property",
+          "datatype",
+          "datavalue"
+        ],
+        "properties": {
+          "snaktype": {
+            "const": "value"
+          },
+          "property": {
+            "$ref": "#/components/schemas/PropertyId"
+          },
+          "datatype": {
+            "const": "wikibase-item"
+          },
+          "datavalue": {
+            "$ref": "#/components/schemas/EntityIdDataValue"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash of the snak for Wikimedia Commons identification"
+          }
+        }
+      },
+      "ExternalIdValueSnak": {
+        "type": "object",
+        "description": "External ID value snak",
+        "required": [
+          "snaktype",
+          "property",
+          "datatype",
+          "datavalue"
+        ],
+        "properties": {
+          "snaktype": {
+            "const": "value"
+          },
+          "property": {
+            "$ref": "#/components/schemas/PropertyId"
+          },
+          "datatype": {
+            "const": "external-id"
+          },
+          "datavalue": {
+            "$ref": "#/components/schemas/StringDataValue"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash of the snak for Wikimedia Commons identification"
+          }
+        }
+      },
+      "GlobeCoordinateDataValue": {
+        "type": "object",
+        "description": "Globe coordinate data value",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "const": "globecoordinate"
+          },
+          "value": {
+            "$ref": "#/components/schemas/DataValueGlobeCoordinate"
+          }
+        }
+      },
+      "GlobeCoordinateValueSnak": {
+        "type": "object",
+        "description": "Globe coordinate value snak",
+        "required": [
+          "snaktype",
+          "property",
+          "datatype",
+          "datavalue"
+        ],
+        "properties": {
+          "snaktype": {
+            "const": "value"
+          },
+          "property": {
+            "$ref": "#/components/schemas/PropertyId"
+          },
+          "datatype": {
+            "const": "globe-coordinate"
+          },
+          "datavalue": {
+            "$ref": "#/components/schemas/GlobeCoordinateDataValue"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash of the snak for Wikimedia Commons identification"
+          }
+        }
+      },
+      "ItemId": {
+        "type": "string",
+        "description": "Item ID",
+        "pattern": "^Q[1-9]\\d*$"
+      },
+      "NoValueSnak": {
+        "type": "object",
+        "description": "No value snak",
+        "required": [
+          "snaktype",
+          "property"
+        ],
+        "properties": {
+          "snaktype": {
+            "const": "novalue"
+          },
+          "property": {
+            "$ref": "#/components/schemas/PropertyId"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash of the snak for Wikimedia Commons identification"
+          }
+        }
+      },
+      "PropertyId": {
+        "type": "string",
+        "description": "Property ID",
+        "pattern": "^P[1-9]\\d*$"
+      },
+      "QuantityDataValue": {
+        "type": "object",
+        "description": "Quantity data value",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "const": "quantity"
+          },
+          "value": {
+            "$ref": "#/components/schemas/DataValueQuantity"
+          }
+        }
+      },
+      "QuantityValueSnak": {
+        "type": "object",
+        "description": "Quantity value snak",
+        "required": [
+          "snaktype",
+          "property",
+          "datatype",
+          "datavalue"
+        ],
+        "properties": {
+          "snaktype": {
+            "const": "value"
+          },
+          "property": {
+            "$ref": "#/components/schemas/PropertyId"
+          },
+          "datatype": {
+            "const": "quantity"
+          },
+          "datavalue": {
+            "$ref": "#/components/schemas/QuantityDataValue"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash of the snak for Wikimedia Commons identification"
+          }
+        }
+      },
+      "Rank": {
+        "type": "string",
+        "description": "Rank",
+        "enum": [
+          "deprecated",
+          "normal",
+          "preferred"
+        ]
+      },
+      "Reference": {
+        "type": "object",
+        "description": "Reference",
+        "required": [
+          "snaks"
+        ],
+        "properties": {
+          "snaks": {
+            "$ref": "#/components/schemas/Claims"
+          },
+          "snaks-order": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "hash": {
+            "type": "string"
+          }
+        }
+      },
+      "Snak": {
+        "oneOf": [
+          { "$ref": "#/components/schemas/NoValueSnak" },
+          { "$ref": "#/components/schemas/SomeValueSnak" },
+          { "$ref": "#/components/schemas/ValueSnak" }
+        ]
+      },
+      "SnakDataType": {
+        "type": "string",
+        "description": "Snak data type",
+        "enum": [
+          "external-id",
+          "globe-coordinate",
+          "quantity",
+          "string",
+          "time",
+          "url",
+          "wikibase-item"
+        ]
+      },
+      "SomeValueSnak": {
+        "type": "object",
+        "description": "Some value snak",
+        "required": [
+          "snaktype",
+          "property"
+        ],
+        "properties": {
+          "snaktype": {
+            "const": "somevalue"
+          },
+          "property": {
+            "$ref": "#/components/schemas/PropertyId"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash of the snak for Wikimedia Commons identification"
+          }
+        }
+      },
+      "Statement": {
+        "type": "object",
+        "description": "Statement",
+        "required": [
+          "mainsnak",
+          "rank"
+        ],
+        "properties": {
+          "mainsnak": {
+            "$ref": "#/components/schemas/Snak"
+          },
+          "rank": {
+            "$ref": "#/components/schemas/Rank"
+          },
+          "qualifiers": {
+            "$ref": "#/components/schemas/Claims"
+          },
+          "qualifiers-order": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reference"
+            },
+            "default": []
+          },
+          "type": {
+            "const": "statement"
+          },
+          "id": {
+            "type": "string",
+            "description": "Statement identifier from Wikimedia Commons"
+          }
+        }
+      },
+      "StringDataValue": {
+        "type": "object",
+        "description": "String data value",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "const": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "SnakType": {
+        "type": "string",
+        "description": "Snak type",
+        "enum": [
+          "novalue",
+          "somevalue",
+          "value"
+        ]
+      },
+      "StringValueSnak": {
+        "type": "object",
+        "description": "String value snak",
+        "required": [
+          "snaktype",
+          "property",
+          "datatype",
+          "datavalue"
+        ],
+        "properties": {
+          "snaktype": {
+            "const": "value"
+          },
+          "property": {
+            "$ref": "#/components/schemas/PropertyId"
+          },
+          "datatype": {
+            "const": "string"
+          },
+          "datavalue": {
+            "$ref": "#/components/schemas/StringDataValue"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash of the snak for Wikimedia Commons identification"
+          }
+        }
+      },
+      "TimeDataValue": {
+        "type": "object",
+        "description": "Time data value",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "const": "time"
+          },
+          "value": {
+            "$ref": "#/components/schemas/DataValueTime"
+          }
+        }
+      },
+      "TimeValueSnak": {
+        "type": "object",
+        "description": "Time value snak",
+        "required": [
+          "snaktype",
+          "property",
+          "datatype",
+          "datavalue"
+        ],
+        "properties": {
+          "snaktype": {
+            "const": "value"
+          },
+          "property": {
+            "$ref": "#/components/schemas/PropertyId"
+          },
+          "datatype": {
+            "const": "time"
+          },
+          "datavalue": {
+            "$ref": "#/components/schemas/TimeDataValue"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash of the snak for Wikimedia Commons identification"
+          }
+        }
+      },
+      "UrlDataValue": {
+        "type": "object",
+        "description": "URL data value",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "const": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "UrlValueSnak": {
+        "type": "object",
+        "description": "URL value snak",
+        "required": [
+          "snaktype",
+          "property",
+          "datatype",
+          "datavalue"
+        ],
+        "properties": {
+          "snaktype": {
+            "const": "value"
+          },
+          "property": {
+            "$ref": "#/components/schemas/PropertyId"
+          },
+          "datatype": {
+            "const": "url"
+          },
+          "datavalue": {
+            "$ref": "#/components/schemas/UrlDataValue"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash of the snak for Wikimedia Commons identification"
+          }
+        }
+      },
+      "ValueSnak": {
+        "oneOf": [
+          { "$ref": "#/components/schemas/EntityIdValueSnak" },
+          { "$ref": "#/components/schemas/ExternalIdValueSnak" },
+          { "$ref": "#/components/schemas/GlobeCoordinateValueSnak" },
+          { "$ref": "#/components/schemas/QuantityValueSnak" },
+          { "$ref": "#/components/schemas/StringValueSnak" },
+          { "$ref": "#/components/schemas/TimeValueSnak" },
+          { "$ref": "#/components/schemas/UrlValueSnak" }
+        ]
+      },
+      "WikibaseEntityType": {
+        "type": "string",
+        "description": "Wikibase entity type",
+        "enum": [
+          "item",
+          "property"
+        ]
+      }
+    }
+  }
+}

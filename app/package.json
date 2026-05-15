@@ -1,0 +1,15 @@
+{
+  "name": "@curator/workspace",
+  "private": true,
+  "workspaces": ["backend", "frontend"],
+  "scripts": {
+    "dev": "STATIC_DIR=./frontend/dist bun --filter @curator/backend dev",
+    "build": "bun --filter @curator/backend build",
+    "test": "bun --filter @curator/backend test",
+    "typecheck": "bun --filter '*' typecheck",
+    "lint": "bun --filter '*' lint",
+    "check": "bun --filter '*' check",
+    "db:generate": "bun --filter @curator/backend db:generate",
+    "db:migrate": "bun --filter @curator/backend db:migrate"
+  }
+}
