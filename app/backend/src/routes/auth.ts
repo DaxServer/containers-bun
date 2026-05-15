@@ -21,12 +21,8 @@ export const createAuthRoutes = (
 ) =>
   new Elysia({ prefix: '/auth' })
     .use(_sessionRef)
-    .get('/login', async ({ session, request, redirect }) => {
-      const host = request.headers.get('host') ?? 'localhost:8000'
-      const proto = request.headers.get('x-forwarded-proto') ?? 'http'
-      const callbackUrl = `${proto}://${host}/auth/callback`
-
-      const { redirectUrl, requestToken } = await oauthClient.initiate(callbackUrl)
+    .get('/login', async ({ session, redirect }) => {
+      const { redirectUrl, requestToken } = await oauthClient.initiate()
       session.request_token = requestToken
       await session.save()
 

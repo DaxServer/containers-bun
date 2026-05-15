@@ -27,8 +27,5 @@ export const config = {
   wikimediaUrls: {
     indexUrl: 'https://commons.wikimedia.org/w/index.php',
     baseUrl: 'https://commons.wikimedia.org/w/api.php',
-    authorizeUrl: 'https://commons.wikimedia.org/w/rest.php/oauth2/authorize',
-    accessTokenUrl: 'https://commons.wikimedia.org/w/rest.php/oauth2/access_token',
-    profileUrl: 'https://commons.wikimedia.org/w/rest.php/oauth2/resource/profile',
   },
 } as const

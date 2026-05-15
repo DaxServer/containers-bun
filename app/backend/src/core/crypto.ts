@@ -29,7 +29,7 @@ function fernetDecrypt(key: Buffer, token: string): string {
   const encKey = key.subarray(16, 32)
 
   const data = Buffer.from(token, 'base64url')
-  if (data.length < 57 || data[0] !== 0x80) throw new Error('Invalid token')
+  if (data.length < 73 || data[0] !== 0x80) throw new Error('Invalid token')
 
   const iv = data.subarray(9, 25)
   const ct = data.subarray(25, -32)
@@ -44,11 +44,13 @@ function fernetDecrypt(key: Buffer, token: string): string {
 
 export function encryptAccessToken(token: [string, string], keyOverride?: string): string {
   const key = Buffer.from(keyOverride ?? config.tokenEncryptionKey, 'base64url')
+  if (key.length !== 32) throw new Error('Invalid encryption key length (expected 32 bytes)')
   return fernetEncrypt(key, JSON.stringify(token))
 }
 
 export function decryptAccessToken(ciphertext: string, keyOverride?: string): [string, string] {
   const key = Buffer.from(keyOverride ?? config.tokenEncryptionKey, 'base64url')
+  if (key.length !== 32) throw new Error('Invalid encryption key length (expected 32 bytes)')
   return JSON.parse(fernetDecrypt(key, ciphertext)) as [string, string]
 }
 

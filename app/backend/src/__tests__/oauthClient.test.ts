@@ -5,10 +5,12 @@ import { createHmac } from 'node:crypto'
 const CONSUMER_KEY = 'test_consumer_key'
 const CONSUMER_SECRET = 'test_consumer_secret'
 
-function fakeJwt(payload: object): string {
-  const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url')
+function signedJwt(payload: object, secret: string): string {
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url')
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url')
-  return `${header}.${body}.fakesig`
+  const data = `${header}.${body}`
+  const sig = createHmac('sha256', secret).update(data).digest().toString('base64url')
+  return `${data}.${sig}`
 }
 
 describe('percentEncode', () => {
@@ -70,7 +72,7 @@ describe('oauthClient.initiate', () => {
       mockFetch as unknown as typeof fetch,
     )
 
-    const result = await client.initiate('http://localhost/auth/callback')
+    const result = await client.initiate()
 
     expect(result.requestToken).toEqual(['req_key', 'req_secret'])
     expect(result.redirectUrl).toContain('oauth_token=req_key')
@@ -106,7 +108,7 @@ describe('oauthClient.identify', () => {
       editcount: 200,
       rights: ['read', 'autoconfirmed'],
     }
-    const mockFetch = mock(async () => new Response(fakeJwt(payload)))
+    const mockFetch = mock(async () => new Response(signedJwt(payload, CONSUMER_SECRET)))
     const client = createOAuthClient(
       CONSUMER_KEY,
       CONSUMER_SECRET,

@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from 'node:crypto'
+
 const INDEX_URL = 'https://commons.wikimedia.org/w/index.php'
 
 export type OAuthIdentity = {
@@ -8,7 +10,7 @@ export type OAuthIdentity = {
 }
 
 export type OAuthClient = {
-  initiate(callbackUrl: string): Promise<{ redirectUrl: string; requestToken: [string, string] }>
+  initiate(): Promise<{ redirectUrl: string; requestToken: [string, string] }>
   complete(
     requestToken: [string, string],
     queryString: string,
@@ -81,10 +83,15 @@ function parseOAuthResponse(body: string): Record<string, string> {
   return Object.fromEntries(new URLSearchParams(body))
 }
 
-function decodeJwtPayload(jwt: string): Record<string, unknown> {
-  const part = jwt.split('.')[1]
-  if (!part) throw new Error('Invalid JWT')
-  return JSON.parse(Buffer.from(part, 'base64url').toString('utf8'))
+function verifyAndDecodeJwt(jwt: string, secret: string): Record<string, unknown> {
+  const parts = jwt.split('.')
+  if (parts.length !== 3) throw new Error('Invalid JWT')
+  const [header, payload, signature] = parts as [string, string, string]
+  const expected = createHmac('sha256', secret).update(`${header}.${payload}`).digest()
+  const actual = Buffer.from(signature, 'base64url')
+  if (expected.length !== actual.length || !timingSafeEqual(expected, actual))
+    throw new Error('JWT signature verification failed')
+  return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'))
 }
 
 export function createOAuthClient(
@@ -93,7 +100,7 @@ export function createOAuthClient(
   fetchImpl: typeof fetch = fetch,
 ): OAuthClient {
   return {
-    async initiate(_callbackUrl) {
+    async initiate() {
       const url = `${INDEX_URL}?title=Special:OAuth/initiate`
       const res = await fetchImpl(url, {
         method: 'POST',
@@ -133,7 +140,9 @@ export function createOAuthClient(
       })
       if (!res.ok) throw new Error(`OAuth token exchange failed: ${res.status}`)
       const p = parseOAuthResponse(await res.text())
-      return { accessToken: [p.oauth_token!, p.oauth_token_secret!] }
+      if (!p.oauth_token || !p.oauth_token_secret)
+        throw new Error('OAuth token exchange failed: missing tokens in response')
+      return { accessToken: [p.oauth_token, p.oauth_token_secret] as [string, string] }
     },
 
     async identify(accessToken) {
@@ -144,7 +153,7 @@ export function createOAuthClient(
         },
       })
       if (!res.ok) throw new Error(`OAuth identify failed: ${res.status}`)
-      const payload = decodeJwtPayload(await res.text())
+      const payload = verifyAndDecodeJwt(await res.text(), consumerSecret)
       return {
         username: payload.username as string,
         sub: String(payload.sub),
