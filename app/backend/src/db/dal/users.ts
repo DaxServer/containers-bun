@@ -1,6 +1,6 @@
 import { db } from '@backend/db/client'
 import { users } from '@backend/db/schema'
-import { count, like, or } from 'drizzle-orm'
+import { count, like, or, sql } from 'drizzle-orm'
 
 function userFilter(filterText?: string) {
   if (!filterText) return undefined
@@ -16,11 +16,11 @@ export async function getUsers({
   offset?: number
   limit?: number
   filterText?: string
-} = {}) {
+} = {}): Promise<(typeof users.$inferSelect)[]> {
   return db.select().from(users).where(userFilter(filterText)).limit(limit).offset(offset)
 }
 
-export async function countUsers({ filterText }: { filterText?: string } = {}) {
+export async function countUsers({ filterText }: { filterText?: string } = {}): Promise<number> {
   const [row] = await db
     .select({ n: count(users.userid) })
     .from(users)
@@ -28,11 +28,15 @@ export async function countUsers({ filterText }: { filterText?: string } = {}) {
   return row?.n ?? 0
 }
 
-export async function ensureUser(userid: string, username: string) {
-  const existing = await db.query.users.findFirst({
+export async function ensureUser(
+  userid: string,
+  username: string,
+): Promise<typeof users.$inferSelect> {
+  await db
+    .insert(users)
+    .values({ userid, username })
+    .onDuplicateKeyUpdate({ set: { username: sql`username` } })
+  return (await db.query.users.findFirst({
     where: (u, { eq }) => eq(u.userid, userid),
-  })
-  if (existing) return existing
-  await db.insert(users).values({ userid, username })
-  return db.query.users.findFirst({ where: (u, { eq }) => eq(u.userid, userid) })
+  }))!
 }
