@@ -1,63 +1,63 @@
 name: CI
 
 on:
-  push:
-    branches: main
   pull_request:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: app
 
 jobs:
   test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v6
+      - name: Determine Bun version
+        id: bun-version
+        run: echo "BUN_VERSION=$(jq -r '.engines.bun' package.json)" >> $GITHUB_OUTPUT
+
+      - uses: oven-sh/setup-bun@v2
         with:
-          go-version-file: go.mod
+          bun-version: ${{ steps.bun-version.outputs.BUN_VERSION }}
 
-      - name: Build
-        run: go build ./...
+      - run: bun install --frozen-lockfile
+      - run: bun test
 
-      - name: Test
-        run: go test ./...
-
-  build:
+  typecheck:
+    name: Typecheck
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
     steps:
       - uses: actions/checkout@v6
 
-      - uses: buildpacks/github-actions/setup-pack@v5.12.0
+      - name: Determine Bun version
+        id: bun-version
+        run: echo "BUN_VERSION=$(jq -r '.engines.bun' package.json)" >> $GITHUB_OUTPUT
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          bun-version: ${{ steps.bun-version.outputs.BUN_VERSION }}
 
-      - name: Build and publish container image
-        id: build
-        run: |
-          REPO_LOWER="${GITHUB_REPOSITORY,,}"
-          IMAGE="ghcr.io/${REPO_LOWER}:pr-${{ github.event.number }}"
-          echo "REPO_LOWER=${REPO_LOWER}" >> $GITHUB_ENV
-          pack build "${IMAGE}" \
-            --builder tools-harbor.wmcloud.org/toolforge/heroku-builder:24_0.21.5 \
-            --buildpack heroku/go@2.2.2 \
-            --buildpack heroku/procfile \
-            --publish
-          DIGEST=$(docker buildx imagetools inspect "${IMAGE}" --format '{{json .Manifest}}' | jq -r '.digest')
-          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+      - run: bun install --frozen-lockfile
+      - run: bun typecheck
 
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v4
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Determine Bun version
+        id: bun-version
+        run: echo "BUN_VERSION=$(jq -r '.engines.bun' package.json)" >> $GITHUB_OUTPUT
+
+      - uses: oven-sh/setup-bun@v2
         with:
-          subject-name: ghcr.io/${{ env.REPO_LOWER }}
-          subject-digest: ${{ steps.build.outputs.digest }}
-          push-to-registry: true
+          bun-version: ${{ steps.bun-version.outputs.BUN_VERSION }}
+
+      - run: bun install --frozen-lockfile
+      - run: bun lint

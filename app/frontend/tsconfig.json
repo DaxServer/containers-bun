@@ -1,0 +1,28 @@
+{
+  "extends": ["@tsconfig/bun/tsconfig.json", "@vue/tsconfig/tsconfig.dom.json"],
+  "include": ["*.d.ts", "src/**/*"],
+  "compilerOptions": {
+    // Some stricter flags (disabled by default)
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Others
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+
+    "lib": ["esnext", "dom"],
+
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "types": ["vite/client", "bun", "node"],
+
+    // Path aliases
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

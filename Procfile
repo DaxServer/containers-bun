@@ -1,1 +1,1 @@
-web: bun run app.js
+web: ./curator
