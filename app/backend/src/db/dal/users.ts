@@ -1,6 +1,6 @@
 import { db } from '@backend/db/client'
 import { users } from '@backend/db/schema'
-import { and, count, like, or } from 'drizzle-orm'
+import { count, like, or } from 'drizzle-orm'
 
 function userFilter(filterText?: string) {
   if (!filterText) return undefined
