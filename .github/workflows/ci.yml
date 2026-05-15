@@ -27,6 +27,8 @@ jobs:
 
       - run: bun install --frozen-lockfile
       - run: bun test
+        env:
+          TOKEN_ENCRYPTION_KEY: AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE
 
   typecheck:
     name: Typecheck
