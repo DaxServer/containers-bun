@@ -1,3 +1,4 @@
+import { config } from '@backend/config'
 import { encryptAccessToken } from '@backend/core/crypto'
 import { createSessionPlugin } from '@backend/core/session'
 import * as batchesDal from '@backend/db/dal/batches'
@@ -24,8 +25,7 @@ const requireAdmin = new Elysia({ name: 'require-admin' })
         headers: { 'content-type': 'application/json' },
       })
     }
-    // Read live from env so tests can inject values via process.env
-    if (session.user.username !== (Bun.env.X_USERNAME ?? '')) {
+    if (session.user.username !== config.xUsername) {
       throw new Response(JSON.stringify({ message: 'Forbidden' }), {
         status: 403,
         headers: { 'content-type': 'application/json' },

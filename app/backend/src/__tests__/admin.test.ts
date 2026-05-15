@@ -10,7 +10,6 @@ import { Elysia } from 'elysia'
 const TEST_ENCRYPTION_KEY = 'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE'
 
 beforeAll(() => {
-  process.env.X_USERNAME = 'AdminUser'
   process.env.TOKEN_ENCRYPTION_KEY = TEST_ENCRYPTION_KEY
 })
 
@@ -30,7 +29,7 @@ function makeStore() {
   return { m, store }
 }
 
-function seedSession(m: Map<string, string>, username = 'AdminUser', sub = '1'): string {
+function seedSession(m: Map<string, string>, username = 'DaxServer', sub = '1'): string {
   const id = 'test-session'
   m.set(`session:${id}`, JSON.stringify({ user: { username, sub } }))
   return `session_id=${id}`
@@ -41,7 +40,7 @@ function seedSessionWithToken(m: Map<string, string>): string {
   m.set(
     `session:${id}`,
     JSON.stringify({
-      user: { username: 'AdminUser', sub: '1' },
+      user: { username: 'DaxServer', sub: '1' },
       access_token: ['tok', 'secret'],
     }),
   )
