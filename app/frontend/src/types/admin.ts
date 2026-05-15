@@ -6,7 +6,7 @@ import type {
   PresetItem,
   StructuredError,
   UploadUpdateItem,
-} from '@/types/asyncapi'
+} from '@frontend/types/asyncapi'
 
 export type AdminUser = {
   userid: string

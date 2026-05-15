@@ -1,10 +1,6 @@
 ## Development
 
 ```bash
-go build ./...
-```
-
-```bash
 # TypeScript backend — run from app/
 bun install          # install workspace deps
 bun test             # run all tests (backend + frontend, scanned recursively)

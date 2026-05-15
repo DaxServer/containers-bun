@@ -1,4 +1,4 @@
-import { haversineDistance } from '@/utils/geo'
+import { haversineDistance } from '@frontend/utils/geo'
 import { describe, expect, it } from 'bun:test'
 
 describe('haversineDistance', () => {

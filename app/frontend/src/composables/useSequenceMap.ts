@@ -1,4 +1,4 @@
-import { useCollectionsStore } from '@/stores/collections.store'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 import type { FeatureCollection, LineString, Point } from 'geojson'
 import { computed } from 'vue'
 

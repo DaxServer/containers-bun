@@ -5,8 +5,8 @@ import type {
   MediaImage,
   UploadCreatedItem,
   UploadUpdateItem,
-} from '@/types/asyncapi'
-import { type Image, type Item, UPLOAD_STATUS } from '@/types/image'
+} from '@frontend/types/asyncapi'
+import { type Image, type Item, UPLOAD_STATUS } from '@frontend/types/image'
 import { type Mock, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { ref } from 'vue'
 
@@ -24,11 +24,11 @@ const mockSocketImpl = () => ({
 })
 
 // Mock all possible paths
-mock.module('@/composables/useSocket', mockSocketImpl)
+mock.module('@frontend/composables/useSocket', mockSocketImpl)
 mock.module('../useSocket', mockSocketImpl)
 mock.module(resolve(__dirname, '../useSocket.ts'), mockSocketImpl)
 
-import { useCollectionsStore } from '@/stores/collections.store'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 import { createTestingPinia } from '@pinia/testing'
 import { setActivePinia } from 'pinia'
 

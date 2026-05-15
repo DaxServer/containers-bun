@@ -27,6 +27,7 @@
     "vue-router": "catalog:"
   },
   "devDependencies": {
+    "@elysiajs/eden": "catalog:",
     "@asyncapi/modelina": "catalog:",
     "@biomejs/biome": "catalog:",
     "@happy-dom/global-registrator": "catalog:",

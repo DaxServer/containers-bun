@@ -12,7 +12,7 @@ const mockSocketImpl = () => ({
   },
 })
 
-mock.module('@/composables/useSocket', mockSocketImpl)
+mock.module('@frontend/composables/useSocket', mockSocketImpl)
 mock.module('../useSocket', mockSocketImpl)
 
 import { resolve } from 'node:path'
@@ -24,9 +24,9 @@ mock.module('primevue/usetoast', () => ({
   useToast: () => ({ add: mockToastAdd }),
 }))
 
-import { makePreset } from '@/__tests__/fixtures'
-import { useAuthStore } from '@/stores/auth.store'
-import { useCollectionsStore } from '@/stores/collections.store'
+import { makePreset } from '@frontend/__tests__/fixtures'
+import { useAuthStore } from '@frontend/stores/auth.store'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 import { usePresetManager } from '../usePresetManager'

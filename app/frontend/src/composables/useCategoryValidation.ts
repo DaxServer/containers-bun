@@ -1,4 +1,4 @@
-import { parseCategoryNames } from '@/utils/categoryParsing'
+import { parseCategoryNames } from '@frontend/utils/categoryParsing'
 import { ref } from 'vue'
 
 export type QueryPage = { title: string; missing?: boolean }

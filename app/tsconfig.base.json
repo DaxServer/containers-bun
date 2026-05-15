@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@backend/*": ["./backend/src/*"],
+      "@frontend/*": ["./frontend/src/*"]
+    }
+  },
+  "files": ["env.d.ts"]
+}

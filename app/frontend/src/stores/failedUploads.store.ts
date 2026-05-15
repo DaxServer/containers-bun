@@ -1,4 +1,4 @@
-import type { BatchFailureGroup } from '@/types/admin'
+import type { BatchFailureGroup } from '@frontend/types/admin'
 import { defineStore } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 

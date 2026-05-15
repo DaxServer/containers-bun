@@ -1,7 +1,7 @@
-import { useTitleVerification } from '@/composables/useTitleVerification'
-import { useCollectionsStore } from '@/stores/collections.store'
-import type { Image } from '@/types/image'
-import { TITLE_STATUS } from '@/types/image'
+import { useTitleVerification } from '@frontend/composables/useTitleVerification'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import type { Image } from '@frontend/types/image'
+import { TITLE_STATUS } from '@frontend/types/image'
 import {
   OPTIONAL_FIELD_PATHS,
   applyTitleTemplate,
@@ -11,7 +11,7 @@ import {
   hasMissingOptionalFields,
   validPaths,
   validateTemplate,
-} from '@/utils/titleTemplate'
+} from '@frontend/utils/titleTemplate'
 import { computed, ref, watch } from 'vue'
 
 export const useTitleTemplate = () => {

@@ -1,10 +1,20 @@
-import { describe, expect, it, beforeAll } from 'bun:test'
+import { createApp } from '@backend/app'
+import { createSessionPlugin, type SessionStore } from '@backend/core/session'
+import { beforeAll, describe, expect, it } from 'bun:test'
 
-let app: Awaited<typeof import('@/app')>['app']
+const noop: SessionStore = {
+  async get() {
+    return null
+  },
+  async set() {},
+  async del() {},
+}
 
-beforeAll(async () => {
+let app: ReturnType<typeof createApp>
+
+beforeAll(() => {
   process.env.STATIC_DIR = import.meta.dir
-  app = (await import('@/app')).app
+  app = createApp(createSessionPlugin(noop))
 })
 
 describe('GET /health', () => {

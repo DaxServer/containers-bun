@@ -1,6 +1,6 @@
-import { useUploadStatus } from '@/composables/useUploadStatus'
-import { useCollectionsStore } from '@/stores/collections.store'
-import { UPLOAD_STATUS, type UploadStatus } from '@/types/image'
+import { useUploadStatus } from '@frontend/composables/useUploadStatus'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { UPLOAD_STATUS, type UploadStatus } from '@frontend/types/image'
 import { computed, ref } from 'vue'
 
 export const useDataFilters = () => {

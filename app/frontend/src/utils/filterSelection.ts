@@ -1,4 +1,4 @@
-import { haversineDistance } from '@/utils/geo'
+import { haversineDistance } from '@frontend/utils/geo'
 
 export interface FilterItem {
   capturedAt: Date

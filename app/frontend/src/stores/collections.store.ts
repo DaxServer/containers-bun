@@ -4,17 +4,17 @@ import {
   type BatchUploadItem,
   type Creator,
   type PresetItem,
-} from '@/types/asyncapi'
-import type { Layout } from '@/types/collections'
-import type { Item, Metadata, MetadataKey } from '@/types/image'
-import { TITLE_ERROR_STATUSES } from '@/types/image'
-import type { FilterItem } from '@/utils/filterSelection'
+} from '@frontend/types/asyncapi'
+import type { Layout } from '@frontend/types/collections'
+import type { Item, Metadata, MetadataKey } from '@frontend/types/image'
+import { TITLE_ERROR_STATUSES } from '@frontend/types/image'
+import type { FilterItem } from '@frontend/utils/filterSelection'
 import {
   selectByMinInterval as filterByMinInterval,
   selectByTraversalDistance as filterByTraversalDistance,
   selectEveryNth as filterEveryNth,
   selectByStraightLineDistance,
-} from '@/utils/filterSelection'
+} from '@frontend/utils/filterSelection'
 import { defineStore } from 'pinia'
 import { computed, reactive, ref, shallowRef } from 'vue'
 

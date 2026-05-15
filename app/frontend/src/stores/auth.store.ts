@@ -1,3 +1,4 @@
+import { api } from '@frontend/lib/apiClient'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
@@ -22,8 +23,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     try {
-      // Call backend logout endpoint
-      await fetch('/auth/logout')
+      await api.auth.logout.get()
       reset()
     } catch (error) {
       console.error('Logout failed:', error)
@@ -35,13 +35,9 @@ export const useAuthStore = defineStore('auth', () => {
   const checkAuth = async () => {
     isLoading.value = true
     try {
-      const response = await fetch('/auth/whoami')
-      if (response.ok) {
-        const userData = (await response.json()) as {
-          username: string
-          userid: string
-          authorized: boolean
-        }
+      const { data, status } = await api.auth.whoami.get()
+      if (status === 200 && data) {
+        const userData = data as { username: string; userid: string; authorized: boolean }
         user.value = userData.username
         userid.value = userData.userid
         isAuthorized.value = userData.authorized
@@ -57,15 +53,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    // State
     isAuthenticated,
     isAuthorized,
     isLoading,
     user,
     userid,
     isAdmin,
-
-    // Actions
     login,
     logout,
     checkAuth,

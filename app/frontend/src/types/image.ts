@@ -1,4 +1,4 @@
-import type { MediaImage, StructuredError } from '@/types/asyncapi'
+import type { MediaImage, StructuredError } from '@frontend/types/asyncapi'
 
 export interface Image extends Omit<MediaImage, 'dates' | 'description'> {
   dates: {

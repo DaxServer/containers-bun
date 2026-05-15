@@ -1,4 +1,5 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
@@ -8,8 +9,8 @@
     "types": ["bun"],
     "noEmit": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@backend/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "drizzle.config.ts", "env.d.ts"]
+  "include": ["src/**/*", "drizzle.config.ts"]
 }

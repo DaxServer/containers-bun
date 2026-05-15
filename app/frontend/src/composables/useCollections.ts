@@ -1,8 +1,8 @@
-import { useCommons } from '@/composables/useCommons'
-import { useSocket } from '@/composables/useSocket'
-import { useUploadStatus } from '@/composables/useUploadStatus'
-import { useAuthStore } from '@/stores/auth.store'
-import { useCollectionsStore } from '@/stores/collections.store'
+import { useCommons } from '@frontend/composables/useCommons'
+import { useSocket } from '@frontend/composables/useSocket'
+import { useUploadStatus } from '@frontend/composables/useUploadStatus'
+import { useAuthStore } from '@frontend/stores/auth.store'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 import type {
   BatchUploadItem,
   CancelBatch,
@@ -24,9 +24,9 @@ import type {
   UploadCreatedItem,
   UploadSlice,
   UploadUpdateItem,
-} from '@/types/asyncapi'
-import type { Image } from '@/types/image'
-import { UPLOAD_STATUS, type UploadStatus } from '@/types/image'
+} from '@frontend/types/asyncapi'
+import type { Image } from '@frontend/types/image'
+import { UPLOAD_STATUS, type UploadStatus } from '@frontend/types/image'
 import { markRaw, watch } from 'vue'
 
 export const UPLOAD_SLICE_SIZE = 18

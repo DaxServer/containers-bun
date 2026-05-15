@@ -1,5 +1,5 @@
-import { makePreset } from '@/__tests__/fixtures'
-import { useCollectionsStore } from '@/stores/collections.store'
+import { makePreset } from '@frontend/__tests__/fixtures'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
 

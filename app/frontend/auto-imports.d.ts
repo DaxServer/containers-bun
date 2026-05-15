@@ -33,6 +33,7 @@ declare global {
   const WikidataEntity: typeof import('./src/components/wikidata/useWikidata').WikidataEntity
   const WikidataProperty: typeof import('./src/components/wikidata/useWikidata').WikidataProperty
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
+  const api: typeof import('./src/lib/apiClient').api
   const applyFieldTemplate: typeof import('./src/utils/titleTemplate').applyFieldTemplate
   const applyTitleTemplate: typeof import('./src/utils/titleTemplate').applyTitleTemplate
   const asyncComputed: typeof import('@vueuse/core').asyncComputed
@@ -488,6 +489,7 @@ declare module 'vue' {
     readonly WikidataEntity: UnwrapRef<typeof import('./src/components/wikidata/useWikidata')['WikidataEntity']>
     readonly WikidataProperty: UnwrapRef<typeof import('./src/components/wikidata/useWikidata')['WikidataProperty']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
+    readonly api: UnwrapRef<typeof import('./src/lib/apiClient')['api']>
     readonly applyFieldTemplate: UnwrapRef<typeof import('./src/utils/titleTemplate')['applyFieldTemplate']>
     readonly applyTitleTemplate: UnwrapRef<typeof import('./src/utils/titleTemplate')['applyTitleTemplate']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>

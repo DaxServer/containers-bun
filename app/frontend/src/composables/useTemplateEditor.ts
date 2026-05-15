@@ -1,12 +1,12 @@
-import { useCategoryValidation } from '@/composables/useCategoryValidation'
-import { useTitleTemplate } from '@/composables/useTitleTemplate'
-import { useCollectionsStore } from '@/stores/collections.store'
+import { useCategoryValidation } from '@frontend/composables/useCategoryValidation'
+import { useTitleTemplate } from '@frontend/composables/useTitleTemplate'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 import {
   OPTIONAL_FIELD_PATHS,
   applyFieldTemplate,
   hasMissingOptionalFields,
   validPaths,
-} from '@/utils/titleTemplate'
+} from '@frontend/utils/titleTemplate'
 import { debounce } from 'ts-debounce'
 import { computed, onScopeDispose, ref, watch } from 'vue'
 
