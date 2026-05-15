@@ -2,14 +2,13 @@ import type {
   BatchUploadItem,
   ClientMessage,
   MediaImage,
+  ServerMessage,
   UploadCreatedItem,
   UploadUpdateItem,
 } from '@backend/types/ws'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type BatchesListData = any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type BatchUploadsListData = any
+type BatchesListData = Extract<ServerMessage, { type: 'BATCHES_LIST' }>['data']
+type BatchUploadsListData = Extract<ServerMessage, { type: 'BATCH_UPLOADS_LIST' }>['data']
 import { type Image, type Item, UPLOAD_STATUS } from '@frontend/types/image'
 import { type Mock, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { ref } from 'vue'
