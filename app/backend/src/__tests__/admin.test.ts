@@ -17,9 +17,15 @@ beforeAll(() => {
 function makeStore() {
   const m = new Map<string, string>()
   const store: SessionStore = {
-    async get(k) { return m.get(k) ?? null },
-    async set(k, v, _ex, _ttl) { m.set(k, v) },
-    async del(k) { m.delete(k) },
+    async get(k) {
+      return m.get(k) ?? null
+    },
+    async set(k, v, _ex, _ttl) {
+      m.set(k, v)
+    },
+    async del(k) {
+      m.delete(k)
+    },
   }
   return { m, store }
 }
@@ -32,19 +38,24 @@ function seedSession(m: Map<string, string>, username = 'AdminUser', sub = '1'):
 
 function seedSessionWithToken(m: Map<string, string>): string {
   const id = 'test-token-session'
-  m.set(`session:${id}`, JSON.stringify({
-    user: { username: 'AdminUser', sub: '1' },
-    access_token: ['tok', 'secret'],
-  }))
+  m.set(
+    `session:${id}`,
+    JSON.stringify({
+      user: { username: 'AdminUser', sub: '1' },
+      access_token: ['tok', 'secret'],
+    }),
+  )
   return `session_id=${id}`
 }
 
-function makeTestApp(overrides: {
-  uploads?: object
-  batches?: object
-  users?: object
-  presets?: object
-} = {}) {
+function makeTestApp(
+  overrides: {
+    uploads?: object
+    batches?: object
+    users?: object
+    presets?: object
+  } = {},
+) {
   const { m, store } = makeStore()
   const session = createSessionPlugin(store)
 

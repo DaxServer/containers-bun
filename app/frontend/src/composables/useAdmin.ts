@@ -7,8 +7,16 @@ type PaginatedResult<T> = { items: T[]; total: number }
 
 type UploadRequestsEden = {
   get: (opts: { query: Record<string, unknown> }) => Promise<{ data: unknown; status: number }>
-  'bulk-cancel': { post: (b: { ids: number[] }) => Promise<{ data: { cancelled_count: number } | null; status: number }> }
-  'bulk-fail': { post: (b: { ids: number[] }) => Promise<{ data: { failed_count: number } | null; status: number }> }
+  'bulk-cancel': {
+    post: (b: {
+      ids: number[]
+    }) => Promise<{ data: { cancelled_count: number } | null; status: number }>
+  }
+  'bulk-fail': {
+    post: (b: {
+      ids: number[]
+    }) => Promise<{ data: { failed_count: number } | null; status: number }>
+  }
 } & ((p: { id: number }) => { put: (b: Record<string, string>) => Promise<{ status: number }> })
 
 export const useAdmin = () => {
@@ -16,7 +24,11 @@ export const useAdmin = () => {
 
   const uploadRequestsEden = api.api.admin.upload_requests as unknown as UploadRequestsEden
 
-  const updateAdminUploadRequest = async (id: number, field: string, value: string): Promise<void> => {
+  const updateAdminUploadRequest = async (
+    id: number,
+    field: string,
+    value: string,
+  ): Promise<void> => {
     const { status } = await uploadRequestsEden({ id }).put({ [field]: value })
     if (status !== 200) throw new Error('Failed to update upload request')
   }

@@ -1,5 +1,6 @@
 .claude
 .code-review-graph
+.DS_Store
 .env
 .vscode
 bun

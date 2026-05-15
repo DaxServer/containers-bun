@@ -1,8 +1,8 @@
 import { generateEditGroupId } from '@backend/core/crypto'
 import { db } from '@backend/db/client'
 import { batches, uploadRequests, users } from '@backend/db/schema'
-import { and, asc, count, desc, eq, gt, inArray, like, lt, or, sql } from 'drizzle-orm'
 import type { SQL } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gt, inArray, like, lt, or, sql } from 'drizzle-orm'
 
 export type BatchUploadItem = {
   id: number
@@ -49,7 +49,10 @@ function toUploadItem(u: typeof uploadRequests.$inferSelect): BatchUploadItem {
 }
 
 function uploadFilter({
-  filterText, statuses, dateFrom, dateTo,
+  filterText,
+  statuses,
+  dateFrom,
+  dateTo,
 }: {
   filterText?: string
   statuses?: string[]
@@ -59,13 +62,15 @@ function uploadFilter({
   const parts: SQL[] = []
   if (filterText) {
     const p = `%${filterText}%`
-    parts.push(or(
-      like(sql`CAST(${uploadRequests.id} AS CHAR)`, p),
-      like(sql`CAST(${uploadRequests.batchid} AS CHAR)`, p),
-      like(uploadRequests.userid, p),
-      like(uploadRequests.filename, p),
-      like(uploadRequests.status, p),
-    ) as SQL)
+    parts.push(
+      or(
+        like(sql`CAST(${uploadRequests.id} AS CHAR)`, p),
+        like(sql`CAST(${uploadRequests.batchid} AS CHAR)`, p),
+        like(uploadRequests.userid, p),
+        like(uploadRequests.filename, p),
+        like(uploadRequests.status, p),
+      ) as SQL,
+    )
   }
   if (statuses && statuses.length > 0) parts.push(inArray(uploadRequests.status, statuses) as SQL)
   if (dateFrom) parts.push(gt(uploadRequests.created_at, dateFrom) as SQL)
@@ -78,10 +83,19 @@ function uploadFilter({
 }
 
 export async function getAllUploadRequests({
-  offset = 0, limit = 100, filterText, statuses, dateFrom, dateTo,
+  offset = 0,
+  limit = 100,
+  filterText,
+  statuses,
+  dateFrom,
+  dateTo,
 }: {
-  offset?: number; limit?: number; filterText?: string
-  statuses?: string[]; dateFrom?: Date; dateTo?: Date
+  offset?: number
+  limit?: number
+  filterText?: string
+  statuses?: string[]
+  dateFrom?: Date
+  dateTo?: Date
 } = {}): Promise<BatchUploadItem[]> {
   const rows = await db
     .select()
@@ -94,9 +108,15 @@ export async function getAllUploadRequests({
 }
 
 export async function countAllUploadRequests({
-  filterText, statuses, dateFrom, dateTo,
+  filterText,
+  statuses,
+  dateFrom,
+  dateTo,
 }: {
-  filterText?: string; statuses?: string[]; dateFrom?: Date; dateTo?: Date
+  filterText?: string
+  statuses?: string[]
+  dateFrom?: Date
+  dateTo?: Date
 } = {}): Promise<number> {
   const [row] = await db
     .select({ n: count(uploadRequests.id) })
@@ -109,7 +129,12 @@ export async function countActiveUploadsForUser(userid: string): Promise<number>
   const [row] = await db
     .select({ n: count(uploadRequests.id) })
     .from(uploadRequests)
-    .where(and(eq(uploadRequests.userid, userid), inArray(uploadRequests.status, ['queued', 'in_progress'])))
+    .where(
+      and(
+        eq(uploadRequests.userid, userid),
+        inArray(uploadRequests.status, ['queued', 'in_progress']),
+      ),
+    )
   return row?.n ?? 0
 }
 
@@ -117,7 +142,12 @@ export async function cancelUploadRequests(ids: number[]): Promise<number> {
   const result = await db
     .update(uploadRequests)
     .set({ status: 'cancelled' })
-    .where(and(inArray(uploadRequests.id, ids), inArray(uploadRequests.status, ['queued', 'in_progress'])))
+    .where(
+      and(
+        inArray(uploadRequests.id, ids),
+        inArray(uploadRequests.status, ['queued', 'in_progress']),
+      ),
+    )
   return (result[0] as { affectedRows: number }).affectedRows
 }
 
@@ -138,7 +168,9 @@ export async function getUploadsByBatch(batchId: number): Promise<BatchUploadIte
   return rows.map(toUploadItem)
 }
 
-export async function getUploadById(uploadId: number): Promise<typeof uploadRequests.$inferSelect & { user: typeof users.$inferSelect } | null> {
+export async function getUploadById(
+  uploadId: number,
+): Promise<(typeof uploadRequests.$inferSelect & { user: typeof users.$inferSelect }) | null> {
   const result = await db.query.uploadRequests.findFirst({
     where: (u, { eq }) => eq(u.id, uploadId),
     with: { user: true },
@@ -163,7 +195,10 @@ export async function clearUploadAccessToken(uploadId: number): Promise<void> {
 }
 
 export async function updateJobTaskId(uploadId: number, taskId: string): Promise<void> {
-  await db.update(uploadRequests).set({ celery_task_id: taskId }).where(eq(uploadRequests.id, uploadId))
+  await db
+    .update(uploadRequests)
+    .set({ celery_task_id: taskId })
+    .where(eq(uploadRequests.id, uploadId))
 }
 
 export async function updateUploadFields(
@@ -177,7 +212,10 @@ export async function updateUploadFields(
   return (result[0] as { affectedRows: number }).affectedRows > 0
 }
 
-export async function cancelBatch(batchId: number, userid?: string): Promise<Map<number, string | null>> {
+export async function cancelBatch(
+  batchId: number,
+  userid?: string,
+): Promise<Map<number, string | null>> {
   const batch = await db.query.batches.findFirst({ where: (b, { eq }) => eq(b.id, batchId) })
   if (!batch) throw new Error(`Batch ${batchId} not found`)
   if (userid && batch.userid !== userid) throw new Error('Permission denied')
@@ -189,7 +227,12 @@ export async function cancelBatch(batchId: number, userid?: string): Promise<Map
     await db
       .update(uploadRequests)
       .set({ status: 'cancelled' })
-      .where(inArray(uploadRequests.id, queued.map(r => r.id)))
+      .where(
+        inArray(
+          uploadRequests.id,
+          queued.map((r) => r.id),
+        ),
+      )
   }
   const result = new Map<number, string | null>()
   for (const r of queued) result.set(r.id, r.celery_task_id)
@@ -205,12 +248,16 @@ export async function retrySelectedUploadsToNewBatch(
   const originals = await db
     .select()
     .from(uploadRequests)
-    .where(and(inArray(uploadRequests.id, uploadIds), sql`${uploadRequests.status} != 'in_progress'`))
+    .where(
+      and(inArray(uploadRequests.id, uploadIds), sql`${uploadRequests.status} != 'in_progress'`),
+    )
   if (originals.length === 0) return { newUploadIds: [], editGroupId: null, newBatchId: 0 }
   const editGroupId = generateEditGroupId()
-  const batchResult = await db.insert(batches).values({ userid: adminUserid, edit_group_id: editGroupId })
+  const batchResult = await db
+    .insert(batches)
+    .values({ userid: adminUserid, edit_group_id: editGroupId })
   const newBatchId = (batchResult[0] as { insertId: number }).insertId
-  const newUploads = originals.map(u => ({
+  const newUploads = originals.map((u) => ({
     batchid: newBatchId,
     userid: adminUserid,
     status: 'queued' as const,
@@ -234,17 +281,22 @@ export async function retrySelectedUploadsToNewBatch(
     .where(eq(uploadRequests.batchid, newBatchId))
     .orderBy(asc(uploadRequests.id))
   // TODO Phase 4: enqueue each inserted upload ID into BullMQ
-  return { newUploadIds: inserted.map(r => r.id), editGroupId, newBatchId }
+  return { newUploadIds: inserted.map((r) => r.id), editGroupId, newBatchId }
 }
 
 export async function markUploadsExpired(ids: number[]): Promise<void> {
   await db
     .update(uploadRequests)
-    .set({ status: 'failed', error: { type: 'error', message: 'Your session has expired. Please log in and retry.' } })
+    .set({
+      status: 'failed',
+      error: { type: 'error', message: 'Your session has expired. Please log in and retry.' },
+    })
     .where(and(inArray(uploadRequests.id, ids), eq(uploadRequests.status, 'queued')))
 }
 
-export async function getQueuedUploadsForRecovery(): Promise<{ id: number; userid: string; access_token: string | null; edit_group_id: string | null }[]> {
+export async function getQueuedUploadsForRecovery(): Promise<
+  { id: number; userid: string; access_token: string | null; edit_group_id: string | null }[]
+> {
   return db
     .select({
       id: uploadRequests.id,
@@ -263,15 +315,32 @@ export async function getQueuedUploadsForRecovery(): Promise<{ id: number; useri
     )
 }
 
-const DUPLICATE_STATUSES = new Set(['duplicate', 'duplicated_sdc_updated', 'duplicated_sdc_not_updated'])
+const DUPLICATE_STATUSES = new Set([
+  'duplicate',
+  'duplicated_sdc_updated',
+  'duplicated_sdc_not_updated',
+])
 
 function categorizeError(status: string, error: unknown): string {
   if (DUPLICATE_STATUSES.has(status)) return 'duplicate'
   const msg = JSON.stringify(error ?? '').toLowerCase()
-  if (msg.includes('429') || msg.includes('rate limit') || msg.includes('too many requests')) return 'rate_limit'
-  if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('connection timeout')) return 'timeout'
-  if (msg.includes('401') || msg.includes('403') || msg.includes('unauthorized') || msg.includes('forbidden')) return 'auth'
-  if (msg.includes('connection error') || msg.includes('network unreachable') || msg.includes('dns')) return 'network'
+  if (msg.includes('429') || msg.includes('rate limit') || msg.includes('too many requests'))
+    return 'rate_limit'
+  if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('connection timeout'))
+    return 'timeout'
+  if (
+    msg.includes('401') ||
+    msg.includes('403') ||
+    msg.includes('unauthorized') ||
+    msg.includes('forbidden')
+  )
+    return 'auth'
+  if (
+    msg.includes('connection error') ||
+    msg.includes('network unreachable') ||
+    msg.includes('dns')
+  )
+    return 'network'
   return 'other'
 }
 
@@ -291,9 +360,24 @@ export async function getFailedUploadsGrouped({
   searchText?: string
 } = {}): Promise<{
   items: {
-    batch: { id: number; createdAt: string; editGroupId: string | null; handler: string; failedCount: number; totalUploads: number }
+    batch: {
+      id: number
+      createdAt: string
+      editGroupId: string | null
+      handler: string
+      failedCount: number
+      totalUploads: number
+    }
     user: { username: string; userid: string }
-    failedUploads: { id: number; filename: string; handler: string; status: string; error: unknown; createdAt: string; errorType: string }[]
+    failedUploads: {
+      id: number
+      filename: string
+      handler: string
+      status: string
+      error: unknown
+      createdAt: string
+      errorType: string
+    }[]
   }[]
   total: number
 }> {
@@ -331,7 +415,7 @@ export async function getFailedUploadsGrouped({
     .orderBy(...orderCols)
 
   const filtered = searchText
-    ? groupRows.filter(r => {
+    ? groupRows.filter((r) => {
         const q = searchText.toLowerCase()
         return (
           r.username.toLowerCase().includes(q) ||
@@ -345,7 +429,7 @@ export async function getFailedUploadsGrouped({
   const page = filtered.slice(offset, offset + limit)
   if (page.length === 0) return { items: [], total }
 
-  const batchIds = page.map(r => r.batchid)
+  const batchIds = page.map((r) => r.batchid)
   const [detailRows, totalCounts] = await Promise.all([
     db
       .select()
@@ -359,7 +443,7 @@ export async function getFailedUploadsGrouped({
       .groupBy(uploadRequests.batchid),
   ])
 
-  const totalMap = new Map(totalCounts.map(r => [r.batchid, r.n]))
+  const totalMap = new Map(totalCounts.map((r) => [r.batchid, r.n]))
   const detailMap = new Map<number, typeof detailRows>()
   for (const r of detailRows) {
     if (!detailMap.has(r.batchid)) detailMap.set(r.batchid, [])
@@ -367,9 +451,9 @@ export async function getFailedUploadsGrouped({
   }
 
   const items = page
-    .map(r => {
+    .map((r) => {
       const details = detailMap.get(r.batchid) ?? []
-      const failedUploads = details.map(u => ({
+      const failedUploads = details.map((u) => ({
         id: u.id,
         filename: u.filename,
         handler: u.handler,
@@ -378,7 +462,7 @@ export async function getFailedUploadsGrouped({
         createdAt: u.created_at?.toISOString() ?? '',
         errorType: categorizeError(u.status, u.error),
       }))
-      if (errorType && !failedUploads.some(u => u.errorType === errorType)) return null
+      if (errorType && !failedUploads.some((u) => u.errorType === errorType)) return null
       return {
         batch: {
           id: r.batchid,

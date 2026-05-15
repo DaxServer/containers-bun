@@ -11,14 +11,11 @@ const mockBulkCancel = mock(async () => ({ data: { cancelled_count: 2 }, status:
 const mockBulkFail = mock(async () => ({ data: { failed_count: 2 }, status: 200 }))
 const mockUploadRequestPut = mock(async () => ({ status: 200 }))
 
-const uploadRequestsEden = Object.assign(
-  (_p: { id: number }) => ({ put: mockUploadRequestPut }),
-  {
-    get: mockUploadRequestsGet,
-    'bulk-cancel': { post: mockBulkCancel },
-    'bulk-fail': { post: mockBulkFail },
-  },
-)
+const uploadRequestsEden = Object.assign((_p: { id: number }) => ({ put: mockUploadRequestPut }), {
+  get: mockUploadRequestsGet,
+  'bulk-cancel': { post: mockBulkCancel },
+  'bulk-fail': { post: mockBulkFail },
+})
 
 mock.module('@frontend/lib/apiClient', () => ({
   api: {
@@ -85,7 +82,9 @@ describe('useAdmin', () => {
       await refreshAdminData()
 
       expect(mockUploadRequestsGet.mock.calls.length).toBe(1)
-      const callArg = (mockUploadRequestsGet.mock.calls[0] as unknown as [{ query: Record<string, unknown> }])[0]
+      const callArg = (
+        mockUploadRequestsGet.mock.calls[0] as unknown as [{ query: Record<string, unknown> }]
+      )[0]
       expect(callArg.query.status).toEqual(['queued', 'failed'])
     })
 
@@ -101,7 +100,9 @@ describe('useAdmin', () => {
       await refreshAdminData()
 
       expect(mockUploadRequestsGet.mock.calls.length).toBe(1)
-      const callArg = (mockUploadRequestsGet.mock.calls[0] as unknown as [{ query: Record<string, unknown> }])[0]
+      const callArg = (
+        mockUploadRequestsGet.mock.calls[0] as unknown as [{ query: Record<string, unknown> }]
+      )[0]
       expect(callArg.query.date_from).toBe('2026-03-01')
       expect(callArg.query.date_to).toBe('2026-03-13')
     })
@@ -115,7 +116,9 @@ describe('useAdmin', () => {
       await refreshAdminData()
 
       expect(mockUploadRequestsGet.mock.calls.length).toBe(1)
-      const callArg = (mockUploadRequestsGet.mock.calls[0] as unknown as [{ query: Record<string, unknown> }])[0]
+      const callArg = (
+        mockUploadRequestsGet.mock.calls[0] as unknown as [{ query: Record<string, unknown> }]
+      )[0]
       expect(callArg.query.date_from).toBeUndefined()
       expect(callArg.query.date_to).toBeUndefined()
     })
@@ -129,7 +132,9 @@ describe('useAdmin', () => {
       await refreshAdminData()
 
       expect(mockUploadRequestsGet.mock.calls.length).toBe(1)
-      const callArg = (mockUploadRequestsGet.mock.calls[0] as unknown as [{ query: Record<string, unknown> }])[0]
+      const callArg = (
+        mockUploadRequestsGet.mock.calls[0] as unknown as [{ query: Record<string, unknown> }]
+      )[0]
       expect(callArg.query.date_from).toBe('2026-03-01')
       expect(callArg.query.date_to).toBeUndefined()
     })
@@ -196,7 +201,13 @@ describe('useAdmin', () => {
       const store = useAdminStore()
       store.selectedUploadRequests = [makeUploadRequest(1, 'queued')]
 
-      mockBulkCancel.mockImplementation(async () => ({ data: null, status: 500 }) as unknown as { data: { cancelled_count: number }; status: number })
+      mockBulkCancel.mockImplementation(
+        async () =>
+          ({ data: null, status: 500 }) as unknown as {
+            data: { cancelled_count: number }
+            status: number
+          },
+      )
 
       const { cancelSelected } = useAdmin()
       let threw = false
@@ -239,7 +250,13 @@ describe('useAdmin', () => {
       const store = useAdminStore()
       store.selectedUploadRequests = [makeUploadRequest(1, UPLOAD_STATUS.Queued)]
 
-      mockBulkFail.mockImplementation(async () => ({ data: null, status: 500 }) as unknown as { data: { failed_count: number }; status: number })
+      mockBulkFail.mockImplementation(
+        async () =>
+          ({ data: null, status: 500 }) as unknown as {
+            data: { failed_count: number }
+            status: number
+          },
+      )
 
       const { markSelectedAsFailed } = useAdmin()
       let threw = false

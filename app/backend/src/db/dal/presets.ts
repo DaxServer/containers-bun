@@ -24,8 +24,12 @@ export async function getPresetsForHandler(
 }
 
 export async function getAllPresets({
-  offset = 0, limit = 100, filterText,
-}: { offset?: number; limit?: number; filterText?: string } = {}): Promise<(typeof presets.$inferSelect)[]> {
+  offset = 0,
+  limit = 100,
+  filterText,
+}: { offset?: number; limit?: number; filterText?: string } = {}): Promise<
+  (typeof presets.$inferSelect)[]
+> {
   return db
     .select()
     .from(presets)
@@ -35,7 +39,9 @@ export async function getAllPresets({
     .offset(offset)
 }
 
-export async function countAllPresets({ filterText }: { filterText?: string } = {}): Promise<number> {
+export async function countAllPresets({
+  filterText,
+}: { filterText?: string } = {}): Promise<number> {
   const [row] = await db
     .select({ n: count(presets.id) })
     .from(presets)
@@ -54,23 +60,41 @@ export async function getDefaultPreset(
 }
 
 export async function createPreset({
-  userid, handler, title, title_template, labels, categories,
-  exclude_from_date_category = false, is_default = false,
+  userid,
+  handler,
+  title,
+  title_template,
+  labels,
+  categories,
+  exclude_from_date_category = false,
+  is_default = false,
 }: {
-  userid: string; handler: string; title: string; title_template: string
-  labels?: unknown; categories?: string
-  exclude_from_date_category?: boolean; is_default?: boolean
+  userid: string
+  handler: string
+  title: string
+  title_template: string
+  labels?: unknown
+  categories?: string
+  exclude_from_date_category?: boolean
+  is_default?: boolean
 }): Promise<typeof presets.$inferSelect | undefined> {
   if (is_default) {
     await db
       .update(presets)
       .set({ is_default: false })
-      .where(and(eq(presets.userid, userid), eq(presets.handler, handler), eq(presets.is_default, true)))
+      .where(
+        and(eq(presets.userid, userid), eq(presets.handler, handler), eq(presets.is_default, true)),
+      )
   }
   const result = await db.insert(presets).values({
-    userid, handler, title, title_template,
-    labels: labels ?? null, categories: categories ?? null,
-    exclude_from_date_category, is_default,
+    userid,
+    handler,
+    title,
+    title_template,
+    labels: labels ?? null,
+    categories: categories ?? null,
+    exclude_from_date_category,
+    is_default,
   })
   const insertId = (result[0] as { insertId: number }).insertId
   return db.query.presets.findFirst({ where: (p, { eq }) => eq(p.id, insertId) })
@@ -80,8 +104,12 @@ export async function updatePreset(
   presetId: number,
   userid: string,
   updates: {
-    title: string; title_template: string; labels?: unknown; categories?: string
-    exclude_from_date_category?: boolean; is_default?: boolean
+    title: string
+    title_template: string
+    labels?: unknown
+    categories?: string
+    exclude_from_date_category?: boolean
+    is_default?: boolean
   },
 ): Promise<typeof presets.$inferSelect | null | undefined> {
   const existing = await db.query.presets.findFirst({
@@ -101,14 +129,17 @@ export async function updatePreset(
         ),
       )
   }
-  await db.update(presets).set({
-    title: updates.title,
-    title_template: updates.title_template,
-    labels: updates.labels ?? null,
-    categories: updates.categories ?? null,
-    exclude_from_date_category: updates.exclude_from_date_category ?? false,
-    is_default: updates.is_default ?? false,
-  }).where(eq(presets.id, presetId))
+  await db
+    .update(presets)
+    .set({
+      title: updates.title,
+      title_template: updates.title_template,
+      labels: updates.labels ?? null,
+      categories: updates.categories ?? null,
+      exclude_from_date_category: updates.exclude_from_date_category ?? false,
+      is_default: updates.is_default ?? false,
+    })
+    .where(eq(presets.id, presetId))
   return db.query.presets.findFirst({ where: (p, { eq }) => eq(p.id, presetId) })
 }
 

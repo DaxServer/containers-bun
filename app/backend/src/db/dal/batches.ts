@@ -24,8 +24,13 @@ export type BatchItem = {
 }
 
 const EMPTY_STATS: BatchStats = {
-  total: 0, queued: 0, in_progress: 0, completed: 0,
-  failed: 0, cancelled: 0, duplicate: 0,
+  total: 0,
+  queued: 0,
+  in_progress: 0,
+  completed: 0,
+  failed: 0,
+  cancelled: 0,
+  duplicate: 0,
 }
 
 export async function populateBatchStats(batchIds: number[]): Promise<Map<number, BatchStats>> {
@@ -63,16 +68,20 @@ function batchFilter(filterText?: string, userid?: string) {
   const parts = []
   if (filterText) {
     const p = `%${filterText}%`
-    parts.push(or(
-      like(sql`CAST(${batches.id} AS CHAR)`, p),
-      like(users.username, p),
-    ))
+    parts.push(or(like(sql`CAST(${batches.id} AS CHAR)`, p), like(users.username, p)))
   }
   if (userid) parts.push(eq(batches.userid, userid))
   return parts.length ? and(...parts) : undefined
 }
 
-type BatchRow = { id: number; userid: string; edit_group_id: string | null; created_at: Date; updated_at: Date; username: string | null }
+type BatchRow = {
+  id: number
+  userid: string
+  edit_group_id: string | null
+  created_at: Date
+  updated_at: Date
+  username: string | null
+}
 
 function toItem(row: BatchRow, stats: BatchStats): BatchItem {
   return {
@@ -104,7 +113,7 @@ export async function createBatch(userid: string, _username: string): Promise<Ba
     .from(batches)
     .innerJoin(users, eq(batches.userid, users.userid))
     .where(eq(batches.id, insertId))
-    .then(r => r[0]!)
+    .then((r) => r[0]!)
   return toItem(row, EMPTY_STATS)
 }
 
@@ -114,15 +123,20 @@ export async function getBatch(batchId: number): Promise<BatchItem | null> {
     .from(batches)
     .innerJoin(users, eq(batches.userid, users.userid))
     .where(eq(batches.id, batchId))
-    .then(r => r[0])
+    .then((r) => r[0])
   if (!row) return null
   const statsMap = await populateBatchStats([batchId])
   return toItem(row, statsMap.get(batchId) ?? EMPTY_STATS)
 }
 
 export async function getBatches({
-  offset = 0, limit = 100, filterText, userid,
-}: { offset?: number; limit?: number; filterText?: string; userid?: string } = {}): Promise<BatchItem[]> {
+  offset = 0,
+  limit = 100,
+  filterText,
+  userid,
+}: { offset?: number; limit?: number; filterText?: string; userid?: string } = {}): Promise<
+  BatchItem[]
+> {
   const rows = await db
     .select(batchCols)
     .from(batches)
@@ -131,12 +145,13 @@ export async function getBatches({
     .orderBy(desc(batches.created_at))
     .limit(limit)
     .offset(offset)
-  const statsMap = await populateBatchStats(rows.map(r => r.id))
-  return rows.map(r => toItem(r, statsMap.get(r.id) ?? EMPTY_STATS))
+  const statsMap = await populateBatchStats(rows.map((r) => r.id))
+  return rows.map((r) => toItem(r, statsMap.get(r.id) ?? EMPTY_STATS))
 }
 
 export async function countBatches({
-  filterText, userid,
+  filterText,
+  userid,
 }: { filterText?: string; userid?: string } = {}): Promise<number> {
   const [row] = await db
     .select({ n: count(batches.id) })
@@ -154,7 +169,7 @@ export async function getBatchesMinimal(batchIds: number[]): Promise<BatchItem[]
     .innerJoin(users, eq(batches.userid, users.userid))
     .where(inArray(batches.id, batchIds))
   const statsMap = await populateBatchStats(batchIds)
-  return rows.map(r => toItem(r, statsMap.get(r.id) ?? EMPTY_STATS))
+  return rows.map((r) => toItem(r, statsMap.get(r.id) ?? EMPTY_STATS))
 }
 
 export async function getBatchIdsWithRecentChanges(
@@ -174,26 +189,27 @@ export async function getBatchIdsWithRecentChanges(
       .innerJoin(users, eq(batches.userid, users.userid))
       .where(and(gt(batches.updated_at, lastUpdateTime), batchFilter(filterText, userid))),
   ])
-  return [...new Set([...fromUploads.map(r => r.id), ...fromBatches.map(r => r.id)])]
+  return [...new Set([...fromUploads.map((r) => r.id), ...fromBatches.map((r) => r.id)])]
 }
 
-export async function getLatestUpdateTime(
-  { userid, filterText }: { userid?: string; filterText?: string } = {},
-): Promise<Date | null> {
+export async function getLatestUpdateTime({
+  userid,
+  filterText,
+}: { userid?: string; filterText?: string } = {}): Promise<Date | null> {
   const [batchMax, uploadMax] = await Promise.all([
     db
       .select({ t: max(batches.updated_at) })
       .from(batches)
       .innerJoin(users, eq(batches.userid, users.userid))
       .where(batchFilter(filterText, userid))
-      .then(r => r[0]?.t ?? null),
+      .then((r) => r[0]?.t ?? null),
     db
       .select({ t: max(uploadRequests.updated_at) })
       .from(uploadRequests)
       .innerJoin(batches, eq(uploadRequests.batchid, batches.id))
       .innerJoin(users, eq(batches.userid, users.userid))
       .where(batchFilter(filterText, userid))
-      .then(r => r[0]?.t ?? null),
+      .then((r) => r[0]?.t ?? null),
   ])
   if (!batchMax && !uploadMax) return null
   if (!batchMax) return uploadMax
