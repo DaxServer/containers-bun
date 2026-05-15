@@ -1,8 +1,8 @@
+import type { BatchUploadItem } from '@backend/types/ws'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
 import { useCollectionsStore } from '../../stores/collections.store'
-import type { BatchUploadItem } from '@backend/types/ws'
 import { UPLOAD_STATUS, type UploadStatus } from '../../types/image'
 import { useDataFilters } from '../useDataFilters'
 

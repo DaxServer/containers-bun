@@ -1,7 +1,7 @@
-import { ref } from 'vue'
-import { treaty } from '@elysiajs/eden'
 import type { App } from '@backend/app'
 import type { ClientMessage, ServerMessage } from '@backend/types/ws'
+import { treaty } from '@elysiajs/eden'
+import { ref } from 'vue'
 
 const getOrigin = () =>
   typeof location !== 'undefined' ? location.origin : 'http://localhost:8000'

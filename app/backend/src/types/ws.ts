@@ -60,9 +60,21 @@ export const ErrorLinkSchema = t.Object({
 })
 
 export const StructuredErrorSchema = t.Union([
-  t.Object({ links: t.Array(ErrorLinkSchema), message: t.String(), type: t.Optional(t.Literal('duplicate')) }),
-  t.Object({ links: t.Array(ErrorLinkSchema), message: t.String(), type: t.Optional(t.Literal('duplicated_sdc_not_updated')) }),
-  t.Object({ links: t.Array(ErrorLinkSchema), message: t.String(), type: t.Optional(t.Literal('duplicated_sdc_updated')) }),
+  t.Object({
+    links: t.Array(ErrorLinkSchema),
+    message: t.String(),
+    type: t.Optional(t.Literal('duplicate')),
+  }),
+  t.Object({
+    links: t.Array(ErrorLinkSchema),
+    message: t.String(),
+    type: t.Optional(t.Literal('duplicated_sdc_not_updated')),
+  }),
+  t.Object({
+    links: t.Array(ErrorLinkSchema),
+    message: t.String(),
+    type: t.Optional(t.Literal('duplicated_sdc_updated')),
+  }),
   t.Object({ message: t.String(), type: t.Optional(t.Literal('error')) }),
   t.Object({ message: t.String(), type: t.Optional(t.Literal('title_blacklisted')) }),
 ])

@@ -1,7 +1,7 @@
+import type { SavePreset } from '@backend/types/ws'
 import { useCollections } from '@frontend/composables/useCollections'
 import { useTitleTemplate } from '@frontend/composables/useTitleTemplate'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
-import type { SavePreset } from '@backend/types/ws'
 import { useToast } from 'primevue/usetoast'
 import { ref, watch } from 'vue'
 

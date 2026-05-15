@@ -1,12 +1,5 @@
-import { WikidataEntity, WikidataProperty } from '@frontend/components/wikidata/useWikidata'
 import type { GeoLocation } from '@backend/types/ws'
-import {
-  DataValueType,
-  Rank,
-  SnakDataType,
-  SnakType,
-  WikibaseEntityType,
-} from '@frontend/types/wikidata'
+import { WikidataEntity, WikidataProperty } from '@frontend/components/wikidata/useWikidata'
 import type {
   EntityIdValueSnak,
   ExternalIdValueSnak,
@@ -20,6 +13,13 @@ import type {
   StringValueSnak,
   TimeValueSnak,
   UrlValueSnak,
+} from '@frontend/types/wikidata'
+import {
+  DataValueType,
+  Rank,
+  SnakDataType,
+  SnakType,
+  WikibaseEntityType,
 } from '@frontend/types/wikidata'
 
 // ============================================================================

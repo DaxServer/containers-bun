@@ -204,10 +204,7 @@ export class MapillaryHandler {
     return getSequenceIds(input)
   }
 
-  async fetchImagesBatch(
-    imageIds: string[],
-    _input: string,
-  ): Promise<Record<string, MediaImage>> {
+  async fetchImagesBatch(imageIds: string[], _input: string): Promise<Record<string, MediaImage>> {
     const data = await fetchImagesByIds(imageIds)
     return Object.fromEntries(
       Object.entries(data)

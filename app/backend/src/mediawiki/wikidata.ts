@@ -26,7 +26,8 @@ export class WikidataClient {
     })
     if (!res.ok) throw new Error(`Wikidata CSRF token fetch failed: ${res.status}`)
     const data = (await res.json()) as Record<string, unknown>
-    return ((data.query as Record<string, unknown>).tokens as Record<string, string>).csrftoken as string
+    return ((data.query as Record<string, unknown>).tokens as Record<string, string>)
+      .csrftoken as string
   }
 
   async fetchItem(qid: string): Promise<Record<string, unknown>> {
