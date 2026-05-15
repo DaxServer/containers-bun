@@ -1,9 +1,37 @@
 import type { AdminUploadRequest } from '@frontend/types/admin'
 import { UPLOAD_STATUS } from '@frontend/types/image'
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
-import { useAdminStore } from '../../stores/admin.store'
-import { useAdmin } from '../useAdmin'
+
+const mockBatchesGet = mock(async () => ({ data: { items: [], total: 0 }, status: 200 }))
+const mockUsersGet = mock(async () => ({ data: { items: [], total: 0 }, status: 200 }))
+const mockPresetsGet = mock(async () => ({ data: { items: [], total: 0 }, status: 200 }))
+const mockUploadRequestsGet = mock(async () => ({ data: { items: [], total: 0 }, status: 200 }))
+const mockBulkCancel = mock(async () => ({ data: { cancelled_count: 2 }, status: 200 }))
+const mockBulkFail = mock(async () => ({ data: { failed_count: 2 }, status: 200 }))
+const mockUploadRequestPut = mock(async () => ({ status: 200 }))
+
+const uploadRequestsEden = Object.assign(
+  (_p: { id: number }) => ({ put: mockUploadRequestPut }),
+  {
+    get: mockUploadRequestsGet,
+    'bulk-cancel': { post: mockBulkCancel },
+    'bulk-fail': { post: mockBulkFail },
+  },
+)
+
+mock.module('@frontend/lib/apiClient', () => ({
+  api: {
+    api: {
+      admin: {
+        batches: { get: mockBatchesGet },
+        users: { get: mockUsersGet },
+        presets: { get: mockPresetsGet },
+        upload_requests: uploadRequestsEden,
+      },
+    },
+  },
+}))
 
 const makeUploadRequest = (id: number, status: string): AdminUploadRequest => ({
   id,
@@ -26,31 +54,39 @@ const makeUploadRequest = (id: number, status: string): AdminUploadRequest => ({
 })
 
 describe('useAdmin', () => {
+  let useAdmin: typeof import('../useAdmin').useAdmin
+  let useAdminStore: typeof import('../../stores/admin.store').useAdminStore
+
+  beforeAll(async () => {
+    const adminMod = await import('../useAdmin')
+    const storeMod = await import('../../stores/admin.store')
+    useAdmin = adminMod.useAdmin
+    useAdminStore = storeMod.useAdminStore
+  })
+
   beforeEach(() => {
     setActivePinia(createPinia())
+    mockBatchesGet.mockClear()
+    mockUsersGet.mockClear()
+    mockPresetsGet.mockClear()
+    mockUploadRequestsGet.mockClear()
+    mockBulkCancel.mockClear()
+    mockBulkFail.mockClear()
+    mockUploadRequestPut.mockClear()
   })
 
   describe('refreshAdminData - upload_requests filters', () => {
-    it('includes status filter as repeated params in URL', async () => {
+    it('includes status filter as repeated params in query', async () => {
       const store = useAdminStore()
       store.adminTable = 'upload_requests'
       store.adminStatusFilter = ['queued', 'failed']
 
-      let capturedUrl = ''
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ items: [], total: 0 }),
-        }),
-      )
-      global.fetch = mockFetch as unknown as typeof fetch
-
       const { refreshAdminData } = useAdmin()
       await refreshAdminData()
 
-      capturedUrl = (mockFetch.mock.calls[0] as unknown as [string])[0]
-      expect(capturedUrl).toContain('status=queued')
-      expect(capturedUrl).toContain('status=failed')
+      expect(mockUploadRequestsGet.mock.calls.length).toBe(1)
+      const callArg = (mockUploadRequestsGet.mock.calls[0] as [{ query: Record<string, unknown> }])[0]
+      expect(callArg.query.status).toEqual(['queued', 'failed'])
     })
 
     it('includes date_from and date_to when both dates are set', async () => {
@@ -61,21 +97,13 @@ describe('useAdmin', () => {
         new Date('2026-03-13T00:00:00.000Z'),
       ]
 
-      let capturedUrl = ''
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ items: [], total: 0 }),
-        }),
-      )
-      global.fetch = mockFetch as unknown as typeof fetch
-
       const { refreshAdminData } = useAdmin()
       await refreshAdminData()
 
-      capturedUrl = (mockFetch.mock.calls[0] as unknown as [string])[0]
-      expect(capturedUrl).toContain('date_from=2026-03-01')
-      expect(capturedUrl).toContain('date_to=2026-03-13')
+      expect(mockUploadRequestsGet.mock.calls.length).toBe(1)
+      const callArg = (mockUploadRequestsGet.mock.calls[0] as [{ query: Record<string, unknown> }])[0]
+      expect(callArg.query.date_from).toBe('2026-03-01')
+      expect(callArg.query.date_to).toBe('2026-03-13')
     })
 
     it('omits date params when adminDateRange is null', async () => {
@@ -83,20 +111,13 @@ describe('useAdmin', () => {
       store.adminTable = 'upload_requests'
       store.adminDateRange = null
 
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ items: [], total: 0 }),
-        }),
-      )
-      global.fetch = mockFetch as unknown as typeof fetch
-
       const { refreshAdminData } = useAdmin()
       await refreshAdminData()
 
-      const capturedUrl = (mockFetch.mock.calls[0] as unknown as [string])[0]
-      expect(capturedUrl).not.toContain('date_from')
-      expect(capturedUrl).not.toContain('date_to')
+      expect(mockUploadRequestsGet.mock.calls.length).toBe(1)
+      const callArg = (mockUploadRequestsGet.mock.calls[0] as [{ query: Record<string, unknown> }])[0]
+      expect(callArg.query.date_from).toBeUndefined()
+      expect(callArg.query.date_to).toBeUndefined()
     })
 
     it('includes date_from but omits date_to when second date in range is null', async () => {
@@ -104,20 +125,13 @@ describe('useAdmin', () => {
       store.adminTable = 'upload_requests'
       store.adminDateRange = [new Date('2026-03-01T00:00:00.000Z'), null]
 
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ items: [], total: 0 }),
-        }),
-      )
-      global.fetch = mockFetch as unknown as typeof fetch
-
       const { refreshAdminData } = useAdmin()
       await refreshAdminData()
 
-      const capturedUrl = (mockFetch.mock.calls[0] as unknown as [string])[0]
-      expect(capturedUrl).toContain('date_from=2026-03-01')
-      expect(capturedUrl).not.toContain('date_to')
+      expect(mockUploadRequestsGet.mock.calls.length).toBe(1)
+      const callArg = (mockUploadRequestsGet.mock.calls[0] as [{ query: Record<string, unknown> }])[0]
+      expect(callArg.query.date_from).toBe('2026-03-01')
+      expect(callArg.query.date_to).toBeUndefined()
     })
   })
 
@@ -167,36 +181,22 @@ describe('useAdmin', () => {
         makeUploadRequest(4, 'failed'),
       ]
 
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ cancelled_count: 2 }),
-        }),
-      )
-      global.fetch = mockFetch as unknown as typeof fetch
+      mockBulkCancel.mockImplementation(async () => ({ data: { cancelled_count: 2 }, status: 200 }))
 
       const { cancelSelected } = useAdmin()
       const result = await cancelSelected()
 
       expect(result).toEqual({ cancelled_count: 2 })
-      const call = mockFetch.mock.calls[0] as unknown as [string, RequestInit]
-      expect(call[0]).toBe('/api/admin/upload_requests/bulk-cancel')
-      expect(call[1].method).toBe('POST')
-      const body = JSON.parse(call[1].body as string) as { ids: number[] }
-      expect(body.ids).toEqual([1, 3])
+      expect(mockBulkCancel.mock.calls.length).toBe(1)
+      const callArg = (mockBulkCancel.mock.calls[0] as [{ ids: number[] }])[0]
+      expect(callArg.ids).toEqual([1, 3])
     })
 
     it('throws on non-ok response', async () => {
       const store = useAdminStore()
       store.selectedUploadRequests = [makeUploadRequest(1, 'queued')]
 
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: false,
-          json: () => Promise.resolve({}),
-        }),
-      )
-      global.fetch = mockFetch as unknown as typeof fetch
+      mockBulkCancel.mockImplementation(async () => ({ data: null, status: 500 }))
 
       const { cancelSelected } = useAdmin()
       let threw = false
@@ -224,36 +224,22 @@ describe('useAdmin', () => {
         store.adminUploadRequests[2]!,
       ]
 
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ failed_count: 2 }),
-        }),
-      )
-      global.fetch = mockFetch as unknown as typeof fetch
+      mockBulkFail.mockImplementation(async () => ({ data: { failed_count: 2 }, status: 200 }))
 
       const { markSelectedAsFailed } = useAdmin()
       const result = await markSelectedAsFailed()
 
       expect(result).toEqual({ failed_count: 2 })
-      const call = mockFetch.mock.calls[0] as unknown as [string, RequestInit]
-      expect(call[0]).toBe('/api/admin/upload_requests/bulk-fail')
-      expect(call[1].method).toBe('POST')
-      const body = JSON.parse(call[1].body as string) as { ids: number[] }
-      expect(body.ids).toEqual([1, 3]) // Only non-failed
+      expect(mockBulkFail.mock.calls.length).toBe(1)
+      const callArg = (mockBulkFail.mock.calls[0] as [{ ids: number[] }])[0]
+      expect(callArg.ids).toEqual([1, 3]) // Only non-failed
     })
 
     it('throws when API call fails', async () => {
       const store = useAdminStore()
       store.selectedUploadRequests = [makeUploadRequest(1, UPLOAD_STATUS.Queued)]
 
-      const mockFetch = mock(() =>
-        Promise.resolve({
-          ok: false,
-          json: () => Promise.resolve({}),
-        }),
-      )
-      global.fetch = mockFetch as unknown as typeof fetch
+      mockBulkFail.mockImplementation(async () => ({ data: null, status: 500 }))
 
       const { markSelectedAsFailed } = useAdmin()
       let threw = false
