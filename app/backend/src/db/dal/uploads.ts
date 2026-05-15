@@ -425,21 +425,19 @@ export async function getFailedUploadsGrouped({
       })
     : groupRows
 
-  const total = filtered.length
-  const page = filtered.slice(offset, offset + limit)
-  if (page.length === 0) return { items: [], total }
+  if (filtered.length === 0) return { items: [], total: 0 }
 
-  const batchIds = page.map((r) => r.batchid)
+  const allBatchIds = filtered.map((r) => r.batchid)
   const [detailRows, totalCounts] = await Promise.all([
     db
       .select()
       .from(uploadRequests)
-      .where(and(eq(uploadRequests.status, 'failed'), inArray(uploadRequests.batchid, batchIds)))
+      .where(and(eq(uploadRequests.status, 'failed'), inArray(uploadRequests.batchid, allBatchIds)))
       .orderBy(asc(uploadRequests.id)),
     db
       .select({ batchid: uploadRequests.batchid, n: count(uploadRequests.id) })
       .from(uploadRequests)
-      .where(inArray(uploadRequests.batchid, batchIds))
+      .where(inArray(uploadRequests.batchid, allBatchIds))
       .groupBy(uploadRequests.batchid),
   ])
 
@@ -450,7 +448,7 @@ export async function getFailedUploadsGrouped({
     detailMap.get(r.batchid)!.push(r)
   }
 
-  const items = page
+  const allItems = filtered
     .map((r) => {
       const details = detailMap.get(r.batchid) ?? []
       const failedUploads = details.map((u) => ({
@@ -477,6 +475,9 @@ export async function getFailedUploadsGrouped({
       }
     })
     .filter((item): item is NonNullable<typeof item> => item !== null)
+
+  const total = allItems.length
+  const items = allItems.slice(offset, offset + limit)
 
   return { items, total }
 }

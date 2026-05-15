@@ -209,7 +209,10 @@ export function createAdminRoutes(dal: AdminDal) {
         return { message: 'Upload request updated successfully' }
       },
       {
-        body: t.Record(t.String(), t.Any()),
+        body: t.Object({
+          status: t.Optional(t.String()),
+          error: t.Optional(t.Any()),
+        }),
       },
     )
 
