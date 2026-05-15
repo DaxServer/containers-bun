@@ -2,16 +2,15 @@
 
 ```bash
 go build ./...
-go test ./...
 ```
 
 ```bash
 # TypeScript backend — run from app/
 bun install          # install workspace deps
-bun test             # run backend + frontend tests
-bun typecheck        # tsc on both packages (authoritative — LSP warnings may be stale)
-bun lint             # biome lint on both packages
-bun run build        # compile curator-server binary at repo root
+bun test             # run all tests (backend + frontend, scanned recursively)
+bun typecheck        # tsc on backend + frontend
+bun lint             # biome lint on backend + frontend
+bun run build        # compile curator-server binary (backend only)
 bun db:generate      # generate Drizzle migrations (requires DB_URL)
 ```
 
@@ -20,6 +19,12 @@ bun db:generate      # generate Drizzle migrations (requires DB_URL)
 - `@elysiajs/static` default prefix is `/public` — use `prefix: "/"` to serve assets at root
 - Drizzle `datetime` has no `.onUpdateNow()` — use `timestamp` for auto-update columns
 - `bun install` from `app/` hard-errors if a workspace member in `"workspaces"` doesn't exist yet
+- Bun workspace catalog defined in `app/package.json` under `workspaces.catalog` — all package deps use `catalog:` protocol
+
+## Go Launcher Notes
+
+- Go launcher (`main.go`) is production-only — local dev runs `bun dev` directly, not via the launcher
+- `curator-server` binary is downloaded from GitHub releases at startup to `/tmp/curator-server`; it is never bundled
 
 ## Toolforge Build Notes
 

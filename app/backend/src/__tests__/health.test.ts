@@ -1,10 +1,9 @@
 import { describe, expect, it, beforeAll } from 'bun:test'
-import path from 'node:path'
 
 let app: Awaited<typeof import('@/app')>['app']
 
 beforeAll(async () => {
-  process.env.STATIC_DIR = path.resolve(__dirname, '../../../frontend/dist')
+  process.env.STATIC_DIR = import.meta.dir
   app = (await import('@/app')).app
 })
 
