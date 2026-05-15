@@ -53,7 +53,7 @@ function buildSignatureBaseString(
   ].join('&')
 }
 
-function buildAuthHeader(
+export function buildAuthHeader(
   method: string,
   url: string,
   consumerKey: string,
