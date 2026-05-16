@@ -3,23 +3,21 @@ import { describe, expect, it, mock } from 'bun:test'
 import type { Redis } from 'ioredis'
 
 function makeRedisMock() {
-  return {
-    get: mock(async () => null),
-    set: mock(async () => 'OK' as const),
-    del: mock(async () => 1),
-  } as unknown as Redis & {
-    set: ReturnType<typeof mock>
-    del: ReturnType<typeof mock>
-  }
+  const setMock = mock(async () => 'OK' as const)
+  const delMock = mock(async () => 1)
+  const getMock = mock(async () => null)
+  const redis = { get: getMock, set: setMock, del: delMock } as unknown as Redis
+  return { redis, setMock, delMock }
 }
 
 describe('MediaWikiClient.uploadFile hash lock TTL', () => {
   it('acquires hash lock with a 600-second TTL', async () => {
     const client = new MediaWikiClient(['key', 'secret'])
 
-    // Stub private/public methods to avoid real network calls
+    // biome-ignore lint/suspicious/noExplicitAny: overriding private methods for testing
     ;(client as any).getCsrfToken = mock(async () => 'test-token+\\')
     client.findDuplicates = mock(async () => [])
+    // biome-ignore lint/suspicious/noExplicitAny: overriding private methods for testing
     ;(client as any).apiUploadChunk = mock(async () => ({
       upload: {
         filekey: 'stash-key',
@@ -28,14 +26,16 @@ describe('MediaWikiClient.uploadFile hash lock TTL', () => {
       },
     }))
 
-    globalThis.fetch = mock(async () => new Response(Buffer.from('tiny-file'), { status: 200 })) as any
+    globalThis.fetch = mock(
+      async () => new Response(Buffer.from('tiny-file'), { status: 200 }),
+    ) as unknown as typeof fetch
 
-    const redis = makeRedisMock()
+    const { redis, setMock } = makeRedisMock()
     await client.uploadFile('test.jpg', 'https://cdn.example/test.jpg', 'wikitext', 'summary', redis, 1, 1)
 
-    const lockSetCall = (redis.set as ReturnType<typeof mock>).mock.calls.find(
-      (args: unknown[]) => String(args[0]).startsWith('hashlock:'),
-    ) as unknown[] | undefined
+    const lockSetCall = setMock.mock.calls.find(
+      (args) => String(args[0]).startsWith('hashlock:'),
+    )
 
     expect(lockSetCall).toBeDefined()
     expect(lockSetCall?.[2]).toBe('EX')
