@@ -15,7 +15,7 @@ const isTest = Bun.env.NODE_ENV === 'test'
 
 const buildApi = (session: SessionPlugin, redis: Redis) =>
   new Elysia()
-    .use(logixlysia({ config: isTest ? { useTransportsOnly: true } : { pino: logger } }))
+    .use(logixlysia({ config: { pino: logger, useTransportsOnly: isTest } }))
     .use(session)
     .get('/health', () => ({ status: 'ok' }))
     .use(authRoutes)
