@@ -32,13 +32,7 @@ import { MapillaryHandler } from '@backend/handlers/mapillary'
 import { MediaWikiClient } from '@backend/mediawiki/client'
 import { WikidataClient } from '@backend/mediawiki/wikidata'
 import { enqueueUpload, removeUploadJob } from '@backend/workers/queue'
-import { Redis } from 'ioredis'
-
-let _redis: Redis | null = null
-function getHandlerRedis(): Redis {
-  if (!_redis) _redis = new Redis(config.redisUrl)
-  return _redis
-}
+import type { Redis } from 'ioredis'
 import type {
   BatchItem,
   BatchUploadItem,
@@ -189,15 +183,17 @@ export class Handler {
   private username: string
   private userid: string
   private sender: WsSender
+  private redis: Redis
   private uploadsInterval: ReturnType<typeof setTimeout> | null = null
   private batchesListInterval: ReturnType<typeof setInterval> | null = null
   private batchStreamer: OptimizedBatchStreamer
 
-  constructor(user: SessionUserWithAuth, sender: WsSender) {
+  constructor(user: SessionUserWithAuth, sender: WsSender, redis: Redis) {
     this.user = user
     this.username = user.username
     this.userid = user.sub
     this.sender = sender
+    this.redis = redis
     this.batchStreamer = new OptimizedBatchStreamer(sender, this.username)
   }
 
@@ -297,9 +293,8 @@ export class Handler {
       }
       const mwRetry = new MediaWikiClient(this.user.access_token)
       const rateLimitRetry = await getRateLimitForBatch(this.userid, mwRetry)
-      const redisRetry = getHandlerRedis()
       for (const uploadId of newUploadIds) {
-        const delayMs = await getNextUploadDelay(this.userid, rateLimitRetry, redisRetry)
+        const delayMs = await getNextUploadDelay(this.userid, rateLimitRetry, this.redis)
         const jobId = await enqueueUpload(
           { uploadId, batchId: newBatchId, editGroupId, userid: this.userid },
           delayMs,
@@ -337,9 +332,11 @@ export class Handler {
         this.sendError('No queued items to cancel')
         return
       }
-      for (const [, taskId] of cancelled.entries()) {
-        if (taskId) await removeUploadJob(taskId)
-      }
+      await Promise.all(
+        [...cancelled.values()]
+          .filter((taskId): taskId is string => !!taskId)
+          .map((taskId) => removeUploadJob(taskId)),
+      )
     })
   }
 
@@ -530,9 +527,8 @@ export class Handler {
       if (created.length > 0) {
         const mw = new MediaWikiClient(this.user.access_token)
         const rateLimit = await getRateLimitForBatch(this.userid, mw)
-        const redis = getHandlerRedis()
         for (const c of created) {
-          const delayMs = await getNextUploadDelay(this.userid, rateLimit, redis)
+          const delayMs = await getNextUploadDelay(this.userid, rateLimit, this.redis)
           const jobId = await enqueueUpload(
             { uploadId: c.id, batchId: data.batchid, editGroupId: batch.edit_group_id!, userid: this.userid },
             delayMs,

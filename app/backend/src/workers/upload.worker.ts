@@ -83,7 +83,7 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
         const claims = buildStatementsFromMapillaryImage(image, !upload.copyright_override)
         const labels = upload.labels as { language: string; value: string } | null
         const labelsPayload = labels
-          ? ({ [labels.language]: { language: labels.language, value: labels.value } } as unknown as unknown[])
+          ? { [labels.language]: { language: labels.language, value: labels.value } }
           : null
         await mw.applySdc(upload.filename, claims, labelsPayload, editSummary)
         await mw.nullEdit(upload.filename)
@@ -99,7 +99,7 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
             const claims = buildStatementsFromMapillaryImage(image, !upload.copyright_override)
             const labels = upload.labels as { language: string; value: string } | null
             const labelsPayload = labels
-              ? ({ [labels.language]: { language: labels.language, value: labels.value } } as unknown as unknown[])
+              ? { [labels.language]: { language: labels.language, value: labels.value } }
               : null
 
             try {

@@ -265,7 +265,7 @@ export class MediaWikiClient {
   async applySdc(
     filename: string,
     claims: unknown[] | null,
-    labels: unknown[] | null,
+    labels: Record<string, { language: string; value: string }> | null,
     editSummary: string,
   ): Promise<void> {
     const token = await this.getCsrfToken()
