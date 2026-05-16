@@ -14,7 +14,7 @@ import { useSocket } from '@frontend/composables/useSocket'
 import { useUploadStatus } from '@frontend/composables/useUploadStatus'
 import { useAuthStore } from '@frontend/stores/auth.store'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
-import type { Image } from '@frontend/types/image'
+import type { Image, Item } from '@frontend/types/image'
 import { UPLOAD_STATUS, type UploadStatus } from '@frontend/types/image'
 import { markRaw, watch } from 'vue'
 

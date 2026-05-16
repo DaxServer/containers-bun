@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ColorVariant } from '@frontend/composables/useUploadStatus'
+
 const props = withDefaults(
   defineProps<{
     label: string

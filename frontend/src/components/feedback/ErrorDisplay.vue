@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { StructuredError } from '@frontend/types/error'
+
 defineProps<{ error: StructuredError }>()
 </script>
 

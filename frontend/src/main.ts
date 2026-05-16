@@ -7,6 +7,7 @@ import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
 import ToastService from 'primevue/toastservice'
 
+import Noir from '@frontend/assets/Noir'
 import App from '@frontend/App.vue'
 import router from '@frontend/router'
 
