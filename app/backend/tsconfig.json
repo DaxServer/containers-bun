@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "types": ["bun"],
     "noEmit": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@backend/*": ["./src/*"]

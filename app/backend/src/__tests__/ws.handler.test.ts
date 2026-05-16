@@ -1,4 +1,5 @@
 import { mock, describe, it, expect, beforeEach } from 'bun:test'
+import type { BatchItem } from '@backend/db/dal/batches'
 import type { ServerMessage } from '@backend/types/ws'
 
 // This file is named ws.handler.test.ts (w > u) so Bun loads it AFTER
@@ -10,10 +11,10 @@ import type { ServerMessage } from '@backend/types/ws'
 // Shared mock state — updated per-test via .mockImplementation
 // ============================================================
 
-const mockGetBatches = mock(async () => [])
+const mockGetBatches = mock(async () => [] as BatchItem[])
 const mockCountBatches = mock(async () => 0)
-const mockGetBatch = mock(async (_id: number) => null as unknown)
-const mockCreateBatch = mock(async (_userid: string, _username: string) => ({
+const mockGetBatch = mock(async (_id: number) => null as BatchItem | null)
+const mockCreateBatch = mock(async (_userid: string, _username: string): Promise<BatchItem> => ({
   id: 42,
   userid: '1',
   username: 'alice',
@@ -51,13 +52,13 @@ const mockGetRateLimitForBatch = mock(async () => ({ uploadsPerPeriod: 10, perio
 const mockGetNextUploadDelay = mock(async () => 0)
 
 // WikidataClient mock instance methods
-const mockFetchItem = mock(async () => ({ claims: {} }))
-const mockEditItem = mock(async () => undefined)
+const mockFetchItem = mock(async (_qid: string) => ({ claims: {} }))
+const mockEditItem = mock(async (_qid: string, _claims: unknown, _sitelinks: unknown) => undefined)
 
 // MapillaryHandler mock
-const mockFetchCollection = mock(async () => ({ images: {}, sequenceId: '' }))
-const mockFetchCollectionIds = mock(async () => [] as string[])
-const mockFetchImagesBatch = mock(async () => ({} as Record<string, unknown>))
+const mockFetchCollection = mock(async (_col: string) => ({ images: {}, sequenceId: '' }))
+const mockFetchCollectionIds = mock(async (_col: string) => [] as string[])
+const mockFetchImagesBatch = mock(async (_ids: string[], _col: string) => ({} as Record<string, unknown>))
 
 // ============================================================
 // Wire up module mocks BEFORE any import of handler.ts
@@ -145,6 +146,8 @@ function makeRedis() {
 const fakeUser = {
   username: 'alice',
   sub: '1',
+  editcount: 0,
+  rights: [] as string[],
   access_token: ['tok', 'secret'] as [string, string],
 }
 
@@ -157,15 +160,7 @@ function makeHandler(sender = makeSender(), redis = makeRedis()) {
 }
 
 // Helper to build a minimal BatchItem from the DAL
-function fakeBatchItem(overrides: Partial<{
-  id: number
-  userid: string
-  username: string | null
-  edit_group_id: string | null
-  created_at: string
-  updated_at: string
-  stats: unknown
-}> = {}) {
+function fakeBatchItem(overrides: Partial<BatchItem> = {}): BatchItem {
   return {
     id: 1,
     userid: '1',
