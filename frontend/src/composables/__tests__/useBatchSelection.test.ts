@@ -1,10 +1,10 @@
 import type { BatchUploadItem } from '@backend/types/ws'
+import { useBatchSelection } from '@frontend/composables/useBatchSelection'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
-import { useCollectionsStore } from '../../stores/collections.store'
-import { UPLOAD_STATUS } from '../../types/image'
-import { useBatchSelection } from '../useBatchSelection'
 
 describe('useBatchSelection', () => {
   const createMockUploadItem = (id: number): BatchUploadItem => ({

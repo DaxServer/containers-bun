@@ -1,11 +1,11 @@
+import { useTitleTemplate } from '@frontend/composables/useTitleTemplate'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import type { Item } from '@frontend/types/image'
+import { TITLE_STATUS } from '@frontend/types/image'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
-import { useCollectionsStore } from '../../stores/collections.store'
-import type { Item } from '../../types/image'
-import { TITLE_STATUS } from '../../types/image'
-import { useTitleTemplate } from '../useTitleTemplate'
 
 describe('useTitleTemplate', () => {
   const createMockItem = (id: string): Item => ({

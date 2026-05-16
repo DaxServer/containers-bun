@@ -1,5 +1,5 @@
-import { Queue } from 'bullmq'
 import { config } from '@backend/config'
+import { Queue } from 'bullmq'
 
 export interface UploadJobData {
   uploadId: number

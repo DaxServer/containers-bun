@@ -1,6 +1,6 @@
 import { buildStatementsFromMapillaryImage } from '@backend/mediawiki/sdc'
-import { describe, expect, it } from 'bun:test'
 import type { MediaImage } from '@backend/types/ws'
+import { describe, expect, it } from 'bun:test'
 
 const baseImage: MediaImage = {
   id: 'img123',

@@ -1,10 +1,10 @@
 import type { BatchUploadItem } from '@backend/types/ws'
+import { useDataFilters } from '@frontend/composables/useDataFilters'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { UPLOAD_STATUS, type UploadStatus } from '@frontend/types/image'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
-import { useCollectionsStore } from '../../stores/collections.store'
-import { UPLOAD_STATUS, type UploadStatus } from '../../types/image'
-import { useDataFilters } from '../useDataFilters'
 
 describe('useDataFilters', () => {
   const createMockUploadItem = (

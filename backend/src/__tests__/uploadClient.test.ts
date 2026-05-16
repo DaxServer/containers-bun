@@ -47,7 +47,15 @@ describe('MediaWikiClient.uploadFile hash lock TTL', () => {
     ) as unknown as typeof fetch
 
     const { redis, setMock } = makeRedisMock()
-    await client.uploadFile('test.jpg', 'https://cdn.example/test.jpg', 'wikitext', 'summary', redis, 1, 1)
+    await client.uploadFile(
+      'test.jpg',
+      'https://cdn.example/test.jpg',
+      'wikitext',
+      'summary',
+      redis,
+      1,
+      1,
+    )
 
     const allCalls = setMock.mock.calls as unknown as unknown[][]
     const lockSetCall = allCalls.find((args) => String(args[0]).startsWith('hashlock:'))
@@ -65,19 +73,37 @@ describe('MediaWikiClient.uploadFile error paths', () => {
     mockFetch({}, 503)
     const { redis } = makeRedisMock()
     await expect(
-      client.uploadFile('test.jpg', 'https://cdn.example/test.jpg', 'wikitext', 'summary', redis, 1, 1),
+      client.uploadFile(
+        'test.jpg',
+        'https://cdn.example/test.jpg',
+        'wikitext',
+        'summary',
+        redis,
+        1,
+        1,
+      ),
     ).rejects.toBeInstanceOf(SourceCdnError)
   })
 
   it('throws DuplicateUploadError when SHA1 duplicate exists', async () => {
     const client = new MediaWikiClient(['key', 'secret'])
-    client.findDuplicates = mock(async () => [{ title: 'File:existing.jpg', url: 'https://commons.example/existing.jpg' }])
+    client.findDuplicates = mock(async () => [
+      { title: 'File:existing.jpg', url: 'https://commons.example/existing.jpg' },
+    ])
     globalThis.fetch = mock(
       async () => new Response(Buffer.from('data'), { status: 200 }),
     ) as unknown as typeof fetch
     const { redis } = makeRedisMock()
     await expect(
-      client.uploadFile('test.jpg', 'https://cdn.example/test.jpg', 'wikitext', 'summary', redis, 1, 1),
+      client.uploadFile(
+        'test.jpg',
+        'https://cdn.example/test.jpg',
+        'wikitext',
+        'summary',
+        redis,
+        1,
+        1,
+      ),
     ).rejects.toBeInstanceOf(DuplicateUploadError)
   })
 
@@ -88,9 +114,21 @@ describe('MediaWikiClient.uploadFile error paths', () => {
       async () => new Response(Buffer.from('data'), { status: 200 }),
     ) as unknown as typeof fetch
     const setMock = mock(async () => null) // null = lock already held
-    const redis = { get: mock(async () => null), set: setMock, del: mock(async () => 1) } as unknown as Redis
+    const redis = {
+      get: mock(async () => null),
+      set: setMock,
+      del: mock(async () => 1),
+    } as unknown as Redis
     await expect(
-      client.uploadFile('test.jpg', 'https://cdn.example/test.jpg', 'wikitext', 'summary', redis, 1, 1),
+      client.uploadFile(
+        'test.jpg',
+        'https://cdn.example/test.jpg',
+        'wikitext',
+        'summary',
+        redis,
+        1,
+        1,
+      ),
     ).rejects.toBeInstanceOf(HashLockError)
   })
 })
@@ -191,7 +229,8 @@ describe('MediaWikiClient.createPage', () => {
     ;(client as any).getCsrfToken = mock(async () => 'token+\\')
     // biome-ignore lint/suspicious/noExplicitAny: overriding private methods for testing
     ;(client as any).apiRequest = mock(async (params: Record<string, string>) => {
-      if (params.action === 'edit') return { error: { code: 'articleexists', info: 'Article already exists' } }
+      if (params.action === 'edit')
+        return { error: { code: 'articleexists', info: 'Article already exists' } }
       return {}
     })
     const title = await client.createPage('Category:Trees', 'text')
@@ -204,10 +243,13 @@ describe('MediaWikiClient.createPage', () => {
     ;(client as any).getCsrfToken = mock(async () => 'token+\\')
     // biome-ignore lint/suspicious/noExplicitAny: overriding private methods for testing
     ;(client as any).apiRequest = mock(async (params: Record<string, string>) => {
-      if (params.action === 'edit') return { error: { code: 'permissiondenied', info: 'You do not have permission' } }
+      if (params.action === 'edit')
+        return { error: { code: 'permissiondenied', info: 'You do not have permission' } }
       return {}
     })
-    await expect(client.createPage('Category:Trees', 'text')).rejects.toThrow('You do not have permission')
+    await expect(client.createPage('Category:Trees', 'text')).rejects.toThrow(
+      'You do not have permission',
+    )
   })
 })
 
@@ -216,10 +258,7 @@ describe('MediaWikiClient.getCategoryMembers', () => {
     const client = new MediaWikiClient(['key', 'secret'])
     mockFetch({
       query: {
-        categorymembers: [
-          { title: 'File:A.jpg' },
-          { title: 'File:B.jpg' },
-        ],
+        categorymembers: [{ title: 'File:A.jpg' }, { title: 'File:B.jpg' }],
       },
     })
     const members = await client.getCategoryMembers('Trees')
@@ -307,7 +346,9 @@ describe('MediaWikiClient.replaceCategoryInPage', () => {
       if (params.action === 'query') {
         return {
           query: {
-            pages: { '1': { revisions: [{ slots: { main: { content: '[[Category:Unrelated]]' } } }] } },
+            pages: {
+              '1': { revisions: [{ slots: { main: { content: '[[Category:Unrelated]]' } } }] },
+            },
           },
         }
       }

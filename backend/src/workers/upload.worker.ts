@@ -1,12 +1,17 @@
-import { Worker } from 'bullmq'
-import type { Redis } from 'ioredis'
 import { config } from '@backend/config'
 import { decryptAccessToken } from '@backend/core/crypto'
-import { DuplicateUploadError, HashLockError, SourceCdnError, StorageError } from '@backend/core/errors'
+import {
+  DuplicateUploadError,
+  HashLockError,
+  SourceCdnError,
+  StorageError,
+} from '@backend/core/errors'
 import { clearUploadAccessToken, getUploadById, updateUploadStatus } from '@backend/db/dal/uploads'
 import { MapillaryHandler } from '@backend/handlers/mapillary'
 import { MediaWikiClient } from '@backend/mediawiki/client'
 import { buildStatementsFromMapillaryImage } from '@backend/mediawiki/sdc'
+import { Worker } from 'bullmq'
+import type { Redis } from 'ioredis'
 import type { UploadJobData } from './queue'
 
 const EDIT_SUMMARY = (editGroupId: string) =>
@@ -128,7 +133,11 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
           return
         }
 
-        if (err instanceof HashLockError || err instanceof StorageError || err instanceof SourceCdnError) {
+        if (
+          err instanceof HashLockError ||
+          err instanceof StorageError ||
+          err instanceof SourceCdnError
+        ) {
           throw err
         }
 

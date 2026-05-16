@@ -14,7 +14,7 @@ type BatchesListData = Extract<ServerMessage, { type: 'BATCHES_LIST' }>['data']
 type BatchUploadsListData = Extract<ServerMessage, { type: 'BATCH_UPLOADS_LIST' }>['data']
 type UploadSliceMsg = Extract<ClientMessage, { type: 'UPLOAD_SLICE' }>
 
-import { UPLOAD_SLICE_SIZE } from '../useCollections'
+import { UPLOAD_SLICE_SIZE } from '@frontend/composables/useCollections'
 
 // Mock useSocket
 export const mockSocketData = ref<ServerMessage | null>(null)
@@ -37,8 +37,8 @@ import { createTestingPinia } from '@pinia/testing'
 import { setActivePinia } from 'pinia'
 
 // Import the code under test
+import type { initCollectionsListeners as InitCollectionsListenersType } from '@frontend/composables/useCollections'
 import { resolve } from 'node:path'
-import type { initCollectionsListeners as InitCollectionsListenersType } from '../useCollections'
 
 const createMockImage = (overrides: Partial<Image> = {}): Image => ({
   id: 'img1',

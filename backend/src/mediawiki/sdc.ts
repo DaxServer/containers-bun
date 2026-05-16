@@ -88,9 +88,7 @@ function quantitySnak(property: string, amount: number, unitEntityId: string): u
 }
 
 function timeSnak(property: string, isoDatetime: string): unknown {
-  const normalized = isoDatetime.endsWith('Z')
-    ? `${isoDatetime.slice(0, -1)}+00:00`
-    : isoDatetime
+  const normalized = isoDatetime.endsWith('Z') ? `${isoDatetime.slice(0, -1)}+00:00` : isoDatetime
   const dt = new Date(normalized)
   if (Number.isNaN(dt.getTime())) {
     throw new Error(`Invalid date provided for SDC: ${isoDatetime}`)

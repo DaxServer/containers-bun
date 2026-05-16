@@ -1,6 +1,6 @@
 import type { Image } from '@frontend/types/image'
+import { applyFieldTemplate } from '@frontend/utils/titleTemplate'
 import { describe, expect, it } from 'bun:test'
-import { applyFieldTemplate } from '../titleTemplate'
 
 describe('applyFieldTemplate', () => {
   const mockImage: Image = {

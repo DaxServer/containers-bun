@@ -1,8 +1,8 @@
+import { useAdminStore } from '@frontend/stores/admin.store'
 import type { AdminUploadRequest } from '@frontend/types/admin'
 import { UPLOAD_STATUS } from '@frontend/types/image'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
-import { useAdminStore } from '../admin.store'
 
 describe('failableCount', () => {
   beforeEach(() => {
