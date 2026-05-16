@@ -20,7 +20,7 @@ const session = createSessionPlugin({
 const worker = createUploadWorker(redis)
 worker.on('error', (err) => console.error('[worker] error:', err))
 
-const app = createApp(session)
+const app = createApp(session, redis)
 app.listen(config.port, () => {
   console.log(`curator-server listening on port ${config.port}`)
 })
