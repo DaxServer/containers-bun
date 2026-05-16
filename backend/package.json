@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun --watch --no-clear-screen src/index.ts",
-    "build": "bun build --compile --minify src/index.ts --outfile ../../curator-server",
+    "build": "bun build --compile --minify src/index.ts --outfile ../curator-server",
     "test": "bun test",
     "lint": "bunx biome lint .",
     "format": "prettier --cache --log-level warn --write src",

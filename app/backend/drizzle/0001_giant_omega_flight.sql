@@ -1,4 +1,0 @@
-ALTER TABLE `batches` ADD CONSTRAINT `batches_userid_users_userid_fk` FOREIGN KEY (`userid`) REFERENCES `users`(`userid`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `presets` ADD CONSTRAINT `presets_userid_users_userid_fk` FOREIGN KEY (`userid`) REFERENCES `users`(`userid`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `upload_requests` ADD CONSTRAINT `upload_requests_batchid_batches_id_fk` FOREIGN KEY (`batchid`) REFERENCES `batches`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `upload_requests` ADD CONSTRAINT `upload_requests_userid_users_userid_fk` FOREIGN KEY (`userid`) REFERENCES `users`(`userid`) ON DELETE no action ON UPDATE no action;

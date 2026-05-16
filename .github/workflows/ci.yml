@@ -6,10 +6,6 @@ on:
 permissions:
   contents: read
 
-defaults:
-  run:
-    working-directory: app
-
 jobs:
   test:
     name: Test
@@ -46,7 +42,7 @@ jobs:
 
       - run: bun install --frozen-lockfile
       - run: bunx vite build
-        working-directory: app/frontend
+        working-directory: frontend
       - run: bun typecheck
 
   lint:

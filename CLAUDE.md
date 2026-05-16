@@ -1,7 +1,7 @@
 ## Development
 
 ```bash
-# TypeScript backend — run from app/
+# TypeScript backend — run from repo root
 bun install          # install workspace deps
 bun test             # run all tests (backend + frontend, scanned recursively)
 bun typecheck        # tsc on backend + frontend
@@ -14,16 +14,11 @@ bun db:generate      # generate Drizzle migrations (requires DB_URL)
 
 - `@elysiajs/static` default prefix is `/public` — use `prefix: "/"` to serve assets at root
 - Drizzle `datetime` has no `.onUpdateNow()` — use `timestamp` for auto-update columns
-- `bun install` from `app/` hard-errors if a workspace member in `"workspaces"` doesn't exist yet
-- Bun workspace catalog defined in `app/package.json` under `workspaces.catalog` — all package deps use `catalog:` protocol
+- `bun install` hard-errors if a workspace member in `"workspaces"` doesn't exist yet
+- Bun workspace catalog defined in `package.json` under `workspaces.catalog` — all package deps use `catalog:` protocol
 - Elysia guard plugins: use `as: 'scoped'` (not `'local'`) — `'local'` silently skips the guard when consumed via a parent `.use()`
 - `config.*` values are frozen at module import time — guards should read from `config`, and tests should seed sessions/state matching the config defaults rather than injecting env vars
 - `vue-tsc` is stricter than `tsc` — it catches `T | undefined` from `.then(r => r[0])` that backend-only typecheck passes; run `bun typecheck` (runs both) before committing
-
-## Go Launcher Notes
-
-- Go launcher (`main.go`) is production-only — local dev runs `bun dev` directly, not via the launcher
-- `curator-server` binary is downloaded from GitHub releases at startup to `/tmp/curator-server`; it is never bundled
 
 ## Toolforge Build Notes
 
