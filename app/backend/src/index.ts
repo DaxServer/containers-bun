@@ -2,6 +2,7 @@ import { Redis } from 'ioredis'
 import { createApp } from './app'
 import { config } from './config'
 import { createSessionPlugin } from './core/session'
+import { createUploadWorker } from './workers/upload.worker'
 
 const redis = new Redis(config.redisUrl)
 const session = createSessionPlugin({
@@ -15,6 +16,9 @@ const session = createSessionPlugin({
     await redis.del(key)
   },
 })
+
+const worker = createUploadWorker(redis)
+worker.on('error', (err) => console.error('[worker] error:', err))
 
 const app = createApp(session)
 app.listen(config.port, () => {

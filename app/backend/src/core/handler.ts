@@ -1,5 +1,6 @@
 import { config } from '@backend/config'
 import { encryptAccessToken } from '@backend/core/crypto'
+import { getRateLimitForBatch, getNextUploadDelay } from '@backend/core/rateLimiter'
 import type { SessionUser } from '@backend/core/session'
 import type { BatchItem as DalBatchItem } from '@backend/db/dal/batches'
 import {
@@ -24,11 +25,20 @@ import {
   createUploadRequestsForBatch,
   getUploadsByBatch,
   retrySelectedUploadsToNewBatch,
+  updateJobTaskId,
 } from '@backend/db/dal/uploads'
 import { ensureUser } from '@backend/db/dal/users'
 import { MapillaryHandler } from '@backend/handlers/mapillary'
 import { MediaWikiClient } from '@backend/mediawiki/client'
 import { WikidataClient } from '@backend/mediawiki/wikidata'
+import { enqueueUpload, removeUploadJob } from '@backend/workers/queue'
+import { Redis } from 'ioredis'
+
+let _redis: Redis | null = null
+function getHandlerRedis(): Redis {
+  if (!_redis) _redis = new Redis(config.redisUrl)
+  return _redis
+}
 import type {
   BatchItem,
   BatchUploadItem,
@@ -285,7 +295,17 @@ export class Handler {
         this.sendError('No failed uploads to retry')
         return
       }
-      // TODO Phase-4: enqueue retried upload IDs into BullMQ with editGroupId
+      const mwRetry = new MediaWikiClient(this.user.access_token)
+      const rateLimitRetry = await getRateLimitForBatch(this.userid, mwRetry)
+      const redisRetry = getHandlerRedis()
+      for (const uploadId of newUploadIds) {
+        const delayMs = await getNextUploadDelay(this.userid, rateLimitRetry, redisRetry)
+        const jobId = await enqueueUpload(
+          { uploadId, batchId: newBatchId, editGroupId, userid: this.userid },
+          delayMs,
+        )
+        await updateJobTaskId(uploadId, jobId)
+      }
       this.sender.send({
         type: 'RETRY_UPLOADS_RESPONSE',
         data: newBatchId,
@@ -317,7 +337,9 @@ export class Handler {
         this.sendError('No queued items to cancel')
         return
       }
-      // TODO Phase-4: revoke BullMQ jobs by their stored task ids
+      for (const [, taskId] of cancelled.entries()) {
+        if (taskId) await removeUploadJob(taskId)
+      }
     })
   }
 
@@ -505,7 +527,19 @@ export class Handler {
         handler: handlerName,
         encryptedAccessToken,
       })
-      // TODO Phase-4: enqueue created upload IDs into BullMQ with edit_group_id
+      if (created.length > 0) {
+        const mw = new MediaWikiClient(this.user.access_token)
+        const rateLimit = await getRateLimitForBatch(this.userid, mw)
+        const redis = getHandlerRedis()
+        for (const c of created) {
+          const delayMs = await getNextUploadDelay(this.userid, rateLimit, redis)
+          const jobId = await enqueueUpload(
+            { uploadId: c.id, batchId: data.batchid, editGroupId: batch.edit_group_id!, userid: this.userid },
+            delayMs,
+          )
+          await updateJobTaskId(c.id, jobId)
+        }
+      }
       this.sender.send({
         type: 'UPLOAD_SLICE_ACK',
         data: created.map((c) => ({ id: c.key, status: c.status })),
