@@ -21,7 +21,7 @@ interface MapillaryImage {
   model?: string
 }
 
-function fromMapillary(image: MapillaryImage): MediaImage | null {
+export function fromMapillary(image: MapillaryImage): MediaImage | null {
   const { geometry, creator: owner, captured_at } = image
 
   if (!geometry) return null
