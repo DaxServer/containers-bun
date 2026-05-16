@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { useAuthStore } from '@frontend/stores/auth.store'
+import { useSocket } from '@frontend/composables/useSocket'
+import { initCollectionsListeners } from '@frontend/composables/useCollections'
+
 const store = useCollectionsStore()
 const auth = useAuthStore()
 const { open } = useSocket

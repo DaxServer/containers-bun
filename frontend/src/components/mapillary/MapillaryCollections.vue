@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { ImageHandler } from '@frontend/types/collections'
+
 const store = useCollectionsStore()
 
 onMounted(() => {

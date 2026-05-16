@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { BatchFailureGroup } from '@frontend/types/admin'
+
 defineProps<{
   group: BatchFailureGroup
 }>()

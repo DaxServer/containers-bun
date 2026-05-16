@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { BatchStats } from '@backend/types/ws'
+import { useUploadStatus } from '@frontend/composables/useUploadStatus'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 
 defineProps<{
   stats: BatchStats

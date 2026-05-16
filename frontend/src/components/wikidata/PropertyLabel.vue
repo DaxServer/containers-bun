@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useWikidata } from '@frontend/components/wikidata/useWikidata'
+
 defineProps<{ property: string }>()
 
 const { getPropertyLabel } = useWikidata()

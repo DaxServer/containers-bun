@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import type { Item } from '@frontend/types/image'
+import type { Layout } from '@frontend/types/collections'
+
 const props = defineProps<{
   item: Item
   altPrefix: string

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { useCollections } from '@frontend/composables/useCollections'
+import { useCommons } from '@frontend/composables/useCommons'
+
 defineProps<{
   placeholder: string
   emptyMessage: string

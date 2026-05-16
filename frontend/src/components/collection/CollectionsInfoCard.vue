@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+
 defineProps<{
   input: string
   selectedCount: number

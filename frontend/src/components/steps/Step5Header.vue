@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { useUploadStatus } from '@frontend/composables/useUploadStatus'
+import { useCollections } from '@frontend/composables/useCollections'
+import { UPLOAD_STATUS } from '@frontend/types/image'
+
 const store = useCollectionsStore()
 const { isDuplicateStatus } = useUploadStatus()
 const { retryUploads, sendUnsubscribeBatch } = useCollections()
