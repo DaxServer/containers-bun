@@ -8,17 +8,36 @@ const getOrigin = () =>
 
 const data = ref<ServerMessage | null>(null)
 let _ws: ReturnType<ReturnType<typeof treaty<App>>['ws']['subscribe']> | null = null
+let _ready = false
+const _queue: ClientMessage[] = []
 
 const open = () => {
   if (_ws) close()
+  _ready = false
   const client = treaty<App>(getOrigin())
   _ws = client.ws.subscribe()
-  _ws.on('message', (event) => {
+  _ws.on('open', () => {
+    _ready = true
+    _queue.splice(0).forEach((msg) => _ws?.send(msg))
+  })
+  _ws.subscribe((event: MessageEvent) => {
     data.value = event.data as ServerMessage
   })
 }
 
-const send = (msg: ClientMessage) => _ws?.send(msg)
-const close = () => _ws?.close()
+const send = (msg: ClientMessage) => {
+  if (!_ws) return
+  if (!_ready) {
+    _queue.push(msg)
+    return
+  }
+  _ws.send(msg)
+}
+
+const close = () => {
+  _ready = false
+  _queue.length = 0
+  _ws?.close()
+}
 
 export const useSocket = { data, open, send, close }

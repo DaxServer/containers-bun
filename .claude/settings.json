@@ -9,7 +9,7 @@
             "type": "command",
             "timeout": 120,
             "statusMessage": "Running tests, typecheck, and lint before commit...",
-            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -q 'git commit'; then cd /home/user/curator/app && bun test && bun typecheck && bun lint || (echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"CI checks failed — fix errors before committing\"}}' && exit 2); fi"
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -q 'git commit'; then REPO_ROOT=$(dirname \"$(git rev-parse --git-common-dir)\") && cd \"$REPO_ROOT\" && bun test && bun typecheck && bun lint || (echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"CI checks failed — fix errors before committing\"}}' && exit 2); fi"
           }
         ]
       }
