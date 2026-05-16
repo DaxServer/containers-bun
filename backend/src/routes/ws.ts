@@ -21,7 +21,7 @@ export function createWsRoutes(redis: Redis) {
     .onError(({ error }) => {
       if (error instanceof ValidationError) {
         wsLogger.error(
-          { received: error.value, message: error.message },
+          { errors: error.all, message: error.message },
           'WebSocket validation error',
         )
       }
