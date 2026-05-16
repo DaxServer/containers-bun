@@ -1,7 +1,7 @@
+import type { QueryNormalized, QueryPage } from '@frontend/composables/useCategoryValidation'
 import { parseCategoryNames } from '@frontend/utils/categoryParsing'
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
-import type { QueryNormalized, QueryPage } from '../useCategoryValidation'
 
 describe('useCategoryValidation', () => {
   let useCategoryValidation: typeof import('../useCategoryValidation').useCategoryValidation

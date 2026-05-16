@@ -1,7 +1,7 @@
+import { config } from '@backend/config'
+import { createOAuthClient } from '@backend/core/oauthClient'
+import { createSessionPlugin } from '@backend/core/session'
 import { Elysia } from 'elysia'
-import { config } from '../config'
-import { createOAuthClient } from '../core/oauthClient'
-import { createSessionPlugin } from '../core/session'
 
 const MIN_EDITCOUNT = 50
 

@@ -26,11 +26,11 @@ mock.module('primevue/usetoast', () => ({
 }))
 
 import { makePreset } from '@frontend/__tests__/fixtures'
+import { usePresetManager } from '@frontend/composables/usePresetManager'
 import { useAuthStore } from '@frontend/stores/auth.store'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
 import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
-import { usePresetManager } from '../usePresetManager'
 
 const enablePresets = () => {
   const auth = useAuthStore()

@@ -1,5 +1,5 @@
+import { useTitleBlacklist } from '@frontend/composables/useTitleBlacklist'
 import { describe, expect, it } from 'bun:test'
-import { useTitleBlacklist } from '../useTitleBlacklist'
 
 describe('useTitleBlacklist', () => {
   const { isBlacklisted } = useTitleBlacklist()

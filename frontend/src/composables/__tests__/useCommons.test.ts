@@ -1,8 +1,8 @@
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import type { Image, Item } from '@frontend/types/image'
+import { TITLE_STATUS } from '@frontend/types/image'
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
-import { useCollectionsStore } from '../../stores/collections.store'
-import type { Image, Item } from '../../types/image'
-import { TITLE_STATUS } from '../../types/image'
 
 // Mock ts-debounce
 let pendingDebounceExecutors: ((...args: unknown[]) => void)[] = []

@@ -1,5 +1,4 @@
 import type { Image } from '@frontend/types/image'
-import { describe, expect, it } from 'bun:test'
 import {
   applyTitleTemplate,
   CAMERA_FIELD_PATHS,
@@ -12,7 +11,8 @@ import {
   OPTIONAL_LOCATION_FIELD_PATHS,
   VALID_EXTENSIONS,
   validateTemplate,
-} from '../titleTemplate'
+} from '@frontend/utils/titleTemplate'
+import { describe, expect, it } from 'bun:test'
 
 describe('titleTemplate utils', () => {
   const createMockImage = (id: string): Image => ({
