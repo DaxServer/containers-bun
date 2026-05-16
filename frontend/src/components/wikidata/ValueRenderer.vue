@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { useWikidata } from '@frontend/components/wikidata/useWikidata'
+import type { DataValue } from '@frontend/types/wikidata'
+import { DataValueType } from '@frontend/types/wikidata'
+import { decimalToDMS } from '@frontend/utils/geo'
+
 defineProps<{ value: DataValue }>()
 
 const { getEntityLabel } = useWikidata()

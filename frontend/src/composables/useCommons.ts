@@ -15,6 +15,7 @@ import {
 import { useTitleVerification } from '@frontend/composables/useTitleVerification'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
 import type { Image, Item, Metadata } from '@frontend/types/image'
+import type { Statement } from '@frontend/types/wikidata'
 import { applyFieldTemplate } from '@frontend/utils/titleTemplate'
 
 export const useCommons = () => {

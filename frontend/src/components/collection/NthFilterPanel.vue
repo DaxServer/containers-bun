@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { DEMO_ITEMS, selectEveryNth } from '@frontend/utils/filterSelection'
+
 type DotState = 'idle' | 'selected' | 'skipped'
 
 const props = defineProps<{ running: boolean }>()

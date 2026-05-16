@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useTemplateEditor } from '@frontend/composables/useTemplateEditor'
+import { AVAILABLE_IMAGE_FIELDS, OPTIONAL_FIELD_PATHS } from '@frontend/utils/titleTemplate'
+import type { FieldGroup } from '@frontend/utils/titleTemplate'
+
 const { allMissingOptionalFieldPaths, onDragStart, titleTemplate } = useTemplateEditor()
 
 const { usedOptionalFields, getVariableToken } = titleTemplate

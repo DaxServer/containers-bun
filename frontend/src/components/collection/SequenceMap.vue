@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { useSequenceMap } from '@frontend/composables/useSequenceMap'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 
 const { geoJSON, pathGeoJSON } = useSequenceMap()
 const store = useCollectionsStore()

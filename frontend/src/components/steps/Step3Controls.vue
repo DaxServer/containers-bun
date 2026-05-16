@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { useCommons } from '@frontend/composables/useCommons'
+import { TITLE_ERROR_STATUSES } from '@frontend/types/image'
+
 const store = useCollectionsStore()
 const { cancelTitleVerification } = useCommons()
 

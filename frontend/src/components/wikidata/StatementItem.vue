@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Snak } from '@frontend/types/wikidata'
+
 defineProps<{ snak: Snak; qualifiers: Record<string, Snak[]> }>()
 </script>
 

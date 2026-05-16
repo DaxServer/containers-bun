@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { useCollections } from '@frontend/composables/useCollections'
+
 const store = useCollectionsStore()
 const { submitUpload } = useCollections()
 </script>

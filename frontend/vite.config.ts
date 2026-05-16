@@ -61,10 +61,6 @@ export default defineConfig((): import('vite').UserConfig => {
             imports: ['debounce'],
           },
         ],
-        dirs: ['src/**'],
-        dirsScanOptions: {
-          fileFilter: (file) => !file.includes('__tests__') && !file.endsWith('.test.ts'),
-        },
         dts: true,
         vueTemplate: true,
         biomelintrc: {

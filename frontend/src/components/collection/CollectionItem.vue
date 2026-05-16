@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { useUploadStatus } from '@frontend/composables/useUploadStatus'
+import { UPLOAD_STATUS, TITLE_ERROR_STATUSES, TITLE_STATUS } from '@frontend/types/image'
+import type { Item } from '@frontend/types/image'
+
 const props = defineProps<{
   item: Item
   altPrefix: string

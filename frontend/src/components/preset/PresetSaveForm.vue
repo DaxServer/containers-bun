@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+
 const props = defineProps<{
   isEditing: boolean
   presetTitle?: string

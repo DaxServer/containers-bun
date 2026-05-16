@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+import type { Snak } from '@frontend/types/wikidata'
+import { SnakType } from '@frontend/types/wikidata'
+
 defineProps<{ snak: Snak }>()
 </script>
 

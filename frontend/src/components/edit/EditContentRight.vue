@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import type { Item } from '@frontend/types/image'
+
 defineProps<{ item: Item; altPrefix: string }>()
 </script>
 

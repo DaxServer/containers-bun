@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useCommons } from '@frontend/composables/useCommons'
+import type { Image } from '@frontend/types/image'
+import type { Statement } from '@frontend/types/wikidata'
+
 const props = defineProps<{
   id: string
   image: Image

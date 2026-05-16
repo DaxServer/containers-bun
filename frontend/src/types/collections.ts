@@ -1,3 +1,6 @@
+import type { ColorVariant } from '@frontend/composables/useUploadStatus'
+import type { UploadStatus } from '@frontend/types/image'
+
 export const ImageHandler = { MAPILLARY: 'mapillary' } as const
 export type Handler = (typeof ImageHandler)[keyof typeof ImageHandler]
 export type Layout = 'list' | 'grid'

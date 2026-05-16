@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { useCollectionsStore } from '@frontend/stores/collections.store'
+
 const store = useCollectionsStore()
 
 defineProps<{
