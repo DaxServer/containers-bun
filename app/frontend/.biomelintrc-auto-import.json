@@ -51,6 +51,7 @@
       "Handler",
       "INTERVAL_UNITS",
       "Image",
+      "ImageHandler",
       "InjectionKey",
       "IntervalUnit",
       "Item",
