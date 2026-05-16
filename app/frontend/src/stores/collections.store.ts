@@ -1,4 +1,5 @@
 import type { BatchItem, BatchUploadItem, Creator, PresetItem } from '@backend/types/ws'
+import { ImageHandler } from '@frontend/types/collections'
 import type { Layout } from '@frontend/types/collections'
 import type { Item, Metadata, MetadataKey } from '@frontend/types/image'
 import { TITLE_ERROR_STATUSES } from '@frontend/types/image'
@@ -12,7 +13,6 @@ import {
 import { defineStore } from 'pinia'
 import { computed, reactive, ref, shallowRef } from 'vue'
 
-const ImageHandler = { MAPILLARY: 'mapillary' } as const
 type ImageHandler = (typeof ImageHandler)[keyof typeof ImageHandler]
 
 export const useCollectionsStore = defineStore('collections', () => {
