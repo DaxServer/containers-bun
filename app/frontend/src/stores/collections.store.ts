@@ -1,5 +1,6 @@
 import type { BatchItem, BatchUploadItem, Creator, PresetItem } from '@backend/types/ws'
-import type { Layout } from '@frontend/types/collections'
+import { ImageHandler } from '@frontend/types/collections'
+import type { Handler, Layout } from '@frontend/types/collections'
 import type { Item, Metadata, MetadataKey } from '@frontend/types/image'
 import { TITLE_ERROR_STATUSES } from '@frontend/types/image'
 import type { FilterItem } from '@frontend/utils/filterSelection'
@@ -12,11 +13,8 @@ import {
 import { defineStore } from 'pinia'
 import { computed, reactive, ref, shallowRef } from 'vue'
 
-const ImageHandler = { MAPILLARY: 'mapillary' } as const
-type ImageHandler = (typeof ImageHandler)[keyof typeof ImageHandler]
-
 export const useCollectionsStore = defineStore('collections', () => {
-  const handler = ref<ImageHandler>(ImageHandler.MAPILLARY)
+  const handler = ref<Handler>(ImageHandler.MAPILLARY)
   const input = ref<string>('')
   const creator = ref<Creator>({ id: '', username: '', profile_url: '' })
 
@@ -273,7 +271,7 @@ export const useCollectionsStore = defineStore('collections', () => {
     itemsPerPage.value = n
   }
 
-  const setHandler = (h: ImageHandler) => {
+  const setHandler = (h: Handler) => {
     handler.value = h
   }
 

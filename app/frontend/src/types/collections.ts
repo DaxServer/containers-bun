@@ -1,4 +1,5 @@
-export type Handler = 'mapillary'
+export const ImageHandler = { MAPILLARY: 'mapillary' } as const
+export type Handler = (typeof ImageHandler)[keyof typeof ImageHandler]
 export type Layout = 'list' | 'grid'
 export const INTERVAL_UNITS = ['milliseconds', 'seconds', 'minutes'] as const
 export type IntervalUnit = (typeof INTERVAL_UNITS)[number]
