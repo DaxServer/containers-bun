@@ -154,7 +154,7 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
   )
 
   worker.on('failed', (job, err) => {
-    workerLogger.error({ jobId: job?.id, err: err.message }, 'Job permanently failed')
+    workerLogger.error({ jobId: job?.id, err }, 'Job permanently failed')
   })
 
   return worker
