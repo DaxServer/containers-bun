@@ -33,9 +33,8 @@ describe('MediaWikiClient.uploadFile hash lock TTL', () => {
     const { redis, setMock } = makeRedisMock()
     await client.uploadFile('test.jpg', 'https://cdn.example/test.jpg', 'wikitext', 'summary', redis, 1, 1)
 
-    const lockSetCall = setMock.mock.calls.find(
-      (args) => String(args[0]).startsWith('hashlock:'),
-    )
+    const allCalls = setMock.mock.calls as unknown as unknown[][]
+    const lockSetCall = allCalls.find((args) => String(args[0]).startsWith('hashlock:'))
 
     expect(lockSetCall).toBeDefined()
     expect(lockSetCall?.[2]).toBe('EX')

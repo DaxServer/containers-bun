@@ -29,7 +29,7 @@ describe('getNextUploadDelay', () => {
     const { redis, setMock } = makeRedisMock()
     await getNextUploadDelay('u1', { uploadsPerPeriod: 10, periodSeconds: 60 }, redis)
     expect(setMock).toHaveBeenCalledTimes(1)
-    const [key, value] = setMock.mock.calls[0] as [string, string]
+    const [key, value] = (setMock.mock.calls as unknown as [string, string][])[0]
     expect(key).toContain('u1')
     expect(Number(value)).toBeGreaterThan(Date.now() / 1000)
   })
