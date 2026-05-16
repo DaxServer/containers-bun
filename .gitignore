@@ -1,4 +1,4 @@
-.claude
+.claude/settings.local.json
 .code-review-graph
 .DS_Store
 .env

@@ -1,6 +1,6 @@
 import { DuplicateUploadError, HashLockError, SourceCdnError } from '@backend/core/errors'
 import { MediaWikiClient } from '@backend/mediawiki/client'
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { describe, expect, it, mock } from 'bun:test'
 import type { Redis } from 'ioredis'
 
 function makeRedisMock() {
