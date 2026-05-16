@@ -45,6 +45,8 @@ jobs:
           bun-version: ${{ steps.bun-version.outputs.BUN_VERSION }}
 
       - run: bun install --frozen-lockfile
+      - run: bunx vite build
+        working-directory: app/frontend
       - run: bun typecheck
 
   lint:
