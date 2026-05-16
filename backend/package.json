@@ -19,7 +19,10 @@
     "elysia": "catalog:",
     "bullmq": "catalog:",
     "ioredis": "catalog:",
-    "mysql2": "catalog:"
+    "logixlysia": "catalog:",
+    "mysql2": "catalog:",
+    "pino": "catalog:",
+    "pino-pretty": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

@@ -8,11 +8,12 @@ import {
 } from '@backend/core/errors'
 import { clearUploadAccessToken, getUploadById, updateUploadStatus } from '@backend/db/dal/uploads'
 import { MapillaryHandler } from '@backend/handlers/mapillary'
+import { workerLogger } from '@backend/logger'
 import { MediaWikiClient } from '@backend/mediawiki/client'
 import { buildStatementsFromMapillaryImage } from '@backend/mediawiki/sdc'
+import type { UploadJobData } from '@backend/workers/queue'
 import { Worker } from 'bullmq'
 import type { Redis } from 'ioredis'
-import type { UploadJobData } from './queue'
 
 const EDIT_SUMMARY = (editGroupId: string) =>
   `Uploaded via Curator | https://editgroups.io/b/OR/${editGroupId}/`
@@ -25,7 +26,7 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
 
       const upload = await getUploadById(uploadId)
       if (!upload) {
-        console.error(`[worker] Upload ${uploadId} not found, skipping`)
+        workerLogger.error({ uploadId }, 'Upload not found, skipping')
         return
       }
 
@@ -153,7 +154,7 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
   )
 
   worker.on('failed', (job, err) => {
-    console.error(`[worker] Job ${job?.id} permanently failed:`, err.message)
+    workerLogger.error({ jobId: job?.id, err }, 'Job permanently failed')
   })
 
   return worker

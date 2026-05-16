@@ -1,16 +1,19 @@
+import type { createSessionPlugin } from '@backend/core/session'
+import { logger } from '@backend/logger'
+import { adminRoutes } from '@backend/routes/admin'
+import { authRoutes } from '@backend/routes/auth'
+import { createWsRoutes } from '@backend/routes/ws'
 import { staticPlugin } from '@elysiajs/static'
 import { Elysia } from 'elysia'
 import type { Redis } from 'ioredis'
+import logixlysia from 'logixlysia'
 import path from 'node:path'
-import type { createSessionPlugin } from './core/session'
-import { adminRoutes } from './routes/admin'
-import { authRoutes } from './routes/auth'
-import { createWsRoutes } from './routes/ws'
 
 type SessionPlugin = ReturnType<typeof createSessionPlugin>
 
 const buildApi = (session: SessionPlugin, redis: Redis) =>
   new Elysia()
+    .use(logixlysia({ config: { pino: logger } }))
     .use(session)
     .get('/health', () => ({ status: 'ok' }))
     .use(authRoutes)
