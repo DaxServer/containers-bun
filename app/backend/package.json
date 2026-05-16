@@ -17,6 +17,7 @@
     "@elysiajs/static": "catalog:",
     "drizzle-orm": "catalog:",
     "elysia": "catalog:",
+    "bullmq": "catalog:",
     "ioredis": "catalog:",
     "mysql2": "catalog:"
   },
