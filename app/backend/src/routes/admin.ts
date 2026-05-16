@@ -15,7 +15,6 @@ const _noopStore = {
   async del(_k: string): Promise<void> {},
 }
 
-// Mirrors requireAuth in core/auth.ts — adds admin username check
 const requireAdmin = new Elysia({ name: 'require-admin' })
   .use(createSessionPlugin(_noopStore))
   .derive({ as: 'scoped' }, ({ session }) => {
