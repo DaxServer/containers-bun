@@ -187,7 +187,7 @@ export class MediaWikiClient {
     }
 
     const lockKey = `hashlock:${sha1}`
-    const locked = await redis.set(lockKey, '1', 'EX', 60, 'NX')
+    const locked = await redis.set(lockKey, '1', 'EX', 600, 'NX')
     if (!locked) throw new HashLockError(`Hash lock already held for ${sha1}`)
 
     try {

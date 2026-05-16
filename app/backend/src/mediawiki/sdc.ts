@@ -92,6 +92,9 @@ function timeSnak(property: string, isoDatetime: string): unknown {
     ? isoDatetime.slice(0, -1) + '+00:00'
     : isoDatetime
   const dt = new Date(normalized)
+  if (Number.isNaN(dt.getTime())) {
+    throw new Error(`Invalid date provided for SDC: ${isoDatetime}`)
+  }
   const year = dt.getUTCFullYear().toString().padStart(4, '0')
   const month = (dt.getUTCMonth() + 1).toString().padStart(2, '0')
   const day = dt.getUTCDate().toString().padStart(2, '0')

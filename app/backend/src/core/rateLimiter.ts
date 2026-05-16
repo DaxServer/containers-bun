@@ -83,6 +83,7 @@ export async function getNextUploadDelay(
   const nextAvailable = nextAvailableStr ? parseFloat(nextAvailableStr) : currentTime
 
   const delay = Math.max(0.0, nextAvailable - currentTime)
+  if (rateLimit.uploadsPerPeriod === 0) return delay * 1000
   const spacing = (rateLimit.periodSeconds / rateLimit.uploadsPerPeriod) * 1.5
 
   const newNextAvailable = Math.max(currentTime, nextAvailable) + spacing
