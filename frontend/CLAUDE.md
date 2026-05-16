@@ -2,7 +2,7 @@
 
 **Auto-imports:** `.vue` SFCs get Vite's auto-import transform; `.ts` composable files do not — must explicitly import `ref`, `watch`, stores, and PrimeVue utilities like `useToast`.
 
-**Auto-imports regeneration:** After adding a composable or store, `bun typecheck` fails with "Cannot find name" until `auto-imports.d.ts` is regenerated. Run `bunx vite build` (triggers `unplugin-auto-import`) then delete `dist/`.
+**Auto-imports regeneration:** After adding a composable or store, regenerate `auto-imports.d.ts` and `components.d.ts` by running `bunx vite build` in `frontend/`, then commit the updated files and delete `dist/`.
 
 **asyncapi.json generator type inference:** `bun generate` uses `tsc` to infer template literal types. If types degrade to `string` after a dep bump, a new TypeScript error is polluting `tsc` output — add a suppression flag in `getInferredType()` in `scripts/asyncapi.ts`.
 
