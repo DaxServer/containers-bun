@@ -299,7 +299,7 @@ export async function createUploadRequestsForBatch({
   items: UploadItem[]
   handler: string
   encryptedAccessToken: string
-}): Promise<{ key: string; status: string }[]> {
+}): Promise<{ id: number; key: string; status: string }[]> {
   if (items.length === 0) return []
   const rows = items.map((it) => ({
     batchid,
@@ -319,7 +319,13 @@ export async function createUploadRequestsForBatch({
     celery_task_id: null,
   }))
   await db.insert(uploadRequests).values(rows)
-  return rows.map((r) => ({ key: r.key, status: r.status }))
+  const keys = rows.map((r) => r.key)
+  const inserted = await db
+    .select({ id: uploadRequests.id, key: uploadRequests.key })
+    .from(uploadRequests)
+    .where(and(eq(uploadRequests.batchid, batchid), inArray(uploadRequests.key, keys)))
+    .orderBy(asc(uploadRequests.id))
+  return inserted.map((r) => ({ id: r.id, key: r.key, status: 'queued' }))
 }
 
 export async function markUploadsExpired(ids: number[]): Promise<void> {

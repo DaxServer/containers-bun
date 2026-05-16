@@ -1,0 +1,37 @@
+import { Queue } from 'bullmq'
+import { config } from '@backend/config'
+
+export interface UploadJobData {
+  uploadId: number
+  batchId: number
+  editGroupId: string
+  userid: string
+}
+
+const connection = { url: config.redisUrl }
+
+let _queue: Queue<UploadJobData> | null = null
+
+function getUploadQueue(): Queue<UploadJobData> {
+  if (!_queue) {
+    _queue = new Queue<UploadJobData>('uploads', { connection })
+  }
+  return _queue
+}
+
+export async function enqueueUpload(data: UploadJobData, delayMs: number): Promise<string> {
+  const job = await getUploadQueue().add('upload', data, {
+    delay: Math.round(delayMs),
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 5000 },
+    jobId: `upload:${data.uploadId}`,
+    removeOnComplete: { age: 86400 },
+    removeOnFail: { age: 86400 * 7 },
+  })
+  return job.id!
+}
+
+export async function removeUploadJob(jobId: string): Promise<void> {
+  const job = await getUploadQueue().getJob(jobId)
+  if (job) await job.remove()
+}

@@ -2,6 +2,7 @@ import { Handler } from '@backend/core/handler'
 import { createSessionPlugin } from '@backend/core/session'
 import { ClientMessage, type ServerMessage } from '@backend/types/ws'
 import Elysia from 'elysia'
+import type { Redis } from 'ioredis'
 
 const _noopStore = {
   async get(_k: string): Promise<null> {
@@ -11,31 +12,32 @@ const _noopStore = {
   async del(_k: string): Promise<void> {},
 }
 
-const connections = new Map<string, Handler>()
+export function createWsRoutes(redis: Redis) {
+  const connections = new Map<string, Handler>()
 
-export const wsRoutes = new Elysia().use(createSessionPlugin(_noopStore)).ws('/ws', {
-  body: ClientMessage,
-  open(ws) {
-    if (!ws.data.session.user) {
-      ws.close(1008, 'Unauthorized')
-      return
-    }
-    if (!ws.data.session.access_token) {
-      ws.close(1008, 'Unauthorized')
-      return
-    }
-    const user = {
-      ...ws.data.session.user,
-      access_token: ws.data.session.access_token,
-    }
-    const sender = {
-      send: (msg: ServerMessage) => {
-        ws.send(msg)
-      },
-    }
-    const handler = new Handler(user, sender)
-    connections.set(ws.id, handler)
-  },
+  return new Elysia().use(createSessionPlugin(_noopStore)).ws('/ws', {
+    body: ClientMessage,
+    open(ws) {
+      if (!ws.data.session.user) {
+        ws.close(1008, 'Unauthorized')
+        return
+      }
+      if (!ws.data.session.access_token) {
+        ws.close(1008, 'Unauthorized')
+        return
+      }
+      const user = {
+        ...ws.data.session.user,
+        access_token: ws.data.session.access_token,
+      }
+      const sender = {
+        send: (msg: ServerMessage) => {
+          ws.send(msg)
+        },
+      }
+      const handler = new Handler(user, sender, redis)
+      connections.set(ws.id, handler)
+    },
   message(ws, body) {
     if (!ws.data.session.user) {
       ws.close(1008, 'Unauthorized')
@@ -106,3 +108,4 @@ export const wsRoutes = new Elysia().use(createSessionPlugin(_noopStore)).ws('/w
     connections.delete(ws.id)
   },
 })
+}
