@@ -20,14 +20,19 @@ const open = () => {
     _ready = true
     for (const msg of _queue.splice(0)) _ws?.send(msg)
   })
+  _ws.on('close', () => {
+    _ready = false
+  })
+  _ws.on('error', () => {
+    _ready = false
+  })
   _ws.subscribe((event) => {
     data.value = event.data
   })
 }
 
 const send = (msg: ClientMessage) => {
-  if (!_ws) return
-  if (!_ready) {
+  if (!_ready || !_ws) {
     _queue.push(msg)
     return
   }
