@@ -1,3 +1,7 @@
+## GitButler Workflow
+
+This repo is managed with GitButler locally. Claude branches integrate via GitHub PR merge only — never cherry-pick or rebase `claude/*` branches as GitButler virtual branches. Target branch is `main`. See global `~/.claude/CLAUDE.md` for full rules.
+
 ## Development
 
 ```bash
