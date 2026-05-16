@@ -1,6 +1,6 @@
 import { config } from '@backend/config'
 import { encryptAccessToken } from '@backend/core/crypto'
-import { getRateLimitForBatch, getNextUploadDelay } from '@backend/core/rateLimiter'
+import { getNextUploadDelay, getRateLimitForBatch } from '@backend/core/rateLimiter'
 import type { SessionUser } from '@backend/core/session'
 import type { BatchItem as DalBatchItem } from '@backend/db/dal/batches'
 import {
@@ -31,8 +31,6 @@ import { ensureUser } from '@backend/db/dal/users'
 import { MapillaryHandler } from '@backend/handlers/mapillary'
 import { MediaWikiClient } from '@backend/mediawiki/client'
 import { WikidataClient } from '@backend/mediawiki/wikidata'
-import { enqueueUpload, removeUploadJob } from '@backend/workers/queue'
-import type { Redis } from 'ioredis'
 import type {
   BatchItem,
   BatchUploadItem,
@@ -41,6 +39,8 @@ import type {
   UploadItem,
   UploadUpdateItem,
 } from '@backend/types/ws'
+import { enqueueUpload, removeUploadJob } from '@backend/workers/queue'
+import type { Redis } from 'ioredis'
 
 const UPLOAD_DONE_STATUSES = new Set([
   'completed',
@@ -530,7 +530,12 @@ export class Handler {
         for (const c of created) {
           const delayMs = await getNextUploadDelay(this.userid, rateLimit, this.redis)
           const jobId = await enqueueUpload(
-            { uploadId: c.id, batchId: data.batchid, editGroupId: batch.edit_group_id!, userid: this.userid },
+            {
+              uploadId: c.id,
+              batchId: data.batchid,
+              editGroupId: batch.edit_group_id!,
+              userid: this.userid,
+            },
             delayMs,
           )
           await updateJobTaskId(c.id, jobId)

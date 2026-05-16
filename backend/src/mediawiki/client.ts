@@ -1,9 +1,14 @@
-import { createHash } from 'node:crypto'
 import { config } from '@backend/config'
-import { DuplicateUploadError, HashLockError, SourceCdnError, StorageError } from '@backend/core/errors'
 import type { DuplicateLink } from '@backend/core/errors'
+import {
+  DuplicateUploadError,
+  HashLockError,
+  SourceCdnError,
+  StorageError,
+} from '@backend/core/errors'
 import { buildAuthHeader } from '@backend/core/oauthClient'
 import type { Redis } from 'ioredis'
+import { createHash } from 'node:crypto'
 
 const CHUNK_SIZE = 1024 * 1024
 const STASH_RETRY_LIMIT = 2
@@ -133,10 +138,17 @@ export class MediaWikiClient {
     ratelimits: Record<string, Record<string, { hits: number; seconds: number }>>
     rights: string[]
   }> {
-    const result = await this.apiRequest({ action: 'query', meta: 'userinfo', uiprop: 'ratelimits|rights' })
+    const result = await this.apiRequest({
+      action: 'query',
+      meta: 'userinfo',
+      uiprop: 'ratelimits|rights',
+    })
     const userinfo = (result.query as Record<string, unknown>).userinfo as Record<string, unknown>
     return {
-      ratelimits: (userinfo.ratelimits ?? {}) as Record<string, Record<string, { hits: number; seconds: number }>>,
+      ratelimits: (userinfo.ratelimits ?? {}) as Record<
+        string,
+        Record<string, { hits: number; seconds: number }>
+      >,
       rights: (userinfo.rights ?? []) as string[],
     }
   }
@@ -160,7 +172,8 @@ export class MediaWikiClient {
       list: 'allimages',
       aisha1: fileHash,
     })
-    const allimages = ((result.query as Record<string, unknown>).allimages as Array<Record<string, string>>) ?? []
+    const allimages =
+      ((result.query as Record<string, unknown>).allimages as Array<Record<string, string>>) ?? []
     return allimages.map((img) => ({ title: img.title!, url: img.url! }))
   }
 
@@ -175,7 +188,8 @@ export class MediaWikiClient {
   ): Promise<string> {
     const downloadRes = await fetch(fileUrl, { headers: { 'User-Agent': config.userAgent } })
     if (!downloadRes.ok) {
-      if (downloadRes.status >= 500) throw new SourceCdnError(`Source CDN error: ${downloadRes.status}`)
+      if (downloadRes.status >= 500)
+        throw new SourceCdnError(`Source CDN error: ${downloadRes.status}`)
       throw new Error(`Failed to download file: ${downloadRes.status}`)
     }
     const buffer = Buffer.from(await downloadRes.arrayBuffer())
@@ -183,7 +197,10 @@ export class MediaWikiClient {
 
     const duplicates = await this.findDuplicates(sha1)
     if (duplicates.length > 0) {
-      throw new DuplicateUploadError(duplicates as DuplicateLink[], `File already exists on Commons (uploadId=${uploadId}, batchId=${batchId})`)
+      throw new DuplicateUploadError(
+        duplicates as DuplicateLink[],
+        `File already exists on Commons (uploadId=${uploadId}, batchId=${batchId})`,
+      )
     }
 
     const lockKey = `hashlock:${sha1}`
@@ -211,7 +228,8 @@ export class MediaWikiClient {
         const result = await this.apiUploadChunk(formData)
         const errorObj = result.error as Record<string, string> | undefined
         if (errorObj) {
-          if (errorObj.code === 'uploadstash-exception') throw new StorageError(errorObj.info ?? 'Stash exception')
+          if (errorObj.code === 'uploadstash-exception')
+            throw new StorageError(errorObj.info ?? 'Stash exception')
           throw new Error(errorObj.info ?? 'Upload chunk failed')
         }
         const upload = result.upload as Record<string, unknown>
@@ -235,7 +253,8 @@ export class MediaWikiClient {
             await new Promise((resolve) => setTimeout(resolve, STASH_RETRY_DELAY_MS))
             continue
           }
-          if (errorObj.code === 'uploadstash-exception') throw new StorageError(errorObj.info ?? 'Stash exception')
+          if (errorObj.code === 'uploadstash-exception')
+            throw new StorageError(errorObj.info ?? 'Stash exception')
           throw new Error(errorObj.info ?? 'Upload commit failed')
         }
         const upload = result.upload as Record<string, unknown>
@@ -246,7 +265,10 @@ export class MediaWikiClient {
         const warnings = upload.warnings as Record<string, unknown> | undefined
         if (warnings?.duplicate) {
           const dupes = (warnings.duplicate as string[]).map((t) => ({ title: t, url: '' }))
-          throw new DuplicateUploadError(dupes, `Duplicate detected during commit (uploadId=${uploadId})`)
+          throw new DuplicateUploadError(
+            dupes,
+            `Duplicate detected during commit (uploadId=${uploadId})`,
+          )
         }
         throw new Error(`Unexpected upload result: ${upload.result}`)
       }
@@ -277,7 +299,8 @@ export class MediaWikiClient {
       'POST',
       { data: JSON.stringify(payload), summary: editSummary, token },
     )
-    if (result.error) throw new Error((result.error as Record<string, string>).info ?? 'wbeditentity failed')
+    if (result.error)
+      throw new Error((result.error as Record<string, string>).info ?? 'wbeditentity failed')
   }
 
   async nullEdit(filename: string): Promise<void> {
@@ -304,7 +327,9 @@ export class MediaWikiClient {
     })
   }
 
-  async fetchSdc(title: string): Promise<{ claims: Record<string, unknown[]>; labels: Record<string, unknown> } | null> {
+  async fetchSdc(
+    title: string,
+  ): Promise<{ claims: Record<string, unknown[]>; labels: Record<string, unknown> } | null> {
     const result = await this.apiRequest({
       action: 'wbgetentities',
       sites: 'commonswiki',

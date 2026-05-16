@@ -14,7 +14,11 @@ let app: ReturnType<typeof createApp>
 
 beforeAll(() => {
   process.env.STATIC_DIR = import.meta.dir
-  app = createApp(createSessionPlugin(noop), { get: async () => null, set: async () => {}, del: async () => {} } as never)
+  app = createApp(createSessionPlugin(noop), {
+    get: async () => null,
+    set: async () => {},
+    del: async () => {},
+  } as never)
 })
 
 describe('GET /health', () => {

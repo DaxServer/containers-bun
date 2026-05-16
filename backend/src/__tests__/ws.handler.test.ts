@@ -1,6 +1,6 @@
-import { mock, describe, it, expect, beforeEach } from 'bun:test'
 import type { BatchItem } from '@backend/db/dal/batches'
 import type { ServerMessage } from '@backend/types/ws'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // mock.module() in Bun is global and persistent for the entire test process —
 // it mutates live ES module bindings and cannot be restored between files.
@@ -15,15 +15,25 @@ import type { ServerMessage } from '@backend/types/ws'
 const mockGetBatches = mock(async () => [] as BatchItem[])
 const mockCountBatches = mock(async () => 0)
 const mockGetBatch = mock(async (_id: number) => null as BatchItem | null)
-const mockCreateBatch = mock(async (_userid: string, _username: string): Promise<BatchItem> => ({
-  id: 42,
-  userid: '1',
-  username: 'alice',
-  edit_group_id: 'eg-abc',
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  stats: { total: 0, queued: 0, in_progress: 0, completed: 0, failed: 0, cancelled: 0, duplicate: 0 },
-}))
+const mockCreateBatch = mock(
+  async (_userid: string, _username: string): Promise<BatchItem> => ({
+    id: 42,
+    userid: '1',
+    username: 'alice',
+    edit_group_id: 'eg-abc',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    stats: {
+      total: 0,
+      queued: 0,
+      in_progress: 0,
+      completed: 0,
+      failed: 0,
+      cancelled: 0,
+      duplicate: 0,
+    },
+  }),
+)
 const mockGetBatchIdsWithRecentChanges = mock(async () => [] as number[])
 const mockGetBatchesMinimal = mock(async () => [])
 const mockGetLatestUpdateTime = mock(async () => null as Date | null)
@@ -35,7 +45,9 @@ const mockRetrySelectedUploadsToNewBatch = mock(async () => ({
   editGroupId: null as string | null,
   newBatchId: 0,
 }))
-const mockCreateUploadRequestsForBatch = mock(async () => [] as { id: number; key: string; status: string }[])
+const mockCreateUploadRequestsForBatch = mock(
+  async () => [] as { id: number; key: string; status: string }[],
+)
 const mockCancelBatchDal = mock(async () => new Map<number, string | null>())
 const mockUpdateJobTaskId = mock(async () => undefined)
 
@@ -59,7 +71,9 @@ const mockEditItem = mock(async (_qid: string, _claims: unknown, _sitelinks: unk
 // MapillaryHandler mock
 const mockFetchCollection = mock(async (_col: string) => ({ images: {}, sequenceId: '' }))
 const mockFetchCollectionIds = mock(async (_col: string) => [] as string[])
-const mockFetchImagesBatch = mock(async (_ids: string[], _col: string) => ({} as Record<string, unknown>))
+const mockFetchImagesBatch = mock(
+  async (_ids: string[], _col: string) => ({}) as Record<string, unknown>,
+)
 
 // ============================================================
 // Wire up module mocks BEFORE any import of handler.ts
@@ -107,16 +121,26 @@ mock.module('@backend/core/rateLimiter', () => ({
 
 mock.module('@backend/mediawiki/wikidata', () => ({
   WikidataClient: class {
-    fetchItem(qid: string) { return mockFetchItem(qid) }
-    editItem(qid: string, claims: unknown, sitelinks: unknown) { return mockEditItem(qid, claims, sitelinks) }
+    fetchItem(qid: string) {
+      return mockFetchItem(qid)
+    }
+    editItem(qid: string, claims: unknown, sitelinks: unknown) {
+      return mockEditItem(qid, claims, sitelinks)
+    }
   },
 }))
 
 mock.module('@backend/handlers/mapillary', () => ({
   MapillaryHandler: class {
-    fetchCollection(col: string) { return mockFetchCollection(col) }
-    fetchCollectionIds(col: string) { return mockFetchCollectionIds(col) }
-    fetchImagesBatch(ids: string[], col: string) { return mockFetchImagesBatch(ids, col) }
+    fetchCollection(col: string) {
+      return mockFetchCollection(col)
+    }
+    fetchCollectionIds(col: string) {
+      return mockFetchCollectionIds(col)
+    }
+    fetchImagesBatch(ids: string[], col: string) {
+      return mockFetchImagesBatch(ids, col)
+    }
   },
 }))
 
@@ -132,8 +156,12 @@ const { Handler } = await import('@backend/core/handler')
 function makeSender() {
   const messages: ServerMessage[] = []
   return {
-    send: mock((msg: ServerMessage) => { messages.push(msg) }),
-    get messages() { return messages },
+    send: mock((msg: ServerMessage) => {
+      messages.push(msg)
+    }),
+    get messages() {
+      return messages
+    },
   }
 }
 
@@ -169,31 +197,41 @@ function fakeBatchItem(overrides: Partial<BatchItem> = {}): BatchItem {
     edit_group_id: 'eg-xyz',
     created_at: '2024-01-01T00:00:00.000Z',
     updated_at: '2024-01-01T00:00:00.000Z',
-    stats: { total: 0, queued: 0, in_progress: 0, completed: 0, failed: 0, cancelled: 0, duplicate: 0 },
+    stats: {
+      total: 0,
+      queued: 0,
+      in_progress: 0,
+      completed: 0,
+      failed: 0,
+      cancelled: 0,
+      duplicate: 0,
+    },
     ...overrides,
   }
 }
 
-function fakeUploadItem(overrides: Partial<{
-  id: number
-  batchid: number
-  userid: string
-  status: string
-  key: string
-  handler: string
-  collection: string | null
-  filename: string
-  wikitext: string
-  copyright_override: boolean
-  labels: unknown
-  result: string | null
-  error: unknown
-  success: string | null
-  celery_task_id: string | null
-  created_at: string | null
-  updated_at: string | null
-  image_id: string
-}> = {}) {
+function fakeUploadItem(
+  overrides: Partial<{
+    id: number
+    batchid: number
+    userid: string
+    status: string
+    key: string
+    handler: string
+    collection: string | null
+    filename: string
+    wikitext: string
+    copyright_override: boolean
+    labels: unknown
+    result: string | null
+    error: unknown
+    success: string | null
+    celery_task_id: string | null
+    created_at: string | null
+    updated_at: string | null
+    image_id: string
+  }> = {},
+) {
   return {
     id: 10,
     batchid: 1,
@@ -217,19 +255,21 @@ function fakeUploadItem(overrides: Partial<{
   }
 }
 
-function fakePresetRow(overrides: Partial<{
-  id: number
-  title: string
-  title_template: string
-  labels: unknown
-  categories: string | null
-  exclude_from_date_category: boolean
-  handler: string
-  is_default: boolean
-  created_at: Date
-  updated_at: Date
-  userid: string
-}> = {}) {
+function fakePresetRow(
+  overrides: Partial<{
+    id: number
+    title: string
+    title_template: string
+    labels: unknown
+    categories: string | null
+    exclude_from_date_category: boolean
+    handler: string
+    is_default: boolean
+    created_at: Date
+    updated_at: Date
+    userid: string
+  }> = {},
+) {
   return {
     id: 1,
     title: 'My Preset',
@@ -251,15 +291,33 @@ function fakePresetRow(overrides: Partial<{
 // ============================================================
 beforeEach(() => {
   for (const m of [
-    mockGetBatches, mockCountBatches, mockGetBatch, mockCreateBatch,
-    mockGetBatchIdsWithRecentChanges, mockGetBatchesMinimal, mockGetLatestUpdateTime,
-    mockCountUploadsInBatch, mockGetUploadsByBatch, mockRetrySelectedUploadsToNewBatch,
-    mockCreateUploadRequestsForBatch, mockCancelBatchDal, mockUpdateJobTaskId,
-    mockEnsureUser, mockGetPresetsForHandler, mockCreatePreset, mockUpdatePreset,
-    mockDeletePreset, mockEnqueueUpload, mockRemoveUploadJob,
-    mockGetRateLimitForBatch, mockGetNextUploadDelay,
-    mockFetchItem, mockEditItem,
-    mockFetchCollection, mockFetchCollectionIds, mockFetchImagesBatch,
+    mockGetBatches,
+    mockCountBatches,
+    mockGetBatch,
+    mockCreateBatch,
+    mockGetBatchIdsWithRecentChanges,
+    mockGetBatchesMinimal,
+    mockGetLatestUpdateTime,
+    mockCountUploadsInBatch,
+    mockGetUploadsByBatch,
+    mockRetrySelectedUploadsToNewBatch,
+    mockCreateUploadRequestsForBatch,
+    mockCancelBatchDal,
+    mockUpdateJobTaskId,
+    mockEnsureUser,
+    mockGetPresetsForHandler,
+    mockCreatePreset,
+    mockUpdatePreset,
+    mockDeletePreset,
+    mockEnqueueUpload,
+    mockRemoveUploadJob,
+    mockGetRateLimitForBatch,
+    mockGetNextUploadDelay,
+    mockFetchItem,
+    mockEditItem,
+    mockFetchCollection,
+    mockFetchCollectionIds,
+    mockFetchImagesBatch,
   ]) {
     m.mockClear()
   }
@@ -290,10 +348,12 @@ describe('Handler.fetchPresets', () => {
 
     await handler.fetchPresets('mapillary')
 
-    const msg = sender.messages.find((m) => m.type === 'PRESETS_LIST') as {
-      type: 'PRESETS_LIST'
-      data: { handler: string; presets: unknown[] }
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'PRESETS_LIST') as
+      | {
+          type: 'PRESETS_LIST'
+          data: { handler: string; presets: unknown[] }
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data.handler).toBe('mapillary')
     expect(msg!.data.presets).toHaveLength(1)
@@ -305,10 +365,12 @@ describe('Handler.fetchPresets', () => {
 
     await handler.fetchPresets('mapillary')
 
-    const msg = sender.messages.find((m) => m.type === 'PRESETS_LIST') as {
-      type: 'PRESETS_LIST'
-      data: { handler: string; presets: unknown[] }
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'PRESETS_LIST') as
+      | {
+          type: 'PRESETS_LIST'
+          data: { handler: string; presets: unknown[] }
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data.presets).toHaveLength(0)
   })
@@ -347,10 +409,12 @@ describe('Handler.savePreset (update, not found)', () => {
       handler: 'mapillary',
     })
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('not found')
   })
@@ -377,10 +441,12 @@ describe('Handler.deletePreset (not found)', () => {
 
     await handler.deletePreset(999)
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('not found')
   })
@@ -394,10 +460,12 @@ describe('Handler.fetchBatchUploads (found)', () => {
 
     await handler.fetchBatchUploads(5)
 
-    const msg = sender.messages.find((m) => m.type === 'BATCH_UPLOADS_LIST') as {
-      type: 'BATCH_UPLOADS_LIST'
-      data: { batch: { id: number }; uploads: unknown[] }
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'BATCH_UPLOADS_LIST') as
+      | {
+          type: 'BATCH_UPLOADS_LIST'
+          data: { batch: { id: number }; uploads: unknown[] }
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data.batch.id).toBe(5)
     expect(msg!.data.uploads).toHaveLength(1)
@@ -411,10 +479,12 @@ describe('Handler.fetchBatchUploads (not found)', () => {
 
     await handler.fetchBatchUploads(999)
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('not found')
   })
@@ -433,17 +503,22 @@ describe('Handler.retryUploads (has failed uploads)', () => {
       editGroupId: 'eg-retry',
       newBatchId: 7,
     }))
-    mockGetRateLimitForBatch.mockImplementation(async () => ({ uploadsPerPeriod: 10, periodSeconds: 60 }))
+    mockGetRateLimitForBatch.mockImplementation(async () => ({
+      uploadsPerPeriod: 10,
+      periodSeconds: 60,
+    }))
     mockGetNextUploadDelay.mockImplementation(async () => 0)
     mockEnqueueUpload.mockImplementation(async () => 'job-xyz')
     mockUpdateJobTaskId.mockImplementation(async () => undefined)
 
     await handler.retryUploads(1)
 
-    const msg = sender.messages.find((m) => m.type === 'RETRY_UPLOADS_RESPONSE') as {
-      type: 'RETRY_UPLOADS_RESPONSE'
-      data: number
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'RETRY_UPLOADS_RESPONSE') as
+      | {
+          type: 'RETRY_UPLOADS_RESPONSE'
+          data: number
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toBe(7)
     expect(mockEnqueueUpload).toHaveBeenCalledTimes(2)
@@ -453,16 +528,16 @@ describe('Handler.retryUploads (has failed uploads)', () => {
 describe('Handler.retryUploads (no failed uploads)', () => {
   it('sends ERROR when there are no failed uploads', async () => {
     const { handler, sender } = makeHandler()
-    mockGetUploadsByBatch.mockImplementation(async () => [
-      fakeUploadItem({ status: 'completed' }),
-    ])
+    mockGetUploadsByBatch.mockImplementation(async () => [fakeUploadItem({ status: 'completed' })])
 
     await handler.retryUploads(1)
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('No failed uploads')
   })
@@ -496,10 +571,12 @@ describe('Handler.cancelBatch (not found)', () => {
 
     await handler.cancelBatch(999)
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('not found')
   })
@@ -513,10 +590,12 @@ describe('Handler.cancelBatch (no queued items)', () => {
 
     await handler.cancelBatch(1)
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('No queued items')
   })
@@ -526,21 +605,23 @@ describe('Handler.checkCategoriesDeleted (some deleted)', () => {
   it('sends CATEGORIES_DELETED_RESPONSE with deleted titles', async () => {
     const { handler, sender } = makeHandler()
     // Return logevents for Cat:A (deleted), empty for Cat:B
-    const responses = [
-      { query: { logevents: [{ type: 'delete' }] } },
-      { query: { logevents: [] } },
-    ]
+    const responses = [{ query: { logevents: [{ type: 'delete' }] } }, { query: { logevents: [] } }]
     let call = 0
-    globalThis.fetch = mock(async () =>
-      new Response(JSON.stringify(responses[call++] ?? responses[responses.length - 1]), { status: 200 }),
+    globalThis.fetch = mock(
+      async () =>
+        new Response(JSON.stringify(responses[call++] ?? responses[responses.length - 1]), {
+          status: 200,
+        }),
     ) as unknown as typeof fetch
 
     await handler.checkCategoriesDeleted(['Cat:A', 'Cat:B'])
 
-    const msg = sender.messages.find((m) => m.type === 'CATEGORIES_DELETED_RESPONSE') as {
-      type: 'CATEGORIES_DELETED_RESPONSE'
-      data: { deleted: string[] }
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'CATEGORIES_DELETED_RESPONSE') as
+      | {
+          type: 'CATEGORIES_DELETED_RESPONSE'
+          data: { deleted: string[] }
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data.deleted).toEqual(['Cat:A'])
   })
@@ -549,8 +630,8 @@ describe('Handler.checkCategoriesDeleted (some deleted)', () => {
 describe('Handler.checkCategoriesDeleted (none deleted)', () => {
   it('sends no message when no categories are deleted', async () => {
     const { handler, sender } = makeHandler()
-    globalThis.fetch = mock(async () =>
-      new Response(JSON.stringify({ query: { logevents: [] } }), { status: 200 }),
+    globalThis.fetch = mock(
+      async () => new Response(JSON.stringify({ query: { logevents: [] } }), { status: 200 }),
     ) as unknown as typeof fetch
 
     await handler.checkCategoriesDeleted(['Cat:A', 'Cat:B'])
@@ -592,7 +673,10 @@ describe('Handler.uploadSlice (batch found, items created)', () => {
       { id: 101, key: 'img-1', status: 'queued' },
       { id: 102, key: 'img-2', status: 'queued' },
     ])
-    mockGetRateLimitForBatch.mockImplementation(async () => ({ uploadsPerPeriod: 10, periodSeconds: 60 }))
+    mockGetRateLimitForBatch.mockImplementation(async () => ({
+      uploadsPerPeriod: 10,
+      periodSeconds: 60,
+    }))
     mockGetNextUploadDelay.mockImplementation(async () => 0)
     mockEnqueueUpload.mockImplementation(async () => 'job-1')
     mockUpdateJobTaskId.mockImplementation(async () => undefined)
@@ -606,11 +690,13 @@ describe('Handler.uploadSlice (batch found, items created)', () => {
       ],
     })
 
-    const msg = sender.messages.find((m) => m.type === 'UPLOAD_SLICE_ACK') as {
-      type: 'UPLOAD_SLICE_ACK'
-      data: { id: string; status: string }[]
-      sliceid: number
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'UPLOAD_SLICE_ACK') as
+      | {
+          type: 'UPLOAD_SLICE_ACK'
+          data: { id: string; status: string }[]
+          sliceid: number
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.sliceid).toBe(1)
     expect(msg!.data).toHaveLength(2)
@@ -630,10 +716,12 @@ describe('Handler.uploadSlice (batch not found)', () => {
       items: [],
     })
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('not found')
   })
@@ -650,10 +738,12 @@ describe('Handler.uploadSlice (batch has no edit_group_id)', () => {
       items: [],
     })
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('no edit_group_id')
   })
@@ -662,9 +752,7 @@ describe('Handler.uploadSlice (batch has no edit_group_id)', () => {
 describe('Handler.retryUploads (retrySelectedUploadsToNewBatch returns empty)', () => {
   it('sends ERROR when new upload ids list is empty', async () => {
     const { handler, sender } = makeHandler()
-    mockGetUploadsByBatch.mockImplementation(async () => [
-      fakeUploadItem({ status: 'failed' }),
-    ])
+    mockGetUploadsByBatch.mockImplementation(async () => [fakeUploadItem({ status: 'failed' })])
     mockRetrySelectedUploadsToNewBatch.mockImplementation(async () => ({
       newUploadIds: [],
       editGroupId: null,
@@ -673,10 +761,12 @@ describe('Handler.retryUploads (retrySelectedUploadsToNewBatch returns empty)', 
 
     await handler.retryUploads(1)
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('No failed uploads')
   })
@@ -691,10 +781,12 @@ describe('Handler.cancelBatch (permission denied)', () => {
 
     await handler.cancelBatch(1)
 
-    const msg = sender.messages.find((m) => m.type === 'ERROR') as {
-      type: 'ERROR'
-      data: string
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'ERROR') as
+      | {
+          type: 'ERROR'
+          data: string
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data).toContain('Permission denied')
   })
@@ -731,15 +823,16 @@ describe('Handler.fetchBatches', () => {
 
     await handler.fetchBatches({ page: 1, limit: 10 })
 
-    const msg = sender.messages.find((m) => m.type === 'BATCHES_LIST') as {
-      type: 'BATCHES_LIST'
-      data: { items: unknown[]; total: number }
-      partial: boolean
-    } | undefined
+    const msg = sender.messages.find((m) => m.type === 'BATCHES_LIST') as
+      | {
+          type: 'BATCHES_LIST'
+          data: { items: unknown[]; total: number }
+          partial: boolean
+        }
+      | undefined
     expect(msg).toBeDefined()
     expect(msg!.data.total).toBe(1)
     expect(msg!.data.items).toHaveLength(1)
     expect(msg!.partial).toBe(false)
   })
 })
-

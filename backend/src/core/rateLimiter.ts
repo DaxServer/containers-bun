@@ -1,5 +1,5 @@
-import type { Redis } from 'ioredis'
 import type { MediaWikiClient } from '@backend/mediawiki/client'
+import type { Redis } from 'ioredis'
 
 export interface RateLimitInfo {
   uploadsPerPeriod: number
@@ -53,7 +53,7 @@ export async function getRateLimitForBatch(
 
   const adjustedEdit =
     bestEdit !== null
-      ? [Math.max(1, Math.floor(bestEdit[0] / 2)), bestEdit[1]] as [number, number]
+      ? ([Math.max(1, Math.floor(bestEdit[0] / 2)), bestEdit[1]] as [number, number])
       : null
 
   const effective = moreRestrictive(bestUpload, adjustedEdit)
