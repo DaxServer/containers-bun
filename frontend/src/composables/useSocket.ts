@@ -13,8 +13,8 @@ const open = () => {
   if (_ws) close()
   const client = treaty<App>(getOrigin())
   _ws = client.ws.subscribe()
-  _ws.on('message', (event) => {
-    data.value = event.data as ServerMessage
+  _ws.subscribe((event) => {
+    data.value = event.data
   })
 }
 

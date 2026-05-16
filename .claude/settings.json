@@ -1,6 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -d node_modules || bun install"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -9,7 +19,7 @@
             "type": "command",
             "timeout": 120,
             "statusMessage": "Running tests, typecheck, and lint before commit...",
-            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -q 'git commit'; then cd /home/user/curator/app && bun test && bun typecheck && bun lint || (echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"CI checks failed — fix errors before committing\"}}' && exit 2); fi"
+            "command": "jq -r '.tool_input.command // \"\"' | grep -q 'git commit' || exit 0; bun test && bun typecheck && bun lint || { echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"CI checks failed — fix errors before committing\"}}'; exit 2; }"
           }
         ]
       }
