@@ -1,4 +1,5 @@
 import type { BatchItem } from '@backend/db/dal/batches'
+import { fromMapillary } from '@backend/handlers/mapillary'
 import type { ServerMessage } from '@backend/types/ws'
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
@@ -131,6 +132,7 @@ mock.module('@backend/mediawiki/wikidata', () => ({
 }))
 
 mock.module('@backend/handlers/mapillary', () => ({
+  fromMapillary,
   MapillaryHandler: class {
     fetchCollection(col: string) {
       return mockFetchCollection(col)

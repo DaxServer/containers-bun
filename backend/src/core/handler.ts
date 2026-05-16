@@ -29,6 +29,7 @@ import {
 } from '@backend/db/dal/uploads'
 import { ensureUser } from '@backend/db/dal/users'
 import { MapillaryHandler } from '@backend/handlers/mapillary'
+import { mapillaryLogger, wsLogger } from '@backend/logger'
 import { MediaWikiClient } from '@backend/mediawiki/client'
 import { WikidataClient } from '@backend/mediawiki/wikidata'
 import type {
@@ -163,7 +164,7 @@ class OptimizedBatchStreamer {
           this.lastUpdateTime = current
         }
       } catch (e) {
-        console.error(`[ws] streaming error for ${this.username}:`, e)
+        wsLogger.error({ username: this.username, err: e }, 'Streaming error')
       }
       this.interval = setTimeout(poll, STREAM_INTERVAL_MS)
     }
@@ -217,7 +218,7 @@ export class Handler {
     try {
       await fn()
     } catch (e) {
-      console.error(`[ws] error in ${name} for ${this.username}:`, e)
+      wsLogger.error({ name, username: this.username, err: e }, 'Handler error')
       this.sendError('Internal server error — please notify the administrator')
     }
   }
@@ -410,7 +411,7 @@ export class Handler {
           await this.fetchImagesInBatches(collection, handler)
           return
         }
-        console.error(`[mapillary] API error for ${collection}:`, e)
+        mapillaryLogger.error({ collection, err: e }, 'API error')
         this.sendError(`Mapillary API Error: ${msg}`)
       }
     })
@@ -439,7 +440,7 @@ export class Handler {
         })
       }
     } catch (e) {
-      console.error(`[mapillary] Batch retrieval failed for ${collection}:`, e)
+      mapillaryLogger.error({ collection, err: e }, 'Batch retrieval failed')
       this.sendError(`Batch retrieval failed: ${(e as Error).message}`)
     }
   }
@@ -607,7 +608,7 @@ export class Handler {
           }
           await wd.editItem(wikidataQid, claims, sitelinks)
         } catch (e) {
-          console.error(`[ws] Wikidata edit failed for ${wikidataQid}:`, e)
+          wsLogger.error({ wikidataQid, err: e }, 'Wikidata edit failed')
         }
       }
     })
@@ -660,7 +661,7 @@ export class Handler {
           return
         }
       } catch (e) {
-        console.error(`[ws] stream_uploads error for batch ${batchid}:`, e)
+        wsLogger.error({ batchid, err: e }, 'Upload stream error')
       }
       this.uploadsInterval = setTimeout(poll, STREAM_INTERVAL_MS)
     }

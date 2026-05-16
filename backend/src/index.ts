@@ -1,8 +1,9 @@
+import { createApp } from '@backend/app'
+import { config } from '@backend/config'
+import { createSessionPlugin } from '@backend/core/session'
+import { logger } from '@backend/logger'
+import { createUploadWorker } from '@backend/workers/upload.worker'
 import { Redis } from 'ioredis'
-import { createApp } from './app'
-import { config } from './config'
-import { createSessionPlugin } from './core/session'
-import { createUploadWorker } from './workers/upload.worker'
 
 const redis = new Redis(config.redisUrl)
 const session = createSessionPlugin({
@@ -18,9 +19,9 @@ const session = createSessionPlugin({
 })
 
 const worker = createUploadWorker(redis)
-worker.on('error', (err) => console.error('[worker] error:', err))
+worker.on('error', (err) => logger.error({ err }, 'Worker error'))
 
 const app = createApp(session, redis)
 app.listen(config.port, () => {
-  console.log(`curator-server listening on port ${config.port}`)
+  logger.info({ port: config.port }, 'curator-server listening')
 })
