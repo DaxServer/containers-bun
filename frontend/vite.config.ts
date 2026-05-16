@@ -99,6 +99,11 @@ export default defineConfig((): import('vite').UserConfig => {
           secure: false,
           rewrite: (path) => path.replace(/^\/callback\/wikimedia/, '/auth/callback'),
         },
+        '/ws': {
+          target: 'ws://localhost:8000',
+          changeOrigin: true,
+          ws: true,
+        },
       },
     },
     resolve: {
