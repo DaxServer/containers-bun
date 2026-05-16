@@ -1,7 +1,7 @@
 // Types matching backend admin endpoints
 
 import type { BatchItem, Label, PresetItem, UploadUpdateItem } from '@backend/types/ws'
-import type { StructuredError } from './error'
+import type { StructuredError } from '@frontend/types/error'
 
 export type AdminUser = {
   userid: string
