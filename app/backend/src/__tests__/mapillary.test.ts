@@ -39,8 +39,7 @@ describe('fromMapillary', () => {
 
   it('builds title from date and id', () => {
     const result = fromMapillary(BASE)
-    const date = new Date(Math.floor(BASE.captured_at / 1000) * 1000).toISOString().slice(0, 10)
-    expect(result!.title).toBe(`Photo from Mapillary ${date} (img123).jpg`)
+    expect(result!.title).toBe('Photo from Mapillary 2023-11-14 (img123).jpg')
   })
 
   it('clamps compass_angle=0 to null', () => {

@@ -2,10 +2,11 @@ import { mock, describe, it, expect, beforeEach } from 'bun:test'
 import type { BatchItem } from '@backend/db/dal/batches'
 import type { ServerMessage } from '@backend/types/ws'
 
-// This file is named ws.handler.test.ts (w > u) so Bun loads it AFTER
-// uploadClient.test.ts and rateLimiter.test.ts. mock.module() is global and
-// persistent — loading this file last prevents the mocks from polluting those
-// other test files' imports.
+// mock.module() in Bun is global and persistent for the entire test process —
+// it mutates live ES module bindings and cannot be restored between files.
+// DAL/queue/rateLimiter mocks below are safe because no other test file imports
+// those modules directly. MediaWikiClient is NOT mocked here; handler tests that
+// need it use globalThis.fetch per-test to control the real client's HTTP calls.
 
 // ============================================================
 // Shared mock state — updated per-test via .mockImplementation

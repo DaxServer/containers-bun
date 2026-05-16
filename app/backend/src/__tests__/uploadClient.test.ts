@@ -273,8 +273,7 @@ describe('MediaWikiClient.replaceCategoryInPage', () => {
     const client = new MediaWikiClient(['key', 'secret'])
     // biome-ignore lint/suspicious/noExplicitAny: overriding private methods for testing
     ;(client as any).getCsrfToken = mock(async () => 'token+\\')
-    // biome-ignore lint/suspicious/noExplicitAny: overriding private methods for testing
-    ;(client as any).apiRequest = mock(async (params: Record<string, string>) => {
+    const apiRequestMock = mock(async (params: Record<string, string>) => {
       if (params.action === 'query') {
         return {
           query: {
@@ -288,8 +287,15 @@ describe('MediaWikiClient.replaceCategoryInPage', () => {
       }
       return {}
     })
+    // biome-ignore lint/suspicious/noExplicitAny: overriding private methods for testing
+    ;(client as any).apiRequest = apiRequestMock
     const result = await client.replaceCategoryInPage('File:A.jpg', 'Old Trees', 'New Trees')
     expect(result).toBe(true)
+    expect(apiRequestMock).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'edit' }),
+      'POST',
+      expect.objectContaining({ text: '[[Category:New Trees]]' }),
+    )
   })
 
   it('returns false when category not found in wikitext', async () => {
