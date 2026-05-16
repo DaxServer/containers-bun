@@ -18,10 +18,10 @@ const open = () => {
   _ws = client.ws.subscribe()
   _ws.on('open', () => {
     _ready = true
-    _queue.splice(0).forEach((msg) => _ws?.send(msg))
+    for (const msg of _queue.splice(0)) _ws?.send(msg)
   })
-  _ws.subscribe((event: MessageEvent) => {
-    data.value = event.data as ServerMessage
+  _ws.subscribe((event) => {
+    data.value = event.data
   })
 }
 

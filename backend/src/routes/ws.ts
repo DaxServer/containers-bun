@@ -1,6 +1,6 @@
 import { Handler } from '@backend/core/handler'
 import { createSessionPlugin } from '@backend/core/session'
-import { ClientMessage, type ServerMessage } from '@backend/types/ws'
+import { ClientMessage, ServerMessage } from '@backend/types/ws'
 import Elysia from 'elysia'
 import type { Redis } from 'ioredis'
 
@@ -17,6 +17,7 @@ export function createWsRoutes(redis: Redis) {
 
   return new Elysia().use(createSessionPlugin(_noopStore)).ws('/ws', {
     body: ClientMessage,
+    response: ServerMessage,
     open(ws) {
       if (!ws.data.session.user) {
         ws.close(1008, 'Unauthorized')
