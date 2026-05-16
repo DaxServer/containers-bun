@@ -1,5 +1,5 @@
 import type { Label, MediaImage } from '@backend/types/ws'
-import type { StructuredError } from './error'
+import type { StructuredError } from '@frontend/types/error'
 
 export interface Image extends Omit<MediaImage, 'dates' | 'description'> {
   dates: {
