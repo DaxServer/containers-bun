@@ -3,51 +3,22 @@ import { db } from '@backend/db/client'
 import { batches, uploadRequests, users } from '@backend/db/schema'
 import type { Handler, StructuredError, UploadItem, UploadStatus } from '@backend/types/ws'
 import type { SQL } from 'drizzle-orm'
-import { and, asc, count, desc, eq, gt, inArray, like, lt, or, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  gt,
+  inArray,
+  like,
+  lt,
+  or,
+  sql,
+} from 'drizzle-orm'
 
-export type BatchUploadItem = {
-  id: number
-  batchid: number
-  userid: string
-  status: UploadStatus
-  key: string
-  handler: Handler
-  collection: string | null
-  filename: string
-  wikitext: string
-  copyright_override: boolean
-  labels: unknown
-  result: string | null
-  error: StructuredError | undefined
-  success: string | null
-  celery_task_id: string | null
-  created_at: string | null
-  updated_at: string | null
-  image_id: string
-}
-
-function toUploadItem(u: typeof uploadRequests.$inferSelect): BatchUploadItem {
-  return {
-    id: u.id,
-    batchid: u.batchid,
-    userid: u.userid,
-    status: u.status as UploadStatus,
-    key: u.key,
-    handler: u.handler as Handler,
-    collection: u.collection,
-    filename: u.filename,
-    wikitext: u.wikitext,
-    copyright_override: u.copyright_override,
-    labels: u.labels,
-    result: u.result,
-    error: u.error ? (u.error as StructuredError) : undefined,
-    success: u.success,
-    celery_task_id: u.celery_task_id,
-    created_at: u.created_at?.toISOString() ?? null,
-    updated_at: u.updated_at?.toISOString() ?? null,
-    image_id: u.key,
-  }
-}
+export type UploadRow = typeof uploadRequests.$inferSelect
 
 function uploadFilter({
   filterText,
@@ -97,15 +68,15 @@ export async function getAllUploadRequests({
   statuses?: string[]
   dateFrom?: Date
   dateTo?: Date
-} = {}): Promise<BatchUploadItem[]> {
-  const rows = await db
-    .select()
+} = {}): Promise<Omit<UploadRow, 'access_token'>[]> {
+  const { access_token: _access_token, ...safeColumns } = getTableColumns(uploadRequests)
+  return db
+    .select(safeColumns)
     .from(uploadRequests)
     .where(uploadFilter({ filterText, statuses, dateFrom, dateTo }))
     .orderBy(desc(uploadRequests.id))
     .limit(limit)
     .offset(offset)
-  return rows.map(toUploadItem)
 }
 
 export async function countAllUploadRequests({
@@ -155,18 +126,17 @@ export async function cancelUploadRequests(ids: number[]): Promise<number> {
 export async function failUploadRequests(ids: number[]): Promise<number> {
   const result = await db
     .update(uploadRequests)
-    .set({ status: 'failed', error: { message: 'Manually marked as failed' } })
+    .set({ status: 'failed', error: { type: 'error', message: 'Manually marked as failed' } })
     .where(and(inArray(uploadRequests.id, ids), sql`${uploadRequests.status} != 'failed'`))
   return (result[0] as { affectedRows: number }).affectedRows
 }
 
-export async function getUploadsByBatch(batchId: number): Promise<BatchUploadItem[]> {
-  const rows = await db
+export async function getUploadsByBatch(batchId: number): Promise<UploadRow[]> {
+  return db
     .select()
     .from(uploadRequests)
     .where(eq(uploadRequests.batchid, batchId))
     .orderBy(asc(uploadRequests.id))
-  return rows.map(toUploadItem)
 }
 
 export async function getUploadById(
@@ -184,9 +154,9 @@ export async function getUploadById(
 
 export async function updateUploadStatus(
   uploadId: number,
-  status: string,
-  error?: unknown,
-  success?: string,
+  status: UploadStatus,
+  error?: StructuredError | null,
+  success?: string | null,
 ): Promise<void> {
   await db
     .update(uploadRequests)

@@ -17,9 +17,13 @@ describe('useDataFilters', () => {
     status,
     filename: `file-${id}.jpg`,
     wikitext: `{{Some text for ${id}}}`,
-    error: error ? { message: error, type: 'error' } : undefined,
+    labels: null,
+    result: null,
+    error: error ? { message: error, type: 'error' } : null,
     success:
-      status === UPLOAD_STATUS.Completed ? 'https://commons.wikimedia.org/wiki/File:Test.jpg' : '',
+      status === UPLOAD_STATUS.Completed
+        ? 'https://commons.wikimedia.org/wiki/File:Test.jpg'
+        : null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     userid: '',
