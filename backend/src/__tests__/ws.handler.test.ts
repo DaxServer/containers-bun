@@ -1,4 +1,5 @@
 import type { BatchItem } from '@backend/db/dal/batches'
+import type { UploadRow } from '@backend/db/dal/uploads'
 import { fetchExistingPages, fromMapillary } from '@backend/handlers/mapillary'
 import type { ServerMessage } from '@backend/types/ws'
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
@@ -216,28 +217,7 @@ function fakeBatchItem(overrides: Partial<BatchItem> = {}): BatchItem {
   }
 }
 
-function fakeUploadItem(
-  overrides: Partial<{
-    id: number
-    batchid: number
-    userid: string
-    status: string
-    key: string
-    handler: string
-    collection: string | null
-    filename: string
-    wikitext: string
-    copyright_override: boolean
-    labels: unknown
-    result: string | null
-    error: unknown
-    success: string | null
-    celery_task_id: string | null
-    created_at: string | null
-    updated_at: string | null
-    image_id: string
-  }> = {},
-) {
+function fakeUploadItem(overrides: Partial<UploadRow> = {}): UploadRow {
   return {
     id: 10,
     batchid: 1,
@@ -246,6 +226,7 @@ function fakeUploadItem(
     key: 'img-key',
     handler: 'mapillary',
     collection: null,
+    access_token: null,
     filename: 'test.jpg',
     wikitext: '== wikitext ==',
     copyright_override: false,
@@ -254,9 +235,8 @@ function fakeUploadItem(
     error: null,
     success: null,
     celery_task_id: null,
-    created_at: '2024-01-01T00:00:00.000Z',
-    updated_at: '2024-01-01T00:00:00.000Z',
-    image_id: 'img-key',
+    created_at: new Date('2024-01-01T00:00:00.000Z'),
+    updated_at: new Date('2024-01-01T00:00:00.000Z'),
     ...overrides,
   }
 }

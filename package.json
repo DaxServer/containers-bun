@@ -72,5 +72,8 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "drizzle-typebox": "^0.3.3"
   }
 }

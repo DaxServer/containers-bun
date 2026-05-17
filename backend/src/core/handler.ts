@@ -19,7 +19,7 @@ import {
   getPresetsForHandler,
   updatePreset,
 } from '@backend/db/dal/presets'
-import type { BatchUploadItem as DalBatchUploadItem } from '@backend/db/dal/uploads'
+import type { UploadRow } from '@backend/db/dal/uploads'
 import {
   cancelBatch as cancelBatchDal,
   createUploadRequestsForBatch,
@@ -96,15 +96,15 @@ function presetRowToItem(p: {
   }
 }
 
-function toUploadUpdateItem(u: DalBatchUploadItem): UploadUpdateItem {
+function toUploadUpdateItem(u: UploadRow): UploadUpdateItem {
   return {
     id: u.id,
     batchid: u.batchid,
-    status: u.status,
-    key: u.key || 'unknown',
-    handler: u.handler,
-    error: u.error,
-    success: u.success ?? null,
+    status: u.status as UploadUpdateItem['status'],
+    key: u.key,
+    handler: u.handler as UploadUpdateItem['handler'],
+    error: u.error as UploadUpdateItem['error'],
+    success: u.success,
   }
 }
 
@@ -254,20 +254,19 @@ export class Handler {
           batch: { ...batch, username: batch.username ?? '' },
           uploads: uploads.map((u) => ({
             id: u.id,
-            status: u.status,
-            filename: u.filename,
-            wikitext: u.wikitext,
             batchid: u.batchid,
             userid: u.userid,
+            status: u.status as BatchUploadItem['status'],
             key: u.key,
-            handler: u.handler,
+            handler: u.handler as BatchUploadItem['handler'],
+            filename: u.filename,
+            wikitext: u.wikitext,
             labels: u.labels as BatchUploadItem['labels'],
             result: u.result,
-            error: u.error,
+            error: u.error as BatchUploadItem['error'],
             success: u.success,
-            created_at: u.created_at ?? '',
-            updated_at: u.updated_at ?? '',
-            image_id: u.image_id,
+            created_at: u.created_at.toISOString(),
+            updated_at: u.updated_at.toISOString(),
           })),
         },
         nonce: nonce(),

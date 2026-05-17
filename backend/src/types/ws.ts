@@ -76,20 +76,20 @@ export const StructuredErrorSchema = t.Union([
   t.Object({
     links: t.Array(ErrorLinkSchema),
     message: t.String(),
-    type: t.Optional(t.Literal('duplicate')),
+    type: t.Literal('duplicate'),
   }),
   t.Object({
     links: t.Array(ErrorLinkSchema),
     message: t.String(),
-    type: t.Optional(t.Literal('duplicated_sdc_not_updated')),
+    type: t.Literal('duplicated_sdc_not_updated'),
   }),
   t.Object({
     links: t.Array(ErrorLinkSchema),
     message: t.String(),
-    type: t.Optional(t.Literal('duplicated_sdc_updated')),
+    type: t.Literal('duplicated_sdc_updated'),
   }),
-  t.Object({ message: t.String(), type: t.Optional(t.Literal('error')) }),
-  t.Object({ message: t.String(), type: t.Optional(t.Literal('title_blacklisted')) }),
+  t.Object({ message: t.String(), type: t.Literal('error') }),
+  t.Object({ message: t.String(), type: t.Literal('title_blacklisted') }),
 ])
 
 export const MediaImageSchema = t.Object({
@@ -129,20 +129,19 @@ export const BatchItemSchema = t.Object({
 
 export const BatchUploadItemSchema = t.Object({
   id: t.Integer(),
-  status: UploadStatusSchema,
-  filename: t.String(),
-  wikitext: t.String(),
   batchid: t.Integer(),
   userid: t.String(),
+  status: UploadStatusSchema,
   key: t.String(),
   handler: HandlerSchema,
-  labels: t.Optional(t.Nullable(LabelSchema)),
-  result: t.Optional(t.Nullable(t.String())),
-  error: t.Optional(StructuredErrorSchema),
-  success: t.Optional(t.Nullable(t.String())),
+  filename: t.String(),
+  wikitext: t.String(),
+  labels: t.Nullable(LabelSchema),
+  result: t.Nullable(t.String()),
+  error: t.Nullable(StructuredErrorSchema),
+  success: t.Nullable(t.String()),
   created_at: t.String(),
   updated_at: t.String(),
-  image_id: t.Optional(t.Nullable(t.String())),
 })
 
 export const UploadUpdateItemSchema = t.Object({
@@ -150,8 +149,8 @@ export const UploadUpdateItemSchema = t.Object({
   batchid: t.Integer(),
   status: UploadStatusSchema,
   key: t.String(),
-  error: t.Optional(StructuredErrorSchema),
-  success: t.Optional(t.Nullable(t.String())),
+  error: t.Nullable(StructuredErrorSchema),
+  success: t.Nullable(t.String()),
   handler: HandlerSchema,
 })
 

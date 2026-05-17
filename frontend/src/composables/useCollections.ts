@@ -108,7 +108,7 @@ export const initCollectionsListeners = () => {
           isDuplicateStatus(update.status as UploadStatus)
         ) {
           store.updateItem(update.key, 'statusReason', update.error?.message)
-          store.updateItem(update.key, 'errorInfo', update.error)
+          store.updateItem(update.key, 'errorInfo', update.error ?? undefined)
         }
         if (update.status === UPLOAD_STATUS.Completed) {
           store.updateItem(update.key, 'successUrl', update.success ?? undefined)
