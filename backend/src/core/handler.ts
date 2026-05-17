@@ -401,6 +401,14 @@ export class Handler {
           this.sendError('Collection not found')
           return
         }
+        try {
+          const existingPages = await handler.fetchExistingPages(Object.keys(images))
+          for (const [id, pages] of Object.entries(existingPages)) {
+            if (images[id]) images[id].existing = pages
+          }
+        } catch (e) {
+          mapillaryLogger.warn({ collection, err: e }, 'WCQS existing pages fetch failed')
+        }
         const first = Object.values(images)[0]!
         this.sender.send({
           type: 'COLLECTION_IMAGES',
@@ -436,6 +444,14 @@ export class Handler {
       for (let i = 0; i < ids.length; i += BATCH_RETRIEVAL_CHUNK_SIZE) {
         const chunk = ids.slice(i, i + BATCH_RETRIEVAL_CHUNK_SIZE)
         const batchImages = await handler.fetchImagesBatch(chunk, collection)
+        try {
+          const existingPages = await handler.fetchExistingPages(Object.keys(batchImages))
+          for (const [id, pages] of Object.entries(existingPages)) {
+            if (batchImages[id]) batchImages[id].existing = pages
+          }
+        } catch (e) {
+          mapillaryLogger.warn({ collection, err: e }, 'WCQS existing pages fetch failed')
+        }
         this.sender.send({
           type: 'PARTIAL_COLLECTION_IMAGES',
           data: { images: Object.values(batchImages), collection },
