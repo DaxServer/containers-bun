@@ -173,13 +173,13 @@ export async function getUploadById(
   uploadId: number,
 ): Promise<(typeof uploadRequests.$inferSelect & { user: typeof users.$inferSelect }) | null> {
   const [row] = await db
-    .select()
+    .select({ upload: uploadRequests, user: users })
     .from(uploadRequests)
-    .leftJoin(users, eq(uploadRequests.userid, users.userid))
+    .innerJoin(users, eq(uploadRequests.userid, users.userid))
     .where(eq(uploadRequests.id, uploadId))
     .limit(1)
   if (!row) return null
-  return { ...row.upload_requests, user: row.users! }
+  return { ...row.upload, user: row.user }
 }
 
 export async function updateUploadStatus(
