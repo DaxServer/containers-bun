@@ -1,6 +1,6 @@
 import type { OAuthClient } from '@backend/core/oauthClient'
-import { createSessionPlugin, type SessionStore } from '@backend/core/session'
-import { createAuthRoutes } from '@backend/routes/auth'
+import { type SessionStore } from '@backend/core/session'
+import { authRoutes } from '@backend/routes/auth'
 import { beforeAll, describe, expect, it, mock } from 'bun:test'
 import { Elysia } from 'elysia'
 
@@ -35,9 +35,10 @@ function makeTestApp(client?: OAuthClient) {
       store.delete(k)
     },
   }
-  const session = createSessionPlugin(sessionStore)
-  const authRoutes = createAuthRoutes(client ?? makeMockClient())
-  return new Elysia().use(session).use(authRoutes)
+  return new Elysia()
+    .use(new Elysia({ name: 'session-store' }).decorate('sessionStore', sessionStore))
+    .use(new Elysia({ name: 'oauth-client' }).decorate('oauthClient', client ?? makeMockClient()))
+    .use(authRoutes)
 }
 
 describe('GET /auth/whoami', () => {
@@ -99,8 +100,8 @@ describe('GET /auth/callback', () => {
 
 describe('POST /auth/register', () => {
   beforeAll(() => {
-    process.env.X_USERNAME = 'BotUser'
-    process.env.X_API_KEY = 'secret_key'
+    Bun.env.X_USERNAME = 'BotUser'
+    Bun.env.X_API_KEY = 'secret_key'
   })
 
   it('returns 200 and sets session for valid API key', async () => {

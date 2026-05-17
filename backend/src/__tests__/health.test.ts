@@ -1,24 +1,11 @@
 import { createApp } from '@backend/app'
-import { createSessionPlugin, type SessionStore } from '@backend/core/session'
 import { beforeAll, describe, expect, it } from 'bun:test'
-
-const noop: SessionStore = {
-  async get() {
-    return null
-  },
-  async set() {},
-  async del() {},
-}
 
 let app: ReturnType<typeof createApp>
 
 beforeAll(() => {
   process.env.STATIC_DIR = import.meta.dir
-  app = createApp(createSessionPlugin(noop), {
-    get: async () => null,
-    set: async () => {},
-    del: async () => {},
-  } as never)
+  app = createApp()
 })
 
 describe('GET /health', () => {
