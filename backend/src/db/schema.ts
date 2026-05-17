@@ -1,14 +1,19 @@
 import { relations, sql } from 'drizzle-orm'
 import {
   boolean,
+  customType,
   index,
   int,
-  json,
   mysqlTable,
   text,
   timestamp,
   varchar,
 } from 'drizzle-orm/mysql-core'
+
+const json = customType<{ data: unknown; driverData: string }>({
+  dataType: () => 'json',
+  fromDriver: (value) => (typeof value === 'string' ? JSON.parse(value) : value),
+})
 
 export const users = mysqlTable(
   'users',
