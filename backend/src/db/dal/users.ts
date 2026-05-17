@@ -34,7 +34,12 @@ export async function ensureUser(
 ): Promise<typeof users.$inferSelect> {
   await db
     .insert(users)
-    .values({ userid, username })
+    .values({
+      userid,
+      username,
+      created_at: sql`CURRENT_TIMESTAMP`,
+      updated_at: sql`CURRENT_TIMESTAMP`,
+    })
     .onDuplicateKeyUpdate({ set: { username: sql`username` } })
   return (await db.query.users.findFirst({
     where: (u, { eq }) => eq(u.userid, userid),
