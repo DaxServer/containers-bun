@@ -90,6 +90,7 @@ export const StructuredErrorSchema = t.Union([
   }),
   t.Object({ message: t.String(), type: t.Literal('error') }),
   t.Object({ message: t.String(), type: t.Literal('title_blacklisted') }),
+  t.Object({ message: t.String() }),
 ])
 
 export const MediaImageSchema = t.Object({

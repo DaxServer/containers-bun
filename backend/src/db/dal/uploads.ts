@@ -126,7 +126,7 @@ export async function cancelUploadRequests(ids: number[]): Promise<number> {
 export async function failUploadRequests(ids: number[]): Promise<number> {
   const result = await db
     .update(uploadRequests)
-    .set({ status: 'failed', error: { type: 'error', message: 'Manually marked as failed' } })
+    .set({ status: 'failed', error: { message: 'Manually marked as failed' } })
     .where(and(inArray(uploadRequests.id, ids), sql`${uploadRequests.status} != 'failed'`))
   return (result[0] as { affectedRows: number }).affectedRows
 }
