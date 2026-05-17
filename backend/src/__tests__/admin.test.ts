@@ -1,16 +1,16 @@
-import { createSessionPlugin, type SessionStore } from '@backend/core/session'
+import { type SessionStore } from '@backend/core/session'
 import type * as batchesDal from '@backend/db/dal/batches'
 import type * as presetsDal from '@backend/db/dal/presets'
 import type * as uploadsDal from '@backend/db/dal/uploads'
 import type * as usersDal from '@backend/db/dal/users'
-import { createAdminRoutes } from '@backend/routes/admin'
+import { adminRoutes } from '@backend/routes/admin'
 import { beforeAll, describe, expect, it, mock } from 'bun:test'
 import { Elysia } from 'elysia'
 
 const TEST_ENCRYPTION_KEY = 'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE'
 
 beforeAll(() => {
-  process.env.TOKEN_ENCRYPTION_KEY = TEST_ENCRYPTION_KEY
+  Bun.env.TOKEN_ENCRYPTION_KEY = TEST_ENCRYPTION_KEY
 })
 
 function makeStore() {
@@ -47,32 +47,28 @@ function seedSessionWithToken(m: Map<string, string>): string {
   return `session_id=${id}`
 }
 
-function makeTestApp(
-  overrides: {
-    uploads?: object
-    batches?: object
-    users?: object
-    presets?: object
-  } = {},
-) {
+type DalOverrides = {
+  uploads?: object
+  batches?: object
+  users?: object
+  presets?: object
+}
+
+function makeTestApp(overrides: DalOverrides = {}) {
   const { m, store } = makeStore()
-  const session = createSessionPlugin(store)
 
   const mockBatches = {
     getBatches: mock(async () => []),
     countBatches: mock(async () => 0),
   }
-
   const mockUsers = {
     getUsers: mock(async () => []),
     countUsers: mock(async () => 0),
   }
-
   const mockPresets = {
     getAllPresets: mock(async () => []),
     countAllPresets: mock(async () => 0),
   }
-
   const mockUploads = {
     getAllUploadRequests: mock(async () => []),
     countAllUploadRequests: mock(async () => 0),
@@ -87,13 +83,18 @@ function makeTestApp(
     })),
   }
 
-  const adminRoutes = createAdminRoutes({
-    users: { ...mockUsers, ...(overrides.users ?? {}) } as unknown as typeof usersDal,
-    batches: { ...mockBatches, ...(overrides.batches ?? {}) } as unknown as typeof batchesDal,
-    presets: { ...mockPresets, ...(overrides.presets ?? {}) } as unknown as typeof presetsDal,
-    uploads: { ...mockUploads, ...(overrides.uploads ?? {}) } as unknown as typeof uploadsDal,
-  })
-  const app = new Elysia().use(session).use(adminRoutes)
+  const app = new Elysia()
+    .use(new Elysia({ name: 'session-store' }).decorate('sessionStore', store))
+    .use(
+      new Elysia({ name: 'admin-dal' }).decorate('dal', {
+        users: { ...mockUsers, ...(overrides.users ?? {}) } as unknown as typeof usersDal,
+        batches: { ...mockBatches, ...(overrides.batches ?? {}) } as unknown as typeof batchesDal,
+        presets: { ...mockPresets, ...(overrides.presets ?? {}) } as unknown as typeof presetsDal,
+        uploads: { ...mockUploads, ...(overrides.uploads ?? {}) } as unknown as typeof uploadsDal,
+      }),
+    )
+    .use(adminRoutes)
+
   return { app, m }
 }
 

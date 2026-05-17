@@ -1,4 +1,4 @@
-import { createSessionPlugin } from '@backend/core/session'
+import { sessionPlugin, type SessionStore } from '@backend/core/session'
 import { ClientMessage } from '@backend/types/ws'
 import { afterAll, describe, expect, it } from 'bun:test'
 import { Elysia } from 'elysia'
@@ -16,30 +16,35 @@ import { Elysia } from 'elysia'
 
 const SESSION_ID = 'ws-validation-test-session'
 
-function makeTestSessionStore() {
-  const store = new Map<string, string>()
-  store.set(
-    `session:${SESSION_ID}`,
-    JSON.stringify({
-      user: { username: 'TestUser', sub: '1', editcount: 100, rights: ['autoconfirmed'] },
-      access_token: ['token-key', 'token-secret'],
-    }),
-  )
-  return {
-    async get(k: string) {
-      return store.get(k) ?? null
-    },
-    async set(k: string, v: string, _ex: 'EX', _ttl: number) {
-      store.set(k, v)
-    },
-    async del(k: string) {
-      store.delete(k)
-    },
+const testSessionStore: SessionStore = new (class {
+  private store = new Map<string, string>()
+
+  constructor() {
+    this.store.set(
+      `session:${SESSION_ID}`,
+      JSON.stringify({
+        user: { username: 'TestUser', sub: '1', editcount: 100, rights: ['autoconfirmed'] },
+        access_token: ['token-key', 'token-secret'],
+      }),
+    )
   }
-}
+
+  async get(k: string) {
+    return this.store.get(k) ?? null
+  }
+
+  async set(k: string, v: string, _ex: 'EX', _ttl: number) {
+    this.store.set(k, v)
+  }
+
+  async del(k: string) {
+    this.store.delete(k)
+  }
+})()
 
 const app = new Elysia()
-  .use(createSessionPlugin(makeTestSessionStore()))
+  .use(new Elysia({ name: 'session-store' }).decorate('sessionStore', testSessionStore))
+  .use(sessionPlugin)
   .ws('/ws', {
     body: ClientMessage,
     open(ws) {

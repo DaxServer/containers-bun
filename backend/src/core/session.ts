@@ -1,4 +1,6 @@
+import { config } from '@backend/config'
 import { Elysia } from 'elysia'
+import { Redis } from 'ioredis'
 import { randomUUID } from 'node:crypto'
 
 export type SessionUser = {
@@ -28,17 +30,44 @@ export interface SessionStore {
 const SESSION_TTL = 86400
 const COOKIE_NAME = 'session_id'
 
-export const createSessionPlugin = (store: SessionStore) =>
-  new Elysia({ name: 'session' }).derive({ as: 'global' }, async ({ cookie }) => {
+class RedisSessionStore implements SessionStore {
+  private _client: Redis | null = null
+
+  private get client(): Redis {
+    this._client ??= new Redis(config.redisUrl)
+    return this._client
+  }
+
+  async get(key: string) {
+    return this.client.get(key)
+  }
+
+  async set(key: string, value: string, ex: 'EX', ttl: number) {
+    await this.client.set(key, value, ex, ttl)
+  }
+
+  async del(key: string) {
+    await this.client.del(key)
+  }
+}
+
+export const sessionStorePlugin = new Elysia({ name: 'session-store' }).decorate(
+  'sessionStore',
+  new RedisSessionStore() as SessionStore,
+)
+
+export const sessionPlugin = new Elysia({ name: 'session' })
+  .use(sessionStorePlugin)
+  .derive({ as: 'global' }, async ({ sessionStore, cookie }) => {
     const id = cookie[COOKIE_NAME]?.value ?? randomUUID()
-    const raw = await store.get(`session:${id}`)
+    const raw = await sessionStore.get(`session:${id}`)
     const stored: SessionData = raw ? JSON.parse(raw) : {}
 
     const session: Session = {
       ...stored,
       async save() {
         const { save: _s, clear: _c, ...plain } = session
-        await store.set(`session:${id}`, JSON.stringify(plain), 'EX', SESSION_TTL)
+        await sessionStore.set(`session:${id}`, JSON.stringify(plain), 'EX', SESSION_TTL)
         cookie[COOKIE_NAME]!.set({
           value: id,
           httpOnly: true,
