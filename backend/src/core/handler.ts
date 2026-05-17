@@ -402,11 +402,10 @@ export class Handler {
           return
         }
         try {
-          const imageMap = new Map(images.map((i) => [i.id, i]))
-          const existingPages = await handler.fetchExistingPages([...imageMap.keys()])
-          for (const [id, pages] of Object.entries(existingPages)) {
-            const img = imageMap.get(id)
-            if (img) img.existing = pages
+          const existingPages = await handler.fetchExistingPages(images.map((i) => i.id))
+          for (const img of images) {
+            const pages = existingPages[img.id]
+            if (pages) img.existing = pages
           }
         } catch (e) {
           mapillaryLogger.warn({ collection, err: e }, 'WCQS existing pages fetch failed')
@@ -447,11 +446,10 @@ export class Handler {
         const chunk = ids.slice(i, i + BATCH_RETRIEVAL_CHUNK_SIZE)
         const batchImages = await handler.fetchImagesBatch(chunk, collection)
         try {
-          const batchMap = new Map(batchImages.map((i) => [i.id, i]))
-          const existingPages = await handler.fetchExistingPages([...batchMap.keys()])
-          for (const [id, pages] of Object.entries(existingPages)) {
-            const img = batchMap.get(id)
-            if (img) img.existing = pages
+          const existingPages = await handler.fetchExistingPages(batchImages.map((i) => i.id))
+          for (const img of batchImages) {
+            const pages = existingPages[img.id]
+            if (pages) img.existing = pages
           }
         } catch (e) {
           mapillaryLogger.warn({ collection, err: e }, 'WCQS existing pages fetch failed')
