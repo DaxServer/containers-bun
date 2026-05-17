@@ -223,7 +223,7 @@ export class Handler {
       await fn()
     } catch (e) {
       wsLogger.error({ name, username: this.username, err: e }, 'Handler error')
-      this.sendError('Internal server error — please notify the administrator')
+      this.sendError('Internal server error — please notify User:DaxServer')
     }
   }
 
