@@ -10,6 +10,10 @@ bun run build        # compile curator-server binary (backend only)
 bun db:generate      # generate Drizzle migrations (requires DB_URL)
 ```
 
+## Dev Mock Auth
+
+Set `DEV_MOCK_AUTH=true` in the backend environment to bypass Commons OAuth. Every request without an active session is automatically authenticated as a mock user (default username: `DaxServer`, sub: `dev-user-1`). Override with `DEV_MOCK_USERNAME` and `DEV_MOCK_SUB`. Uploads and WebSocket connections are disabled (no real access token). The frontend shows an amber banner when running under Vite dev mode with mock auth active.
+
 ## TypeScript Backend Notes
 
 - `@elysiajs/static` default prefix is `/public` — use `prefix: "/"` to serve assets at root

@@ -7,6 +7,7 @@ import { useCollectionsStore } from '@frontend/stores/collections.store'
 const store = useCollectionsStore()
 const auth = useAuthStore()
 const { open } = useSocket
+const isDev = import.meta.env.DEV
 
 initCollectionsListeners()
 
@@ -20,6 +21,7 @@ onMounted(() => {
     <ConfirmDialog />
     <Toast />
     <Header />
+    <DevAuthBanner v-if="isDev" />
 
     <template v-if="auth.isAuthenticated">
       <div
