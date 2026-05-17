@@ -10,9 +10,9 @@ import {
   varchar,
 } from 'drizzle-orm/mysql-core'
 
-const json = customType<{ data: unknown; driverData: string }>({
+const json = customType<{ data: unknown; driverData: string | null }>({
   dataType: () => 'json',
-  toDriver: (value) => JSON.stringify(value),
+  toDriver: (value) => (value === null ? null : JSON.stringify(value)),
   fromDriver: (value) => (typeof value === 'string' ? JSON.parse(value) : value),
 })
 
