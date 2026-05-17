@@ -72,7 +72,7 @@ export function fromMapillary(image: MapillaryImage): MediaImage | null {
   }
 }
 
-async function fetchSequenceData(sequenceId: string): Promise<Record<string, MapillaryImage>> {
+async function fetchSequenceData(sequenceId: string): Promise<MapillaryImage[]> {
   const url = new URL('https://graph.mapillary.com/images')
   url.searchParams.set('sequence_ids', sequenceId)
   url.searchParams.set('fields', MAPILLARY_FIELDS)
@@ -86,7 +86,7 @@ async function fetchSequenceData(sequenceId: string): Promise<Record<string, Map
   const data = (await res.json()) as { data: MapillaryImage[] }
   const images = data.data
   images.sort((a, b) => a.captured_at - b.captured_at)
-  return Object.fromEntries(images.map((i) => [String(i.id), i]))
+  return images
 }
 
 async function getSequenceIds(sequenceId: string): Promise<string[]> {
@@ -103,8 +103,8 @@ async function getSequenceIds(sequenceId: string): Promise<string[]> {
   return data.data.map((i) => String(i.id))
 }
 
-async function fetchImagesByIds(imageIds: string[]): Promise<Record<string, MapillaryImage>> {
-  if (imageIds.length === 0) return {}
+async function fetchImagesByIds(imageIds: string[]): Promise<MapillaryImage[]> {
+  if (imageIds.length === 0) return []
 
   const url = new URL('https://graph.mapillary.com')
   url.searchParams.set('ids', imageIds.join(','))
@@ -117,7 +117,7 @@ async function fetchImagesByIds(imageIds: string[]): Promise<Record<string, Mapi
   if (!res.ok) throw new Error(`Mapillary API error: ${res.status}`)
 
   const data = (await res.json()) as Record<string, MapillaryImage>
-  return Object.fromEntries(Object.entries(data).map(([k, v]) => [String(k), v]))
+  return Object.values(data)
 }
 
 async function resolveSequenceIdFromImage(imageId: string): Promise<string | null> {
@@ -169,9 +169,7 @@ async function fetchExistingPages(imageIds: string[]): Promise<Record<string, Ex
 export class MapillaryHandler {
   readonly name = 'mapillary'
 
-  async fetchCollection(
-    input: string,
-  ): Promise<{ images: Record<string, MediaImage>; sequenceId: string }> {
+  async fetchCollection(input: string): Promise<{ images: MediaImage[]; sequenceId: string }> {
     let sequenceId = input
 
     if (input.startsWith('https://www.mapillary.com/app/') && input.includes('?')) {
@@ -183,14 +181,10 @@ export class MapillaryHandler {
       }
     }
 
-    const collection = await fetchSequenceData(sequenceId)
-    const images: Record<string, MediaImage> = Object.fromEntries(
-      Object.entries(collection)
-        .map(([k, v]) => [k, fromMapillary(v)] as const)
-        .filter((entry): entry is [string, MediaImage] => entry[1] !== null),
-    )
+    const raw = await fetchSequenceData(sequenceId)
+    const images = raw.map(fromMapillary).filter((i): i is MediaImage => i !== null)
 
-    await reverseGeocodeBatch(Object.values(images))
+    await reverseGeocodeBatch(images)
 
     return { images, sequenceId }
   }
@@ -199,13 +193,9 @@ export class MapillaryHandler {
     return getSequenceIds(input)
   }
 
-  async fetchImagesBatch(imageIds: string[], _input: string): Promise<Record<string, MediaImage>> {
-    const data = await fetchImagesByIds(imageIds)
-    return Object.fromEntries(
-      Object.entries(data)
-        .map(([k, v]) => [k, fromMapillary(v)] as const)
-        .filter((entry): entry is [string, MediaImage] => entry[1] !== null),
-    )
+  async fetchImagesBatch(imageIds: string[], _input: string): Promise<MediaImage[]> {
+    const raw = await fetchImagesByIds(imageIds)
+    return raw.map(fromMapillary).filter((i): i is MediaImage => i !== null)
   }
 
   async fetchExistingPages(imageIds: string[]): Promise<Record<string, ExistingPage[]>> {
