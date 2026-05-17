@@ -1,5 +1,5 @@
 import type { BatchItem } from '@backend/db/dal/batches'
-import { fromMapillary } from '@backend/handlers/mapillary'
+import { fetchExistingPages, fromMapillary } from '@backend/handlers/mapillary'
 import type { ServerMessage } from '@backend/types/ws'
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
 
@@ -133,6 +133,7 @@ mock.module('@backend/mediawiki/wikidata', () => ({
 
 mock.module('@backend/handlers/mapillary', () => ({
   fromMapillary,
+  fetchExistingPages,
   MapillaryHandler: class {
     fetchCollection(col: string) {
       return mockFetchCollection(col)
@@ -142,6 +143,9 @@ mock.module('@backend/handlers/mapillary', () => ({
     }
     fetchImagesBatch(ids: string[], col: string) {
       return mockFetchImagesBatch(ids, col)
+    }
+    fetchExistingPages(ids: string[]) {
+      return fetchExistingPages(ids)
     }
   },
 }))

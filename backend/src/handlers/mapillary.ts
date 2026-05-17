@@ -131,25 +131,49 @@ async function resolveSequenceIdFromImage(imageId: string): Promise<string | nul
   return data.sequence ?? null
 }
 
-async function fetchExistingPages(imageIds: string[]): Promise<Record<string, ExistingPage[]>> {
+export async function fetchExistingPages(
+  imageIds: string[],
+): Promise<Record<string, ExistingPage[]>> {
   const values = imageIds.map((id) => `"${id.replace(/"/g, '')}"`).join(' ')
   const query = `SELECT ?file ?id WHERE {
   VALUES ?id { ${values} }
   ?file wdt:P7418 ?id.
 }`
 
-  const res = await fetch('https://commons-query.wikimedia.org/sparql', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/sparql-results+json',
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': config.userAgent,
-      Cookie: `wcqsOauth=${config.wcqsOauthToken}`,
-    },
-    body: `query=${encodeURIComponent(query)}`,
-    redirect: 'follow',
-    signal: AbortSignal.timeout(30_000),
-  })
+  const body = `query=${encodeURIComponent(query)}`
+  const cookieJar: Record<string, string> = { wcqsOauth: config.wcqsOauthToken }
+  let url = 'https://commons-query.wikimedia.org/sparql'
+
+  const request = () =>
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/sparql-results+json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': config.userAgent,
+        Cookie: Object.entries(cookieJar)
+          .map(([k, v]) => `${k}=${v}`)
+          .join('; '),
+      },
+      body,
+      redirect: 'manual',
+    })
+
+  let res = await request()
+
+  if (res.status >= 300 && res.status < 400) {
+    const location = res.headers.get('location')
+    if (location) {
+      for (const c of res.headers.getSetCookie()) {
+        const nameValue = c.slice(0, c.indexOf(';') < 0 ? c.length : c.indexOf(';')).trim()
+        const eq = nameValue.indexOf('=')
+        if (eq > 0) cookieJar[nameValue.slice(0, eq)] = nameValue.slice(eq + 1)
+      }
+      url = new URL(location, url).toString()
+      res = await request()
+    }
+  }
+
   if (!res.ok) throw new Error(`WCQS SPARQL error: ${res.status}`)
 
   const data = (await res.json()) as {
