@@ -397,19 +397,21 @@ export class Handler {
       const handler = new MapillaryHandler()
       try {
         const { images, sequenceId } = await handler.fetchCollection(collection)
-        if (Object.keys(images).length === 0) {
+        if (images.length === 0) {
           this.sendError('Collection not found')
           return
         }
         try {
-          const existingPages = await handler.fetchExistingPages(Object.keys(images))
+          const imageMap = new Map(images.map((i) => [i.id, i]))
+          const existingPages = await handler.fetchExistingPages([...imageMap.keys()])
           for (const [id, pages] of Object.entries(existingPages)) {
-            if (images[id]) images[id].existing = pages
+            const img = imageMap.get(id)
+            if (img) img.existing = pages
           }
         } catch (e) {
           mapillaryLogger.warn({ collection, err: e }, 'WCQS existing pages fetch failed')
         }
-        const first = Object.values(images)[0]!
+        const first = images[0]!
         this.sender.send({
           type: 'COLLECTION_IMAGES',
           data: { images, creator: first.creator, sequence_id: sequenceId },
@@ -445,16 +447,18 @@ export class Handler {
         const chunk = ids.slice(i, i + BATCH_RETRIEVAL_CHUNK_SIZE)
         const batchImages = await handler.fetchImagesBatch(chunk, collection)
         try {
-          const existingPages = await handler.fetchExistingPages(Object.keys(batchImages))
+          const batchMap = new Map(batchImages.map((i) => [i.id, i]))
+          const existingPages = await handler.fetchExistingPages([...batchMap.keys()])
           for (const [id, pages] of Object.entries(existingPages)) {
-            if (batchImages[id]) batchImages[id].existing = pages
+            const img = batchMap.get(id)
+            if (img) img.existing = pages
           }
         } catch (e) {
           mapillaryLogger.warn({ collection, err: e }, 'WCQS existing pages fetch failed')
         }
         this.sender.send({
           type: 'PARTIAL_COLLECTION_IMAGES',
-          data: { images: Object.values(batchImages), collection },
+          data: { images: batchImages, collection },
           nonce: nonce(),
         })
       }

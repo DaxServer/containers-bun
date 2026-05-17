@@ -348,8 +348,8 @@ describe('useCollections Listeners', () => {
   describe('onCollectionImages', () => {
     it('should replace items and update creator', () => {
       const creator = { id: 'c1', username: 'u1', profile_url: '' }
-      const images: Record<string, MediaImage> = {
-        img1: {
+      const images: MediaImage[] = [
+        {
           id: 'img1',
           title: '',
           description: 'desc',
@@ -361,7 +361,7 @@ describe('useCollections Listeners', () => {
           camera: { make: undefined, model: undefined, is_pano: false },
           existing: [],
         },
-      }
+      ]
 
       listeners.onCollectionImages(creator, images, 'seq1')
 
@@ -376,8 +376,8 @@ describe('useCollections Listeners', () => {
     it('should coerce dates.taken into Date and default missing description', () => {
       const creator = { id: 'c1', username: 'u1', profile_url: '' }
       const takenIso = new Date('2024-01-01T00:00:00.000Z').toISOString()
-      const images: Record<string, MediaImage> = {
-        img1: {
+      const images: MediaImage[] = [
+        {
           id: 'img1',
           title: '',
           description: '',
@@ -389,7 +389,7 @@ describe('useCollections Listeners', () => {
           camera: { make: undefined, model: undefined, is_pano: false },
           existing: [],
         },
-      }
+      ]
 
       listeners.onCollectionImages(creator, images, 'seq1')
 
@@ -401,7 +401,7 @@ describe('useCollections Listeners', () => {
 
     it('should handle empty images object', () => {
       const creator = { id: 'c1', username: 'u1', profile_url: '' }
-      const images: Record<string, MediaImage> = {}
+      const images: MediaImage[] = []
 
       listeners.onCollectionImages(creator, images, 'seq1')
 

@@ -65,7 +65,7 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
 
       const handler = new MapillaryHandler()
       const images = await handler.fetchImagesBatch([upload.key], upload.collection ?? upload.key)
-      const image = images[upload.key]
+      const image = images.find((i) => i.id === upload.key)
 
       if (!image) {
         throw new Error(`Image ${upload.key} not found in Mapillary — will retry`)

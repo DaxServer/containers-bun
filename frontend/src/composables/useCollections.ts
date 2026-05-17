@@ -156,20 +156,16 @@ export const initCollectionsListeners = () => {
     }
   }
 
-  const onCollectionImages = (
-    creator: Creator,
-    images: Record<string, MediaImage>,
-    sequenceId: string,
-  ) => {
+  const onCollectionImages = (creator: Creator, images: MediaImage[], sequenceId: string) => {
     store.creator = creator
     store.input = sequenceId
     const allItems: Record<string, Item> = {}
     let index = 0
-    for (const [id, image] of Object.entries(images)) {
+    for (const image of images) {
       const img = toImage(image)
       index += 1
       const descriptionText = buildDescription()
-      allItems[id] = createItem(img, id, index, descriptionText)
+      allItems[image.id] = createItem(img, image.id, index, descriptionText)
     }
     store.replaceItems(allItems)
     store.stepper = '2'

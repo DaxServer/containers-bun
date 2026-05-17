@@ -338,7 +338,7 @@ export const BatchUploadsListSchema = t.Object({
 export const CollectionImagesSchema = t.Object({
   type: t.Literal('COLLECTION_IMAGES'),
   data: t.Object({
-    images: t.Record(t.String(), MediaImageSchema),
+    images: t.Array(MediaImageSchema),
     creator: CreatorSchema,
     sequence_id: t.String(),
   }),
