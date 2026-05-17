@@ -24,7 +24,7 @@ export async function enqueueUpload(data: UploadJobData, delayMs: number): Promi
     delay: Math.round(delayMs),
     attempts: 3,
     backoff: { type: 'exponential', delay: 5000 },
-    jobId: `upload:${data.uploadId}`,
+    jobId: `upload-${data.uploadId}`,
     removeOnComplete: { age: 86400 },
     removeOnFail: { age: 86400 * 7 },
   })
