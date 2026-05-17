@@ -256,7 +256,7 @@ export async function retrySelectedUploadsToNewBatch(
   const editGroupId = generateEditGroupId()
   const batchResult = await db
     .insert(batches)
-    .values({ userid: adminUserid, edit_group_id: editGroupId })
+    .values({ userid: adminUserid, edit_group_id: editGroupId, created_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
   const newBatchId = (batchResult[0] as { insertId: number }).insertId
   const newUploads = originals.map((u) => ({
     batchid: newBatchId,
@@ -274,6 +274,8 @@ export async function retrySelectedUploadsToNewBatch(
     error: null,
     success: null,
     celery_task_id: null,
+    created_at: sql`CURRENT_TIMESTAMP`,
+    updated_at: sql`CURRENT_TIMESTAMP`,
   }))
   await db.insert(uploadRequests).values(newUploads)
   const inserted = await db
@@ -317,6 +319,8 @@ export async function createUploadRequestsForBatch({
     error: null,
     success: null,
     celery_task_id: null,
+    created_at: sql`CURRENT_TIMESTAMP`,
+    updated_at: sql`CURRENT_TIMESTAMP`,
   }))
   await db.insert(uploadRequests).values(rows)
   const keys = rows.map((r) => r.key)

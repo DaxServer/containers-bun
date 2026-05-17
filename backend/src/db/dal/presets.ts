@@ -95,6 +95,8 @@ export async function createPreset({
     categories: categories ?? null,
     exclude_from_date_category,
     is_default,
+    created_at: sql`CURRENT_TIMESTAMP`,
+    updated_at: sql`CURRENT_TIMESTAMP`,
   })
   const insertId = (result[0] as { insertId: number }).insertId
   return db.query.presets.findFirst({ where: (p, { eq }) => eq(p.id, insertId) })
