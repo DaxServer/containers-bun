@@ -169,7 +169,7 @@ export async function fetchExistingPages(
         const eq = nameValue.indexOf('=')
         if (eq > 0) cookieJar[nameValue.slice(0, eq)] = nameValue.slice(eq + 1)
       }
-      url = location
+      url = new URL(location, url).toString()
       res = await request()
     }
   }
