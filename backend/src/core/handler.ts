@@ -38,7 +38,9 @@ import type {
   PresetItem,
   ServerMessage,
   UploadItem,
+  UploadStatus,
   UploadUpdateItem,
+  Handler as WsHandler,
 } from '@backend/types/ws'
 import { enqueueUpload, removeUploadJob } from '@backend/workers/queue'
 import type { Redis } from 'ioredis'
@@ -85,7 +87,7 @@ function presetRowToItem(p: {
     labels: p.labels as PresetItem['labels'],
     categories: p.categories ?? '',
     exclude_from_date_category: p.exclude_from_date_category,
-    handler: p.handler,
+    handler: p.handler as WsHandler,
     is_default: p.is_default,
     created_at: p.created_at.toISOString(),
     updated_at: p.updated_at.toISOString(),
@@ -96,9 +98,9 @@ function toUploadUpdateItem(u: DalBatchUploadItem): UploadUpdateItem {
   return {
     id: u.id,
     batchid: u.batchid,
-    status: u.status,
+    status: u.status as UploadStatus,
     key: u.key || 'unknown',
-    handler: u.handler || 'unknown',
+    handler: u.handler as WsHandler,
     error: u.error as UploadUpdateItem['error'],
     success: u.success ?? null,
   }
@@ -250,13 +252,13 @@ export class Handler {
           batch: { ...batch, username: batch.username ?? '' },
           uploads: uploads.map((u) => ({
             id: u.id,
-            status: u.status,
+            status: u.status as UploadStatus,
             filename: u.filename,
             wikitext: u.wikitext,
             batchid: u.batchid,
             userid: u.userid,
             key: u.key,
-            handler: u.handler,
+            handler: u.handler as WsHandler,
             labels: u.labels as BatchUploadItem['labels'],
             result: u.result,
             error: u.error as BatchUploadItem['error'],
@@ -544,7 +546,7 @@ export class Handler {
       }
       this.sender.send({
         type: 'UPLOAD_SLICE_ACK',
-        data: created.map((c) => ({ id: c.key, status: c.status })),
+        data: created.map((c) => ({ id: c.key, status: c.status as UploadStatus })),
         sliceid: data.sliceid,
         nonce: nonce(),
       })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { COLOR_VARIANTS } from '@frontend/composables/useUploadStatus'
 import type { ColorVariant } from '@frontend/composables/useUploadStatus'
+import { COLOR_VARIANTS } from '@frontend/composables/useUploadStatus'
 
 const props = withDefaults(
   defineProps<{

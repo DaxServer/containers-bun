@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useFailedUploadsStore } from '@frontend/stores/failedUploads.store'
 import { useFailedUploads } from '@frontend/composables/useFailedUploads'
+import { useFailedUploadsStore } from '@frontend/stores/failedUploads.store'
 
 const store = useFailedUploadsStore()
 const { fetchFailedUploads } = useFailedUploads()

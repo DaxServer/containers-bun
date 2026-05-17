@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCollectionsStore } from '@frontend/stores/collections.store'
-import { INTERVAL_UNITS, DISTANCE_UNITS } from '@frontend/types/collections'
-import type { IntervalUnit, DistanceUnit } from '@frontend/types/collections'
+import type { DistanceUnit, IntervalUnit } from '@frontend/types/collections'
+import { DISTANCE_UNITS, INTERVAL_UNITS } from '@frontend/types/collections'
 
 const store = useCollectionsStore()
 const helpVisible = ref(false)

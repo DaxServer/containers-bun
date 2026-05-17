@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useCollectionsStore } from '@frontend/stores/collections.store'
-import { useUploadStatus } from '@frontend/composables/useUploadStatus'
 import { useCollections } from '@frontend/composables/useCollections'
+import { useUploadStatus } from '@frontend/composables/useUploadStatus'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 import { UPLOAD_STATUS } from '@frontend/types/image'
 
 const store = useCollectionsStore()

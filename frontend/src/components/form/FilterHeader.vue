@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUploadStatus } from '@frontend/composables/useUploadStatus'
-import { UPLOAD_STATUS } from '@frontend/types/image'
 import type { UploadStatus } from '@frontend/types/image'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 
 const props = defineProps<{
   filterText: string

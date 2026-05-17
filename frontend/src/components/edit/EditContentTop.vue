@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { useCollectionsStore } from '@frontend/stores/collections.store'
 import { useCommons } from '@frontend/composables/useCommons'
-import { TITLE_STATUS, TITLE_ERROR_STATUSES } from '@frontend/types/image'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 import type { Item } from '@frontend/types/image'
-import { VALID_EXTENSIONS, FIELD_PATH_TO_NAME } from '@frontend/utils/titleTemplate'
+import { TITLE_ERROR_STATUSES, TITLE_STATUS } from '@frontend/types/image'
+import { FIELD_PATH_TO_NAME, VALID_EXTENSIONS } from '@frontend/utils/titleTemplate'
 
 const props = defineProps<{ item: Item; altPrefix: string }>()
 

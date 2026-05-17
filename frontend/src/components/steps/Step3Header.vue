@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useCollectionsStore } from '@frontend/stores/collections.store'
+import { useCategoryValidation } from '@frontend/composables/useCategoryValidation'
 import { usePresetManager } from '@frontend/composables/usePresetManager'
 import { useTitleTemplate } from '@frontend/composables/useTitleTemplate'
-import { useCategoryValidation } from '@frontend/composables/useCategoryValidation'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 
 const store = useCollectionsStore()
 const { itemsMissingCameraFields } = useTitleTemplate()

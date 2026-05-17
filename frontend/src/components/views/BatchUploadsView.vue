@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { BatchStats } from '@backend/types/ws'
+import { useBatchSelection } from '@frontend/composables/useBatchSelection'
+import { useCollections } from '@frontend/composables/useCollections'
+import { useCommons } from '@frontend/composables/useCommons'
+import { useDataFilters } from '@frontend/composables/useDataFilters'
+import { useUploadStatus } from '@frontend/composables/useUploadStatus'
 import { useAuthStore } from '@frontend/stores/auth.store'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
-import { useCommons } from '@frontend/composables/useCommons'
-import { useCollections } from '@frontend/composables/useCollections'
-import { useUploadStatus } from '@frontend/composables/useUploadStatus'
-import { useBatchSelection } from '@frontend/composables/useBatchSelection'
-import { useDataFilters } from '@frontend/composables/useDataFilters'
-import { UPLOAD_STATUS } from '@frontend/types/image'
-import type { UploadStatus } from '@frontend/types/image'
 import type { BatchStatsCard } from '@frontend/types/collections'
+import type { UploadStatus } from '@frontend/types/image'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 
 const batchId = useRouteParams<number>('id')
 const router = useRouter()

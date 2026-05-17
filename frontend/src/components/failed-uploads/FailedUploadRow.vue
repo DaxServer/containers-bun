@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { UPLOAD_STATUS } from '@frontend/types/image'
 import type { FailedUpload } from '@frontend/types/admin'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 
 defineProps<{
   upload: FailedUpload

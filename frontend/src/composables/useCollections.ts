@@ -421,11 +421,12 @@ export const useCollections = () => {
     store.$reset()
     fetchPresets()
     store.isLoading = true
-    send({
-      type: 'FETCH_IMAGES',
+    const fetchImagesMsg = {
+      type: 'FETCH_IMAGES' as const,
       data: store.input,
       handler: store.handler,
-    })
+    }
+    send(fetchImagesMsg)
   }
 
   const loadBatches = (page: number, rows: number, userid?: string, filter?: string) => {
@@ -522,10 +523,11 @@ export const useCollections = () => {
   }
 
   const fetchPresets = () => {
-    send({
-      type: 'FETCH_PRESETS',
+    const fetchPresetsMsg = {
+      type: 'FETCH_PRESETS' as const,
       data: { handler: store.handler },
-    })
+    }
+    send(fetchPresetsMsg)
   }
 
   const savePreset = (preset: SavePreset['data']) => {

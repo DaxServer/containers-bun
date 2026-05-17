@@ -1,4 +1,4 @@
-import type { Label, MediaImage } from '@backend/types/ws'
+import type { Label, MediaImage, UploadStatus } from '@backend/types/ws'
 import type { StructuredError } from '@frontend/types/error'
 
 export interface Image extends Omit<MediaImage, 'dates' | 'description'> {
@@ -74,7 +74,7 @@ export const UPLOAD_STATUS = {
   Cancelled: 'cancelled',
 } as const
 
-export type UploadStatus = (typeof UPLOAD_STATUS)[keyof typeof UPLOAD_STATUS]
+export type { UploadStatus }
 
 export type UploadStatusUpdate =
   | {

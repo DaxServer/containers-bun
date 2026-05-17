@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { DEMO_ITEMS, selectByStraightLineDistance, selectByTraversalDistance } from '@frontend/utils/filterSelection'
+import {
+  DEMO_ITEMS,
+  selectByStraightLineDistance,
+  selectByTraversalDistance,
+} from '@frontend/utils/filterSelection'
 import { haversineDistance } from '@frontend/utils/geo'
 
 type DotState = 'idle' | 'selected' | 'skipped'

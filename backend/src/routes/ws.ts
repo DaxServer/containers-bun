@@ -20,10 +20,7 @@ export function createWsRoutes(redis: Redis) {
     .use(createSessionPlugin(_noopStore))
     .onError(({ error }) => {
       if (error instanceof ValidationError) {
-        wsLogger.error(
-          { errors: error.all, message: error.message },
-          'WebSocket validation error',
-        )
+        wsLogger.error({ errors: error.all, message: error.message }, 'WebSocket validation error')
       }
     })
     .ws('/ws', {

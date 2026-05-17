@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useCollectionsStore } from '@frontend/stores/collections.store'
 import { useTemplateEditor } from '@frontend/composables/useTemplateEditor'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 
 const store = useCollectionsStore()
 

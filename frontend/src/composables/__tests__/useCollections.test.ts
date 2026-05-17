@@ -719,13 +719,13 @@ describe('useCollections Listeners', () => {
         uploads: [
           {
             id: 1,
-            status: '',
+            status: 'queued',
             filename: '',
             wikitext: '',
             batchid: 0,
             userid: '',
             key: '',
-            handler: '',
+            handler: 'mapillary',
             created_at: '',
             updated_at: '',
           },
@@ -784,13 +784,13 @@ describe('useCollections Listeners', () => {
         uploads: [
           {
             id: 2,
-            status: '',
+            status: 'queued',
             filename: '',
             wikitext: '',
             batchid: 0,
             userid: '',
             key: '',
-            handler: '',
+            handler: 'mapillary',
             created_at: '',
             updated_at: '',
           },
@@ -828,13 +828,13 @@ describe('useCollections Listeners', () => {
         uploads: [
           {
             id: 1,
-            status: '',
+            status: 'queued',
             filename: '',
             wikitext: '',
             batchid: 0,
             userid: '',
             key: '',
-            handler: '',
+            handler: 'mapillary',
             created_at: '',
             updated_at: '',
           },

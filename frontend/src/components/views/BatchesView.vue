@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useCollectionsStore } from '@frontend/stores/collections.store'
-import { useCommons } from '@frontend/composables/useCommons'
 import { useCollections } from '@frontend/composables/useCollections'
+import { useCommons } from '@frontend/composables/useCommons'
+import { useCollectionsStore } from '@frontend/stores/collections.store'
 
 const store = useCollectionsStore()
 const router = useRouter()

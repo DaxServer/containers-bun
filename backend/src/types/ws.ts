@@ -31,6 +31,19 @@ export const ImageUrlsSchema = t.Object({
   thumbnail: t.String(),
 })
 
+export const HandlerSchema = t.Literal('mapillary')
+
+export const UploadStatusSchema = t.Union([
+  t.Literal('queued'),
+  t.Literal('in_progress'),
+  t.Literal('completed'),
+  t.Literal('failed'),
+  t.Literal('duplicate'),
+  t.Literal('duplicated_sdc_updated'),
+  t.Literal('duplicated_sdc_not_updated'),
+  t.Literal('cancelled'),
+])
+
 export const CreatorSchema = t.Object({
   id: t.String(),
   username: t.String(),
@@ -116,13 +129,13 @@ export const BatchItemSchema = t.Object({
 
 export const BatchUploadItemSchema = t.Object({
   id: t.Integer(),
-  status: t.String(),
+  status: UploadStatusSchema,
   filename: t.String(),
   wikitext: t.String(),
   batchid: t.Integer(),
   userid: t.String(),
   key: t.String(),
-  handler: t.String(),
+  handler: HandlerSchema,
   labels: t.Optional(t.Nullable(LabelSchema)),
   result: t.Optional(t.Nullable(t.String())),
   error: t.Optional(StructuredErrorSchema),
@@ -135,16 +148,16 @@ export const BatchUploadItemSchema = t.Object({
 export const UploadUpdateItemSchema = t.Object({
   id: t.Integer(),
   batchid: t.Integer(),
-  status: t.String(),
+  status: UploadStatusSchema,
   key: t.String(),
   error: t.Optional(StructuredErrorSchema),
   success: t.Optional(t.Nullable(t.String())),
-  handler: t.String(),
+  handler: HandlerSchema,
 })
 
 export const UploadCreatedItemSchema = t.Object({
   id: t.Integer(),
-  status: t.String(),
+  status: UploadStatusSchema,
   image_id: t.String(),
   input: t.String(),
   batchid: t.Integer(),
@@ -152,7 +165,7 @@ export const UploadCreatedItemSchema = t.Object({
 
 export const UploadSliceAckItemSchema = t.Object({
   id: t.String(),
-  status: t.String(),
+  status: UploadStatusSchema,
 })
 
 export const PresetItemSchema = t.Object({
@@ -162,7 +175,7 @@ export const PresetItemSchema = t.Object({
   labels: t.Optional(t.Nullable(LabelSchema)),
   categories: t.String(),
   exclude_from_date_category: t.Boolean(),
-  handler: t.String(),
+  handler: HandlerSchema,
   is_default: t.Boolean(),
   created_at: t.String(),
   updated_at: t.String(),
@@ -261,7 +274,7 @@ export const SavePresetSchema = t.Object({
     categories: t.String(),
     exclude_from_date_category: t.Optional(t.Boolean()),
     is_default: t.Optional(t.Boolean()),
-    handler: t.String(),
+    handler: HandlerSchema,
   }),
 })
 
@@ -271,7 +284,7 @@ export const UploadSliceSchema = t.Object({
     batchid: t.Integer(),
     sliceid: t.Integer(),
     items: t.Array(UploadItemSchema),
-    handler: t.Optional(t.String()),
+    handler: t.Optional(HandlerSchema),
   }),
 })
 
@@ -487,6 +500,9 @@ export const ServerMessage = t.Union([
 
 export type ClientMessage = Static<typeof ClientMessage>
 export type ServerMessage = Static<typeof ServerMessage>
+
+export type Handler = Static<typeof HandlerSchema>
+export type UploadStatus = Static<typeof UploadStatusSchema>
 
 export type Label = Static<typeof LabelSchema>
 export type ExistingPage = Static<typeof ExistingPageSchema>

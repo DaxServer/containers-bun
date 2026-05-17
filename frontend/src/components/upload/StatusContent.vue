@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useCommons } from '@frontend/composables/useCommons'
 import { useUploadStatus } from '@frontend/composables/useUploadStatus'
-import { UPLOAD_STATUS } from '@frontend/types/image'
 import type { Item } from '@frontend/types/image'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 
 const props = defineProps<{
   item: Item
