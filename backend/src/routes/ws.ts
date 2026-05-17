@@ -46,6 +46,7 @@ export const wsRoutes = new Elysia({ name: 'ws-routes' })
       const sender = { send: (msg: ServerMessage) => ws.send(msg) }
       const handler = new Handler(user, sender, ws.data.redis.client)
       connections.set(ws.id, handler)
+      wsLogger.info(`User ${user.username} connected`)
     },
     message(ws, body) {
       if (!ws.data.session.user) {
@@ -57,6 +58,7 @@ export const wsRoutes = new Elysia({ name: 'ws-routes' })
         ws.close(1011, 'Handler not initialized')
         return
       }
+      wsLogger.info(`[ws] ${body.type} from ${ws.data.session.user.username}`)
       switch (body.type) {
         case 'FETCH_BATCHES':
           handler.fetchBatches(body.data)

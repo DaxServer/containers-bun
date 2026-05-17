@@ -15,14 +15,15 @@ import type { UploadJobData } from '@backend/workers/queue'
 import { Worker } from 'bullmq'
 import type { Redis } from 'ioredis'
 
-const EDIT_SUMMARY = (editGroupId: string) =>
-  `Uploaded via Curator | https://editgroups.io/b/OR/${editGroupId}/`
+const buildEditSummary = (imageKey: string, batchId: number, editGroupId: string) =>
+  `Uploaded via Curator from Mapillary image ${imageKey} (batch ${batchId}) ([[:toolforge:editgroups-commons/b/curator/${editGroupId}|details]])`
 
 export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
   const worker = new Worker<UploadJobData>(
     'uploads',
     async (job) => {
       const { uploadId, batchId, editGroupId } = job.data
+      workerLogger.info(`[worker] [${uploadId}] [${job.id}] task started`)
 
       const upload = await getUploadById(uploadId)
       if (!upload) {
@@ -55,6 +56,9 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
 
       const { blacklisted, reason } = await mw.checkTitleBlacklisted(upload.filename)
       if (blacklisted) {
+        workerLogger.warn(
+          `[worker] [${uploadId}/${batchId}] title ${upload.filename} is blacklisted: ${reason}`,
+        )
         await updateUploadStatus(uploadId, 'failed', {
           type: 'title_blacklisted',
           message: reason,
@@ -73,14 +77,14 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
 
       await updateUploadStatus(uploadId, 'in_progress')
 
-      const editSummary = EDIT_SUMMARY(editGroupId)
+      const summary = buildEditSummary(upload.key, batchId, editGroupId)
 
       try {
         const fileUrl = await mw.uploadFile(
           upload.filename,
           image.urls.original,
           upload.wikitext,
-          editSummary,
+          summary,
           redis,
           uploadId,
           batchId,
@@ -91,13 +95,16 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
         const labelsPayload = labels
           ? { [labels.language]: { language: labels.language, value: labels.value } }
           : null
-        await mw.applySdc(upload.filename, claims, labelsPayload, editSummary)
+        await mw.applySdc(upload.filename, claims, labelsPayload, summary)
         await mw.nullEdit(upload.filename)
 
+        workerLogger.info(`[worker] [${uploadId}/${batchId}] successfully uploaded to ${fileUrl}`)
         await updateUploadStatus(uploadId, 'completed', null, fileUrl)
         await clearUploadAccessToken(uploadId)
+        workerLogger.info(`[worker] [${uploadId}] [${job.id}] task completed`)
       } catch (err) {
         if (err instanceof DuplicateUploadError) {
+          workerLogger.info(`[worker] [${uploadId}/${batchId}] duplicate upload detected`)
           const links = err.duplicates
 
           if (links.length > 0) {
@@ -109,7 +116,7 @@ export function createUploadWorker(redis: Redis): Worker<UploadJobData> {
               : null
 
             try {
-              await mw.applySdc(dupeFilename, claims, labelsPayload, editSummary)
+              await mw.applySdc(dupeFilename, claims, labelsPayload, summary)
               await updateUploadStatus(uploadId, 'duplicated_sdc_updated', {
                 type: 'duplicated_sdc_updated',
                 links,
