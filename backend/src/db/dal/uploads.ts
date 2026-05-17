@@ -1,7 +1,7 @@
 import { generateEditGroupId } from '@backend/core/crypto'
 import { db } from '@backend/db/client'
 import { batches, uploadRequests, users } from '@backend/db/schema'
-import type { Handler, UploadItem, UploadStatus } from '@backend/types/ws'
+import type { Handler, StructuredError, UploadItem, UploadStatus } from '@backend/types/ws'
 import type { SQL } from 'drizzle-orm'
 import { and, asc, count, desc, eq, gt, inArray, like, lt, or, sql } from 'drizzle-orm'
 
@@ -18,7 +18,7 @@ export type BatchUploadItem = {
   copyright_override: boolean
   labels: unknown
   result: string | null
-  error: unknown
+  error: StructuredError | undefined
   success: string | null
   celery_task_id: string | null
   created_at: string | null
@@ -40,7 +40,7 @@ function toUploadItem(u: typeof uploadRequests.$inferSelect): BatchUploadItem {
     copyright_override: u.copyright_override,
     labels: u.labels,
     result: u.result,
-    error: u.error,
+    error: u.error ? (u.error as StructuredError) : undefined,
     success: u.success,
     celery_task_id: u.celery_task_id,
     created_at: u.created_at?.toISOString() ?? null,
