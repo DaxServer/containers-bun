@@ -103,7 +103,7 @@ function toUploadUpdateItem(u: DalBatchUploadItem): UploadUpdateItem {
     status: u.status,
     key: u.key || 'unknown',
     handler: u.handler,
-    error: (u.error as UploadUpdateItem['error'] | null) ?? undefined,
+    error: u.error,
     success: u.success ?? null,
   }
 }
@@ -263,7 +263,7 @@ export class Handler {
             handler: u.handler,
             labels: u.labels as BatchUploadItem['labels'],
             result: u.result,
-            error: (u.error as BatchUploadItem['error'] | null) ?? undefined,
+            error: u.error,
             success: u.success,
             created_at: u.created_at ?? '',
             updated_at: u.updated_at ?? '',
