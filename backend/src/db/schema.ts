@@ -12,6 +12,7 @@ import {
 
 const json = customType<{ data: unknown; driverData: string }>({
   dataType: () => 'json',
+  toDriver: (value) => JSON.stringify(value),
   fromDriver: (value) => (typeof value === 'string' ? JSON.parse(value) : value),
 })
 
