@@ -1,12 +1,5 @@
-import { createApp } from '@backend/app'
-import { beforeAll, describe, expect, it } from 'bun:test'
-
-let app: ReturnType<typeof createApp>
-
-beforeAll(() => {
-  process.env.STATIC_DIR = import.meta.dir
-  app = createApp()
-})
+import { app } from '@backend/app'
+import { describe, expect, it } from 'bun:test'
 
 describe('GET /health', () => {
   it('returns 200 with status ok', async () => {

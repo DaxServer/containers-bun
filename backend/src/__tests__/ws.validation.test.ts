@@ -1,4 +1,4 @@
-import type { SessionStore } from '@backend/core/session'
+import { sessionPlugin, type SessionStore } from '@backend/core/session'
 import { ClientMessage } from '@backend/types/ws'
 import { afterAll, describe, expect, it } from 'bun:test'
 import { Elysia } from 'elysia'
@@ -44,17 +44,7 @@ const testSessionStore: SessionStore = new (class {
 
 const app = new Elysia()
   .use(new Elysia({ name: 'session-store' }).decorate('sessionStore', testSessionStore))
-  .derive({ as: 'global' }, async ({ sessionStore, cookie }) => {
-    const id = cookie['session_id']?.value ?? SESSION_ID
-    const raw = await sessionStore.get(`session:${id}`)
-    const stored = raw ? JSON.parse(raw) : {}
-    return {
-      session: {
-        user: stored.user,
-        access_token: stored.access_token,
-      },
-    }
-  })
+  .use(sessionPlugin)
   .ws('/ws', {
     body: ClientMessage,
     open(ws) {

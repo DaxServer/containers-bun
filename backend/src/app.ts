@@ -9,8 +9,9 @@ import logixlysia from 'logixlysia'
 import path from 'node:path'
 
 const isTest = Bun.env.NODE_ENV === 'test'
+const STATIC_DIR = Bun.env.STATIC_DIR
 
-export const app = new Elysia()
+const base = new Elysia()
   .use(logixlysia({ config: { pino: logger, useTransportsOnly: isTest } }))
   .use(devAuthPlugin)
   .get('/health', () => ({ status: 'ok' }))
@@ -18,13 +19,10 @@ export const app = new Elysia()
   .use(adminRoutes)
   .use(wsRoutes)
 
-export type App = typeof app
+export type App = typeof base
 
-export const createApp = () => {
-  const STATIC_DIR = Bun.env.STATIC_DIR
-  return STATIC_DIR
-    ? app
-        .use(staticPlugin({ assets: STATIC_DIR, prefix: '/' }))
-        .get('/*', () => Bun.file(path.join(STATIC_DIR, 'index.html')))
-    : app
-}
+export const app = STATIC_DIR
+  ? base
+      .use(staticPlugin({ assets: STATIC_DIR, prefix: '/' }))
+      .get('/*', () => Bun.file(path.join(STATIC_DIR, 'index.html')))
+  : base

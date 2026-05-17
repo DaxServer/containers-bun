@@ -73,7 +73,7 @@ export const authRoutes = new Elysia({ name: 'auth-routes', prefix: '/auth' })
     }
   })
   .post('/register', async ({ session, headers, set }) => {
-    // Read live from env so tests can inject values via process.env
+    // Read live from env so tests can inject values via Bun.env
     const xUsername = Bun.env.X_USERNAME ?? ''
     const xApiKey = Bun.env.X_API_KEY ?? ''
     if (!xUsername || !xApiKey) {
