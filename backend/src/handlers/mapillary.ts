@@ -1,5 +1,7 @@
 import { config } from '@backend/config'
 import { reverseGeocodeBatch } from '@backend/core/geocoding'
+import { mapillaryLogger } from '@backend/logger'
+import { WIKIDATA_PROPERTY } from '@backend/mediawiki/sdc'
 import type { ExistingPage, MediaImage } from '@backend/types/ws'
 
 const MAPILLARY_FIELDS =
@@ -137,12 +139,14 @@ export async function fetchExistingPages(
   const values = imageIds.map((id) => `"${id.replace(/"/g, '')}"`).join(' ')
   const query = `SELECT ?file ?id WHERE {
   VALUES ?id { ${values} }
-  ?file wdt:P7418 ?id.
+  ?file wdt:${WIKIDATA_PROPERTY.MapillaryPhotoID} ?id.
 }`
 
   const body = `query=${encodeURIComponent(query)}`
   const cookieJar: Record<string, string> = { wcqsOauth: config.wcqsOauthToken }
   let url = 'https://commons-query.wikimedia.org/sparql'
+
+  mapillaryLogger.debug({ imageCount: imageIds.length, url }, 'WCQS query start')
 
   const request = () =>
     fetch(url, {
@@ -160,25 +164,36 @@ export async function fetchExistingPages(
     })
 
   let res = await request()
+  mapillaryLogger.debug({ status: res.status, url }, 'WCQS initial response')
 
   if (res.status >= 300 && res.status < 400) {
     const location = res.headers.get('location')
+    const setCookies = res.headers.getSetCookie()
+    mapillaryLogger.debug({ status: res.status, location, setCookies }, 'WCQS redirect')
     if (location) {
-      for (const c of res.headers.getSetCookie()) {
+      for (const c of setCookies) {
         const nameValue = c.slice(0, c.indexOf(';') < 0 ? c.length : c.indexOf(';')).trim()
         const eq = nameValue.indexOf('=')
         if (eq > 0) cookieJar[nameValue.slice(0, eq)] = nameValue.slice(eq + 1)
       }
       url = new URL(location, url).toString()
       res = await request()
+      mapillaryLogger.debug({ status: res.status, url }, 'WCQS post-redirect response')
     }
   }
 
-  if (!res.ok) throw new Error(`WCQS SPARQL error: ${res.status}`)
+  if (!res.ok) {
+    const body = await res.text().catch(() => '(unreadable)')
+    mapillaryLogger.error({ status: res.status, url, body }, 'WCQS SPARQL error')
+    throw new Error(`WCQS SPARQL error: ${res.status}`)
+  }
 
   const data = (await res.json()) as {
     results: { bindings: { file: { value: string }; id: { value: string } }[] }
   }
+
+  const matchCount = data.results.bindings.length
+  mapillaryLogger.debug({ imageCount: imageIds.length, matchCount }, 'WCQS query complete')
 
   const existing: Record<string, ExistingPage[]> = {}
   for (const binding of data.results.bindings) {

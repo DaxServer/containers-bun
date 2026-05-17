@@ -31,6 +31,7 @@ import { ensureUser } from '@backend/db/dal/users'
 import { MapillaryHandler } from '@backend/handlers/mapillary'
 import { mapillaryLogger, wsLogger } from '@backend/logger'
 import { MediaWikiClient } from '@backend/mediawiki/client'
+import { WIKIDATA_PROPERTY } from '@backend/mediawiki/sdc'
 import { WikidataClient } from '@backend/mediawiki/wikidata'
 import type {
   BatchItem,
@@ -607,12 +608,13 @@ export class Handler {
         try {
           const wd = new WikidataClient(this.user.access_token)
           const entity = await wd.fetchItem(wikidataQid)
-          const existingClaims = (entity.claims as Record<string, unknown[]>)?.P373 ?? []
+          const existingClaims =
+            (entity.claims as Record<string, unknown[]>)?.[WIKIDATA_PROPERTY.CommonsCategory] ?? []
           const categoryName = title.replace(/_/g, ' ')
           const newClaim = {
             mainsnak: {
               snaktype: 'value',
-              property: 'P373',
+              property: WIKIDATA_PROPERTY.CommonsCategory,
               datavalue: { type: 'string', value: categoryName },
             },
             type: 'statement',

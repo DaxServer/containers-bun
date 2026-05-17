@@ -1,5 +1,5 @@
+import { WIKIDATA_ENTITY, WIKIDATA_PROPERTY } from '@backend/mediawiki/sdc'
 import type { GeoLocation } from '@backend/types/ws'
-import { WikidataEntity, WikidataProperty } from '@frontend/components/wikidata/useWikidata'
 import type {
   EntityIdValueSnak,
   ExternalIdValueSnak,
@@ -184,52 +184,52 @@ export const createQuantityStatement = (
 export const getNumericId = (entity: ItemId): number => parseInt(entity.slice(1), 10)
 
 export const createCreatorClaim = (username: string, snaks?: Snak[]): Statement => {
-  return createStatement(createSomeValueSnak(WikidataProperty.Creator), [
-    createStringSnak(WikidataProperty.AuthorNameString, username),
+  return createStatement(createSomeValueSnak(WIKIDATA_PROPERTY.Creator), [
+    createStringSnak(WIKIDATA_PROPERTY.AuthorNameString, username),
     ...(snaks || []),
   ])
 }
 
 export const createInceptionClaim = (date: Date): Statement => {
-  return createTimeStatement(WikidataProperty.Inception, date)
+  return createTimeStatement(WIKIDATA_PROPERTY.Inception, date)
 }
 
 export const createSourceOfFileClaim = (url: string): Statement => {
   return createStatement(
-    createWikibaseItemSnak(WikidataProperty.SourceOfFile, WikidataEntity.FileAvailableOnInternet),
+    createWikibaseItemSnak(WIKIDATA_PROPERTY.SourceOfFile, WIKIDATA_ENTITY.FileAvailableOnInternet),
     [
-      createWikibaseItemSnak(WikidataProperty.Operator, WikidataEntity.Mapillary),
-      createUrlSnak(WikidataProperty.DescribedAtUrl, url),
+      createWikibaseItemSnak(WIKIDATA_PROPERTY.Operator, WIKIDATA_ENTITY.Mapillary),
+      createUrlSnak(WIKIDATA_PROPERTY.DescribedAtUrl, url),
     ],
   )
 }
 
 export const createCopyrightStatusClaim = (): Statement => {
-  return createWikibaseItemStatement(WikidataProperty.CopyrightStatus, WikidataEntity.Copyrighted)
+  return createWikibaseItemStatement(WIKIDATA_PROPERTY.CopyrightStatus, WIKIDATA_ENTITY.Copyrighted)
 }
 
 export const createCopyrightLicenseClaim = (): Statement => {
-  return createWikibaseItemStatement(WikidataProperty.CopyrightLicense, WikidataEntity.CCBYSA40)
+  return createWikibaseItemStatement(WIKIDATA_PROPERTY.CopyrightLicense, WIKIDATA_ENTITY.CCBYSA40)
 }
 
 export const createWidthClaim = (width: number): Statement => {
-  return createQuantityStatement(WikidataProperty.Width, width, WikidataEntity.Pixel)
+  return createQuantityStatement(WIKIDATA_PROPERTY.Width, width, WIKIDATA_ENTITY.Pixel)
 }
 
 export const createHeightClaim = (height: number): Statement => {
-  return createQuantityStatement(WikidataProperty.Height, height, WikidataEntity.Pixel)
+  return createQuantityStatement(WIKIDATA_PROPERTY.Height, height, WIKIDATA_ENTITY.Pixel)
 }
 
 export const createPointOfViewClaim = (location: GeoLocation): Statement => {
   const qualifiers: Snak[] = []
   if (location.compass_angle != null) {
     qualifiers.push(
-      createQuantitySnak(WikidataProperty.Heading, location.compass_angle, WikidataEntity.Degree),
+      createQuantitySnak(WIKIDATA_PROPERTY.Heading, location.compass_angle, WIKIDATA_ENTITY.Degree),
     )
   }
   return createStatement(
     createGlobeCoordinateSnak(
-      WikidataProperty.CoordinatesOfThePointOfView,
+      WIKIDATA_PROPERTY.CoordinatesOfThePointOfView,
       location.latitude,
       location.longitude,
     ),

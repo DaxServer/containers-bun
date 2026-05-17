@@ -4,7 +4,7 @@ const isProd = !!Bun.env.TOOL_DATA_DIR
 const isTest = Bun.env.NODE_ENV === 'test'
 
 export const logger = pino({
-  level: Bun.env.LOG_LEVEL ?? (isTest ? 'silent' : 'info'),
+  level: Bun.env.LOG_LEVEL ?? (isTest ? 'silent' : isProd ? 'info' : 'debug'),
   transport: isProd ? undefined : { target: 'pino-pretty' },
 })
 
