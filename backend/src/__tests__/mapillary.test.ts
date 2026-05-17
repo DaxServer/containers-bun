@@ -1,5 +1,5 @@
-import { fromMapillary } from '@backend/handlers/mapillary'
-import { describe, expect, it } from 'bun:test'
+import { fetchExistingPages, fromMapillary } from '@backend/handlers/mapillary'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 
 const BASE = {
   id: 'img123',
@@ -16,6 +16,66 @@ const BASE = {
   make: 'Sony',
   model: 'RX1',
 }
+
+describe('fetchExistingPages', () => {
+  let originalFetch: typeof globalThis.fetch
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch
+  })
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+  })
+
+  it('returns existing pages from SPARQL bindings', async () => {
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          results: {
+            bindings: [
+              {
+                file: { value: 'https://commons.wikimedia.org/entity/M123' },
+                id: { value: 'img1' },
+              },
+            ],
+          },
+        }),
+        { status: 200 },
+      )) as unknown as typeof fetch
+
+    const result = await fetchExistingPages(['img1'])
+
+    expect(result).toEqual({ img1: [{ url: 'https://commons.wikimedia.org/entity/M123' }] })
+  })
+
+  it('follows WCQS redirect and re-sends wcqsOauth plus Set-Cookie cookies', async () => {
+    let callCount = 0
+    const capturedCookies: string[] = []
+
+    globalThis.fetch = (async (_url: RequestInfo | URL, init?: RequestInit) => {
+      callCount++
+      capturedCookies.push((init?.headers as Record<string, string>)['Cookie'] ?? '')
+
+      if (callCount === 1) {
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location: 'https://commons-query.wikimedia.org/sparql',
+            'Set-Cookie': 'WMF-Last-Access=17-May-2026; Path=/; HttpOnly',
+          },
+        })
+      }
+      return new Response(JSON.stringify({ results: { bindings: [] } }), { status: 200 })
+    }) as unknown as typeof fetch
+
+    await fetchExistingPages(['img1'])
+
+    expect(callCount).toBe(2)
+    expect(capturedCookies[1]).toContain('wcqsOauth=')
+    expect(capturedCookies[1]).toContain('WMF-Last-Access=17-May-2026')
+  })
+})
 
 describe('fromMapillary', () => {
   it('converts a full image record correctly', () => {
