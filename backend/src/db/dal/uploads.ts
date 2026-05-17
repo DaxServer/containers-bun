@@ -172,11 +172,14 @@ export async function getUploadsByBatch(batchId: number): Promise<BatchUploadIte
 export async function getUploadById(
   uploadId: number,
 ): Promise<(typeof uploadRequests.$inferSelect & { user: typeof users.$inferSelect }) | null> {
-  const result = await db.query.uploadRequests.findFirst({
-    where: (u, { eq }) => eq(u.id, uploadId),
-    with: { user: true },
-  })
-  return result ?? null
+  const [row] = await db
+    .select({ upload: uploadRequests, user: users })
+    .from(uploadRequests)
+    .innerJoin(users, eq(uploadRequests.userid, users.userid))
+    .where(eq(uploadRequests.id, uploadId))
+    .limit(1)
+  if (!row) return null
+  return { ...row.upload, user: row.user }
 }
 
 export async function updateUploadStatus(
