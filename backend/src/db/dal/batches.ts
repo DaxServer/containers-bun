@@ -106,7 +106,12 @@ const batchCols = {
 
 export async function createBatch(userid: string, _username: string): Promise<BatchItem> {
   const edit_group_id = generateEditGroupId()
-  const result = await db.insert(batches).values({ userid, edit_group_id, created_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+  const result = await db.insert(batches).values({
+    userid,
+    edit_group_id,
+    created_at: sql`CURRENT_TIMESTAMP`,
+    updated_at: sql`CURRENT_TIMESTAMP`,
+  })
   const insertId = (result[0] as { insertId: number }).insertId
   const row = await db
     .select(batchCols)

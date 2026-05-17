@@ -256,7 +256,12 @@ export async function retrySelectedUploadsToNewBatch(
   const editGroupId = generateEditGroupId()
   const batchResult = await db
     .insert(batches)
-    .values({ userid: adminUserid, edit_group_id: editGroupId, created_at: sql`CURRENT_TIMESTAMP`, updated_at: sql`CURRENT_TIMESTAMP` })
+    .values({
+      userid: adminUserid,
+      edit_group_id: editGroupId,
+      created_at: sql`CURRENT_TIMESTAMP`,
+      updated_at: sql`CURRENT_TIMESTAMP`,
+    })
   const newBatchId = (batchResult[0] as { insertId: number }).insertId
   const newUploads = originals.map((u) => ({
     batchid: newBatchId,
