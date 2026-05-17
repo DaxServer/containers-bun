@@ -1,3 +1,4 @@
+import { devAuthPlugin } from '@backend/core/devAuth'
 import type { createSessionPlugin } from '@backend/core/session'
 import { logger } from '@backend/logger'
 import { adminRoutes } from '@backend/routes/admin'
@@ -17,6 +18,7 @@ const buildApi = (session: SessionPlugin, redis: Redis) =>
   new Elysia()
     .use(logixlysia({ config: { pino: logger, useTransportsOnly: isTest } }))
     .use(session)
+    .use(devAuthPlugin)
     .get('/health', () => ({ status: 'ok' }))
     .use(authRoutes)
     .use(adminRoutes)

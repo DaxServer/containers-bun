@@ -75,6 +75,7 @@ export const createAuthRoutes = (
         username: session.user.username,
         userid: session.user.sub,
         authorized: config.xUsername === session.user.username,
+        isMock: Bun.env.DEV_MOCK_AUTH === 'true',
       }
     })
     .post('/register', async ({ session, headers, set }) => {

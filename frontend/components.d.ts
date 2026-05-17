@@ -35,6 +35,7 @@ declare module 'vue' {
     DataView: typeof import('primevue/dataview')['default']
     DateCategorySetting: typeof import('./src/components/edit/DateCategorySetting.vue')['default']
     DatePicker: typeof import('primevue/datepicker')['default']
+    DevAuthBanner: typeof import('./src/components/ui/DevAuthBanner.vue')['default']
     Dialog: typeof import('primevue/dialog')['default']
     DistanceFilterPanel: typeof import('./src/components/collection/DistanceFilterPanel.vue')['default']
     Divider: typeof import('primevue/divider')['default']
