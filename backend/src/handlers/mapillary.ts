@@ -192,11 +192,6 @@ export class MapillaryHandler {
 
     await reverseGeocodeBatch(Object.values(images))
 
-    const existingPages = await fetchExistingPages(Object.keys(images))
-    for (const [id, pages] of Object.entries(existingPages)) {
-      if (images[id]) images[id].existing = pages
-    }
-
     return { images, sequenceId }
   }
 
@@ -211,5 +206,9 @@ export class MapillaryHandler {
         .map(([k, v]) => [k, fromMapillary(v)] as const)
         .filter((entry): entry is [string, MediaImage] => entry[1] !== null),
     )
+  }
+
+  async fetchExistingPages(imageIds: string[]): Promise<Record<string, ExistingPage[]>> {
+    return fetchExistingPages(imageIds)
   }
 }
