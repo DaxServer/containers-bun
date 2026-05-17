@@ -74,8 +74,6 @@ export const UPLOAD_STATUS = {
   Cancelled: 'cancelled',
 } as const
 
-export type { UploadStatus }
-
 export type UploadStatusUpdate =
   | {
       key: string

@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import type { UploadStatus } from '@backend/types/ws'
 import { useAdmin } from '@frontend/composables/useAdmin'
 import { useUploadStatus } from '@frontend/composables/useUploadStatus'
 import { useAdminStore } from '@frontend/stores/admin.store'
 import type { AdminBatch, AdminPreset, AdminUser } from '@frontend/types/admin'
-import type { UploadStatus } from '@frontend/types/image'
 
 const store = useAdminStore()
 const {

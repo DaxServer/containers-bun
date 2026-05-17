@@ -1,4 +1,5 @@
-import { UPLOAD_STATUS, type UploadStatus } from '@frontend/types/image'
+import type { UploadStatus } from '@backend/types/ws'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 
 export const COLOR_VARIANTS = {
   gray: {

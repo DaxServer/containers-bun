@@ -38,7 +38,6 @@ import type {
   PresetItem,
   ServerMessage,
   UploadItem,
-  UploadStatus,
   UploadUpdateItem,
   Handler as WsHandler,
 } from '@backend/types/ws'
@@ -84,7 +83,9 @@ function presetRowToItem(p: {
     id: p.id,
     title: p.title,
     title_template: p.title_template,
-    labels: p.labels as PresetItem['labels'],
+    labels: (typeof p.labels === 'string'
+      ? JSON.parse(p.labels)
+      : p.labels) as PresetItem['labels'],
     categories: p.categories ?? '',
     exclude_from_date_category: p.exclude_from_date_category,
     handler: p.handler as WsHandler,
@@ -98,9 +99,9 @@ function toUploadUpdateItem(u: DalBatchUploadItem): UploadUpdateItem {
   return {
     id: u.id,
     batchid: u.batchid,
-    status: u.status as UploadStatus,
+    status: u.status,
     key: u.key || 'unknown',
-    handler: u.handler as WsHandler,
+    handler: u.handler,
     error: u.error as UploadUpdateItem['error'],
     success: u.success ?? null,
   }
@@ -252,13 +253,13 @@ export class Handler {
           batch: { ...batch, username: batch.username ?? '' },
           uploads: uploads.map((u) => ({
             id: u.id,
-            status: u.status as UploadStatus,
+            status: u.status,
             filename: u.filename,
             wikitext: u.wikitext,
             batchid: u.batchid,
             userid: u.userid,
             key: u.key,
-            handler: u.handler as WsHandler,
+            handler: u.handler,
             labels: u.labels as BatchUploadItem['labels'],
             result: u.result,
             error: u.error as BatchUploadItem['error'],
@@ -505,7 +506,7 @@ export class Handler {
     batchid: number
     sliceid: number
     items: UploadItem[]
-    handler?: string
+    handler?: WsHandler
   }): Promise<void> {
     await this.safe('uploadSlice', async () => {
       const batch = await getBatch(data.batchid)
@@ -546,7 +547,7 @@ export class Handler {
       }
       this.sender.send({
         type: 'UPLOAD_SLICE_ACK',
-        data: created.map((c) => ({ id: c.key, status: c.status as UploadStatus })),
+        data: created.map((c) => ({ id: c.key, status: c.status })),
         sliceid: data.sliceid,
         nonce: nonce(),
       })

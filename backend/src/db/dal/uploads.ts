@@ -1,7 +1,7 @@
 import { generateEditGroupId } from '@backend/core/crypto'
 import { db } from '@backend/db/client'
 import { batches, uploadRequests, users } from '@backend/db/schema'
-import type { UploadItem } from '@backend/types/ws'
+import type { Handler, UploadItem, UploadStatus } from '@backend/types/ws'
 import type { SQL } from 'drizzle-orm'
 import { and, asc, count, desc, eq, gt, inArray, like, lt, or, sql } from 'drizzle-orm'
 
@@ -9,9 +9,9 @@ export type BatchUploadItem = {
   id: number
   batchid: number
   userid: string
-  status: string
+  status: UploadStatus
   key: string
-  handler: string
+  handler: Handler
   collection: string | null
   filename: string
   wikitext: string
@@ -31,9 +31,9 @@ function toUploadItem(u: typeof uploadRequests.$inferSelect): BatchUploadItem {
     id: u.id,
     batchid: u.batchid,
     userid: u.userid,
-    status: u.status,
+    status: u.status as UploadStatus,
     key: u.key,
-    handler: u.handler,
+    handler: u.handler as Handler,
     collection: u.collection,
     filename: u.filename,
     wikitext: u.wikitext,
@@ -297,9 +297,9 @@ export async function createUploadRequestsForBatch({
   username: string
   batchid: number
   items: UploadItem[]
-  handler: string
+  handler: Handler
   encryptedAccessToken: string
-}): Promise<{ id: number; key: string; status: string }[]> {
+}): Promise<{ id: number; key: string; status: UploadStatus }[]> {
   if (items.length === 0) return []
   const rows = items.map((it) => ({
     batchid,
@@ -325,7 +325,7 @@ export async function createUploadRequestsForBatch({
     .from(uploadRequests)
     .where(and(eq(uploadRequests.batchid, batchid), inArray(uploadRequests.key, keys)))
     .orderBy(asc(uploadRequests.id))
-  return inserted.map((r) => ({ id: r.id, key: r.key, status: 'queued' }))
+  return inserted.map((r) => ({ id: r.id, key: r.key, status: 'queued' as const }))
 }
 
 export async function markUploadsExpired(ids: number[]): Promise<void> {

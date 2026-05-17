@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BatchStats } from '@backend/types/ws'
+import type { BatchStats, UploadStatus } from '@backend/types/ws'
 import { useBatchSelection } from '@frontend/composables/useBatchSelection'
 import { useCollections } from '@frontend/composables/useCollections'
 import { useCommons } from '@frontend/composables/useCommons'
@@ -8,7 +8,6 @@ import { useUploadStatus } from '@frontend/composables/useUploadStatus'
 import { useAuthStore } from '@frontend/stores/auth.store'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
 import type { BatchStatsCard } from '@frontend/types/collections'
-import type { UploadStatus } from '@frontend/types/image'
 import { UPLOAD_STATUS } from '@frontend/types/image'
 
 const batchId = useRouteParams<number>('id')

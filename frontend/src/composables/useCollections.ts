@@ -7,6 +7,7 @@ import type {
   SavePreset,
   UploadCreatedItem,
   UploadSliceAckItem,
+  UploadStatus,
   UploadUpdateItem,
 } from '@backend/types/ws'
 import { useCommons } from '@frontend/composables/useCommons'
@@ -15,7 +16,7 @@ import { useUploadStatus } from '@frontend/composables/useUploadStatus'
 import { useAuthStore } from '@frontend/stores/auth.store'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
 import type { Image, Item } from '@frontend/types/image'
-import { UPLOAD_STATUS, type UploadStatus } from '@frontend/types/image'
+import { UPLOAD_STATUS } from '@frontend/types/image'
 import { markRaw, watch } from 'vue'
 
 export const UPLOAD_SLICE_SIZE = 18

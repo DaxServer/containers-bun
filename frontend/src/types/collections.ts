@@ -1,9 +1,7 @@
-import type { Handler } from '@backend/types/ws'
+import type { UploadStatus } from '@backend/types/ws'
 import type { ColorVariant } from '@frontend/composables/useUploadStatus'
-import type { UploadStatus } from '@frontend/types/image'
 
 export const ImageHandler = { MAPILLARY: 'mapillary' } as const
-export type { Handler }
 export type Layout = 'list' | 'grid'
 export const INTERVAL_UNITS = ['milliseconds', 'seconds', 'minutes'] as const
 export type IntervalUnit = (typeof INTERVAL_UNITS)[number]
