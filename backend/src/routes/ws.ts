@@ -57,6 +57,7 @@ export const wsRoutes = new Elysia({ name: 'ws-routes' })
         ws.close(1011, 'Handler not initialized')
         return
       }
+      wsLogger.info({ type: body.type, user: ws.data.session.user.username }, 'WS message received')
       switch (body.type) {
         case 'FETCH_BATCHES':
           handler.fetchBatches(body.data)
