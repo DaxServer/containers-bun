@@ -1,4 +1,4 @@
-import { WikidataEntity, WikidataProperty } from '@frontend/components/wikidata/useWikidata'
+import { WIKIDATA_ENTITY, WIKIDATA_PROPERTY } from '@backend/mediawiki/sdc'
 import {
   createCopyrightLicenseClaim,
   createCopyrightStatusClaim,
@@ -114,16 +114,16 @@ ${categories}
     // Creator
     claims.push(
       createCreatorClaim(image.creator.username, [
-        createExternalIdSnak(WikidataProperty.MapillaryUsername, image.creator.username),
+        createExternalIdSnak(WIKIDATA_PROPERTY.MapillaryUsername, image.creator.username),
       ]),
     )
 
     // Mapillary ID
-    claims.push(createExternalIdStatement(WikidataProperty.MapillaryPhotoID, id))
+    claims.push(createExternalIdStatement(WIKIDATA_PROPERTY.MapillaryPhotoID, id))
 
     // Published in
     claims.push(
-      createWikibaseItemStatement(WikidataProperty.PublishedIn, WikidataEntity.MapillaryDatabase),
+      createWikibaseItemStatement(WIKIDATA_PROPERTY.PublishedIn, WIKIDATA_ENTITY.MapillaryDatabase),
     )
 
     // Inception

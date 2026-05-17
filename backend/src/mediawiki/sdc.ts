@@ -1,6 +1,6 @@
 import type { MediaImage } from '@backend/types/ws'
 
-const WIKIDATA_ENTITY = {
+export const WIKIDATA_ENTITY = {
   CCBYSA40: 'Q18199165',
   Copyrighted: 'Q50423863',
   Degree: 'Q28390',
@@ -8,10 +8,11 @@ const WIKIDATA_ENTITY = {
   Mapillary: 'Q17985544',
   MapillaryDatabase: 'Q26757498',
   Pixel: 'Q355198',
-}
+} as const
 
-const WIKIDATA_PROPERTY = {
+export const WIKIDATA_PROPERTY = {
   AuthorNameString: 'P2093',
+  CommonsCategory: 'P373',
   CoordinatesOfThePointOfView: 'P1259',
   CopyrightLicense: 'P275',
   CopyrightStatus: 'P6216',
@@ -25,8 +26,10 @@ const WIKIDATA_PROPERTY = {
   Operator: 'P137',
   PublishedIn: 'P1433',
   SourceOfFile: 'P7482',
+  Title: 'P1476',
+  Url: 'P2699',
   Width: 'P2049',
-}
+} as const
 
 function stringSnak(property: string, value: string): unknown {
   return { snaktype: 'value', property, datavalue: { value, type: 'string' } }
