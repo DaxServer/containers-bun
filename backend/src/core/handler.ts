@@ -96,7 +96,6 @@ function presetRowToItem(p: {
   }
 }
 
-
 function toUploadUpdateItem(u: UploadRow): UploadUpdateItem {
   return {
     id: u.id,
@@ -130,6 +129,9 @@ class OptimizedBatchStreamer {
     page: number,
     limit: number,
   ): Promise<void> {
+    wsLogger.info(
+      `[ws] [resp] Starting optimized batch streaming for ${this.username} (page: ${page}, limit: ${limit})`,
+    )
     const offset = (page - 1) * limit
     const [items, total] = await Promise.all([
       getBatches({ offset, limit, filterText, userid }),
@@ -143,7 +145,12 @@ class OptimizedBatchStreamer {
     })
     this.lastUpdateTime = await getLatestUpdateTime({ userid, filterText })
 
-    if (page > 1) return
+    if (page > 1) {
+      wsLogger.info(
+        `[ws] [resp] Pagination detected (page ${page}), not streaming updates for ${this.username}`,
+      )
+      return
+    }
 
     const poll = async () => {
       try {
@@ -158,6 +165,9 @@ class OptimizedBatchStreamer {
             const changed = await getBatchesMinimal(changedIds)
             if (changed.length > 0) {
               const newTotal = await countBatches({ filterText, userid })
+              wsLogger.info(
+                `[ws] [resp] Updates detected for ${this.username}, sending incremental update`,
+              )
               this.sender.send({
                 type: 'BATCHES_LIST',
                 data: { items: changed.map(toWsBatchItem), total: newTotal },
@@ -178,6 +188,7 @@ class OptimizedBatchStreamer {
 
   stopStreaming(): void {
     if (this.interval) {
+      wsLogger.info(`[ws] [resp] Stopping optimized batch streaming for ${this.username}`)
       clearTimeout(this.interval)
       this.interval = null
     }
@@ -249,6 +260,9 @@ export class Handler {
         return
       }
       const uploads = await getUploadsByBatch(batchid)
+      wsLogger.info(
+        `[ws] [resp] Sending batch ${batchid} and ${uploads.length} uploads for ${this.username}`,
+      )
       this.sender.send({
         type: 'BATCH_UPLOADS_LIST',
         data: {
@@ -283,6 +297,9 @@ export class Handler {
       const all = await getUploadsByBatch(batchid)
       const failedIds = all.filter((u) => u.status === 'failed').map((u) => u.id)
       if (failedIds.length === 0) {
+        wsLogger.info(
+          `[ws] [resp] No failed uploads to retry for batch ${batchid} for ${this.username}`,
+        )
         this.sendError('No failed uploads to retry')
         return
       }
@@ -293,6 +310,9 @@ export class Handler {
         this.username,
       )
       if (newUploadIds.length === 0 || !editGroupId) {
+        wsLogger.info(
+          `[ws] [resp] No failed uploads to retry for batch ${batchid} for ${this.username}`,
+        )
         this.sendError('No failed uploads to retry')
         return
       }
@@ -306,6 +326,9 @@ export class Handler {
         )
         await updateJobTaskId(uploadId, jobId)
       }
+      wsLogger.info(
+        `[ws] [resp] Retried ${newUploadIds.length} uploads for batch ${batchid} for ${this.username}`,
+      )
       this.sender.send({
         type: 'RETRY_UPLOADS_RESPONSE',
         data: newBatchId,
@@ -334,9 +357,15 @@ export class Handler {
         throw e
       }
       if (cancelled.size === 0) {
+        wsLogger.info(
+          `[ws] [resp] No queued items to cancel for batch ${batchid} for ${this.username}`,
+        )
         this.sendError('No queued items to cancel')
         return
       }
+      wsLogger.info(
+        `[ws] [resp] Cancelled ${cancelled.size} uploads for batch ${batchid} for ${this.username}`,
+      )
       await Promise.all(
         [...cancelled.values()]
           .filter((taskId): taskId is string => !!taskId)
@@ -349,6 +378,7 @@ export class Handler {
     await this.safe('subscribeBatch', async () => {
       if (this.uploadsInterval) clearTimeout(this.uploadsInterval)
       this.uploadsInterval = this.startUploadStream(batchid)
+      wsLogger.info(`[ws] [resp] Subscribed to batch ${batchid} for ${this.username}`)
       this.sender.send({ type: 'SUBSCRIBED', data: batchid, nonce: nonce() })
     })
   }
@@ -358,6 +388,7 @@ export class Handler {
       clearTimeout(this.uploadsInterval)
       this.uploadsInterval = null
     }
+    wsLogger.info(`[ws] [resp] Unsubscribed from batch updates for ${this.username}`)
   }
 
   async subscribeBatchesList(data: { userid?: string; filter?: string }): Promise<void> {
@@ -370,12 +401,14 @@ export class Handler {
 
   async unsubscribeBatchesList(): Promise<void> {
     this.batchStreamer.stopStreaming()
+    wsLogger.info(`[ws] [resp] Unsubscribed from batches list for ${this.username}`)
   }
 
   async createBatch(): Promise<void> {
     await this.safe('createBatch', async () => {
       await ensureUser(this.userid, this.username)
       const batch = await createBatch(this.userid, this.username)
+      wsLogger.info(`[ws] [resp] Batch ${batch.id} created for ${this.username}`)
       this.sender.send({ type: 'BATCH_CREATED', data: batch.id, nonce: nonce() })
     })
   }
@@ -388,6 +421,7 @@ export class Handler {
         this.sendError('Preset not found or permission denied')
         return
       }
+      wsLogger.info(`[ws] [resp] Deleted preset ${presetId} for ${this.username}`)
       // Return refreshed list (mapillary is the only handler)
       await this.fetchPresets('mapillary')
     })
@@ -402,6 +436,9 @@ export class Handler {
           this.sendError('Collection not found')
           return
         }
+        mapillaryLogger.info(
+          `[mapillary] Found ${images.length} images in collection ${collection} for ${this.username}`,
+        )
         try {
           const existingPages = await handler.fetchExistingPages(images.map((i) => i.id))
           for (const img of images) {
@@ -431,6 +468,9 @@ export class Handler {
   }
 
   private async fetchImagesInBatches(collection: string, handler: MapillaryHandler): Promise<void> {
+    mapillaryLogger.warn(
+      `[mapillary] Attempting batch retrieval for ${collection} for ${this.username}`,
+    )
     this.sender.send({
       type: 'TRY_BATCH_RETRIEVAL',
       data: 'Large collection detected. Loading in batches...',
@@ -442,6 +482,9 @@ export class Handler {
         this.sendError('Collection has no images')
         return
       }
+      mapillaryLogger.info(
+        `[mapillary] Found ${ids.length} images in collection ${collection} for ${this.username}`,
+      )
       this.sender.send({ type: 'COLLECTION_IMAGE_IDS', data: ids, nonce: nonce() })
       for (let i = 0; i < ids.length; i += BATCH_RETRIEVAL_CHUNK_SIZE) {
         const chunk = ids.slice(i, i + BATCH_RETRIEVAL_CHUNK_SIZE)
@@ -470,6 +513,9 @@ export class Handler {
   async fetchPresets(handlerType: 'mapillary'): Promise<void> {
     await this.safe('fetchPresets', async () => {
       const rows = await getPresetsForHandler(this.userid, handlerType)
+      wsLogger.info(
+        `[ws] [resp] Sending ${rows.length} presets for ${this.username} handler=${handlerType}`,
+      )
       this.sender.send({
         type: 'PRESETS_LIST',
         data: {
@@ -528,6 +574,9 @@ export class Handler {
     handler?: WsHandler
   }): Promise<void> {
     await this.safe('uploadSlice', async () => {
+      wsLogger.info(
+        `[ws] Creating upload slice ${data.sliceid} with ${data.items.length} items for ${this.username} in batch ${data.batchid}`,
+      )
       const batch = await getBatch(data.batchid)
       if (!batch) {
         this.sendError(`Batch ${data.batchid} not found`)
@@ -564,6 +613,9 @@ export class Handler {
           await updateJobTaskId(c.id, jobId)
         }
       }
+      wsLogger.info(
+        `[ws] [resp] Slice ${data.sliceid} of batch ${data.batchid} (${created.length} uploads) enqueued for ${this.username}`,
+      )
       this.sender.send({
         type: 'UPLOAD_SLICE_ACK',
         data: created.map((c) => ({ id: c.key, status: c.status })),
@@ -579,6 +631,9 @@ export class Handler {
       const results = await Promise.all(titles.map((t) => mw.isCategoryDeleted(t)))
       const deleted = titles.filter((_, i) => results[i])
       if (deleted.length > 0) {
+        wsLogger.info(
+          `[ws] [resp] Categories ${deleted.join(', ')} are deleted for ${this.username}`,
+        )
         this.sender.send({
           type: 'CATEGORIES_DELETED_RESPONSE',
           data: { deleted },
@@ -599,6 +654,7 @@ export class Handler {
         return
       }
       const normalized = createdTitle.replace(/ /g, '_')
+      wsLogger.info(`[ws] [resp] Created category ${createdTitle} for ${this.username}`)
       this.sender.send({
         type: 'CATEGORY_CREATED_RESPONSE',
         data: { title: normalized },
@@ -630,6 +686,7 @@ export class Handler {
             commonswiki: { site: 'commonswiki', title: `Category:${title}` },
           }
           await wd.editItem(wikidataQid, claims, sitelinks)
+          wsLogger.info(`[ws] Added P373 and sitelink for ${wikidataQid} → Category:${title}`)
         } catch (e) {
           wsLogger.error({ wikidataQid, err: e }, 'Wikidata edit failed')
         }
@@ -646,6 +703,9 @@ export class Handler {
         const replaced = await mw.replaceCategoryInPage(t, source, target)
         if (replaced) count++
       }
+      wsLogger.info(
+        `[ws] [resp] Recategorized ${count}/${titles.length} files from [[Category:${source}]] to [[Category:${target}]] for ${this.username}`,
+      )
       this.sender.send({
         type: 'RECATEGORIZE_FILES_RESPONSE',
         data: { source, count },
