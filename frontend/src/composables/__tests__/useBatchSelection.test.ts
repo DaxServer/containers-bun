@@ -1,29 +1,11 @@
-import type { BatchUploadItem } from '@backend/types/ws'
+import { createMockUploadItem } from '@frontend/__tests__/fixtures'
 import { useBatchSelection } from '@frontend/composables/useBatchSelection'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
-import { UPLOAD_STATUS } from '@frontend/types/image'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
 import { createPinia, setActivePinia } from 'pinia'
 
 describe('useBatchSelection', () => {
-  const createMockUploadItem = (id: number): BatchUploadItem => ({
-    id,
-    key: `key-${id}`,
-    status: UPLOAD_STATUS.Queued,
-    filename: `file-${id}.jpg`,
-    wikitext: `{{Some text}}`,
-    labels: null,
-    result: null,
-    error: null,
-    success: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    userid: '',
-    batchid: 1,
-    handler: 'mapillary',
-  })
-
   beforeAll(() => {
     GlobalRegistrator.register()
   })
@@ -35,13 +17,7 @@ describe('useBatchSelection', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     const store = useCollectionsStore()
-    store.batchUploads = [
-      createMockUploadItem(1),
-      createMockUploadItem(2),
-      createMockUploadItem(3),
-      createMockUploadItem(4),
-      createMockUploadItem(5),
-    ]
+    store.batchUploads = Array.from({ length: 5 }, (_, i) => createMockUploadItem(i + 1))
   })
 
   describe('initial state', () => {

@@ -1,4 +1,4 @@
-import type { BatchUploadItem, UploadStatus } from '@backend/types/ws'
+import { createMockUploadItem } from '@frontend/__tests__/fixtures'
 import { useDataFilters } from '@frontend/composables/useDataFilters'
 import { useCollectionsStore } from '@frontend/stores/collections.store'
 import { UPLOAD_STATUS } from '@frontend/types/image'
@@ -7,29 +7,6 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, mock } from 'bun
 import { createPinia, setActivePinia } from 'pinia'
 
 describe('useDataFilters', () => {
-  const createMockUploadItem = (
-    id: number,
-    status: UploadStatus = UPLOAD_STATUS.Queued,
-    error?: string,
-  ): BatchUploadItem => ({
-    id,
-    key: `key-${id}`,
-    status,
-    filename: `file-${id}.jpg`,
-    wikitext: `{{Some text for ${id}}}`,
-    labels: null,
-    result: null,
-    error: error ? { message: error, type: 'error' } : null,
-    success:
-      status === UPLOAD_STATUS.Completed
-        ? 'https://commons.wikimedia.org/wiki/File:Test.jpg'
-        : null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    userid: '',
-    batchid: 1,
-    handler: 'mapillary',
-  })
 
   beforeAll(() => {
     GlobalRegistrator.register()

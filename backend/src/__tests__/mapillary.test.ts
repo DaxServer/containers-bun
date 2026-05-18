@@ -102,51 +102,30 @@ describe('fromMapillary', () => {
     expect(result!.title).toBe('Photo from Mapillary 2023-11-14 (img123).jpg')
   })
 
-  it('clamps compass_angle=0 to null', () => {
-    const result = fromMapillary({ ...BASE, compass_angle: 0 })
-    expect(result!.location.compass_angle).toBeNull()
+  it.each([
+    [0, null],
+    [360, null],
+    [359, 359],
+  ] as const)('maps compass_angle=%s to %s', (angle, expected) => {
+    const result = fromMapillary({ ...BASE, compass_angle: angle })
+    expect(result!.location.compass_angle).toBe(expected)
   })
 
-  it('clamps compass_angle=360 to null', () => {
-    const result = fromMapillary({ ...BASE, compass_angle: 360 })
-    expect(result!.location.compass_angle).toBeNull()
+  it.each(['make', 'model'] as const)('strips camera.%s="none" to null', (field) => {
+    const result = fromMapillary({ ...BASE, [field]: 'none' })
+    expect(result!.camera[field]).toBeNull()
   })
 
-  it('keeps valid compass_angle=359', () => {
-    const result = fromMapillary({ ...BASE, compass_angle: 359 })
-    expect(result!.location.compass_angle).toBe(359)
-  })
-
-  it('strips make="none" to null', () => {
-    const result = fromMapillary({ ...BASE, make: 'none' })
-    expect(result!.camera.make).toBeNull()
-  })
-
-  it('strips model="none" to null', () => {
-    const result = fromMapillary({ ...BASE, model: 'none' })
-    expect(result!.camera.model).toBeNull()
-  })
-
-  it('returns null when geometry is missing', () => {
-    const result = fromMapillary({ ...BASE, geometry: null as never })
-    expect(result).toBeNull()
-  })
-
-  it('returns null when coords has fewer than 2 elements', () => {
-    const result = fromMapillary({
-      ...BASE,
-      geometry: { type: 'Point', coordinates: [-73.985] as never },
-    })
-    expect(result).toBeNull()
-  })
-
-  it('returns null when creator is missing', () => {
-    const result = fromMapillary({ ...BASE, creator: null as never })
-    expect(result).toBeNull()
-  })
-
-  it('returns null when captured_at is null', () => {
-    const result = fromMapillary({ ...BASE, captured_at: null as never })
+  it.each([
+    ['geometry is missing', { geometry: null as never }],
+    [
+      'coords has fewer than 2 elements',
+      { geometry: { type: 'Point', coordinates: [-73.985] as never } },
+    ],
+    ['creator is missing', { creator: null as never }],
+    ['captured_at is null', { captured_at: null as never }],
+  ])('returns null when %s', (_, override) => {
+    const result = fromMapillary({ ...BASE, ...override })
     expect(result).toBeNull()
   })
 
