@@ -1,18 +1,10 @@
 import { config } from '@backend/config'
 import { encryptAccessToken } from '@backend/core/crypto'
+import { OptimizedBatchStreamer, STREAM_INTERVAL_MS, nonce } from '@backend/core/batchStreamer'
+import type { WsSender } from '@backend/core/batchStreamer'
 import { getNextUploadDelay, getRateLimitForBatch } from '@backend/core/rateLimiter'
 import type { SessionUser } from '@backend/core/session'
-import type { BatchItem as DalBatchItem } from '@backend/db/dal/batches'
-import {
-  countBatches,
-  countUploadsInBatch,
-  createBatch,
-  getBatch,
-  getBatchIdsWithRecentChanges,
-  getBatches,
-  getBatchesMinimal,
-  getLatestUpdateTime,
-} from '@backend/db/dal/batches'
+import { countUploadsInBatch, createBatch, getBatch } from '@backend/db/dal/batches'
 import {
   createPreset,
   deletePreset as deletePresetDal,
@@ -31,13 +23,10 @@ import { ensureUser } from '@backend/db/dal/users'
 import { MapillaryHandler } from '@backend/handlers/mapillary'
 import { mapillaryLogger, wsLogger } from '@backend/logger'
 import { MediaWikiClient } from '@backend/mediawiki/client'
-import { WIKIDATA_PROPERTY } from '@backend/mediawiki/sdc'
 import { WikidataClient } from '@backend/mediawiki/wikidata'
 import type {
-  BatchItem,
   BatchUploadItem,
   PresetItem,
-  ServerMessage,
   UploadItem,
   UploadUpdateItem,
   Handler as WsHandler,
@@ -53,19 +42,10 @@ const UPLOAD_DONE_STATUSES = new Set([
   'duplicated_sdc_not_updated',
 ])
 
-const STREAM_INTERVAL_MS = 2000
 const BATCH_RETRIEVAL_CHUNK_SIZE = 100
-
-export interface WsSender {
-  send(msg: ServerMessage): void
-}
 
 type SessionUserWithAuth = SessionUser & {
   access_token: [string, string]
-}
-
-function nonce(): string {
-  return new Date().toISOString()
 }
 
 function presetRowToItem(p: {
@@ -105,93 +85,6 @@ function toUploadUpdateItem(u: UploadRow): UploadUpdateItem {
     handler: u.handler as UploadUpdateItem['handler'],
     error: u.error as UploadUpdateItem['error'],
     success: u.success,
-  }
-}
-
-function toWsBatchItem(b: DalBatchItem): BatchItem {
-  return { ...b, username: b.username ?? '' }
-}
-
-class OptimizedBatchStreamer {
-  private sender: WsSender
-  private username: string
-  private lastUpdateTime: Date | null = null
-  private interval: ReturnType<typeof setTimeout> | null = null
-
-  constructor(sender: WsSender, username: string) {
-    this.sender = sender
-    this.username = username
-  }
-
-  async startStreaming(
-    userid: string | undefined,
-    filterText: string | undefined,
-    page: number,
-    limit: number,
-  ): Promise<void> {
-    wsLogger.info(
-      `[ws] [resp] Starting optimized batch streaming for ${this.username} (page: ${page}, limit: ${limit})`,
-    )
-    const offset = (page - 1) * limit
-    const [items, total] = await Promise.all([
-      getBatches({ offset, limit, filterText, userid }),
-      countBatches({ filterText, userid }),
-    ])
-    this.sender.send({
-      type: 'BATCHES_LIST',
-      data: { items: items.map(toWsBatchItem), total },
-      partial: false,
-      nonce: nonce(),
-    })
-    this.lastUpdateTime = await getLatestUpdateTime({ userid, filterText })
-
-    if (page > 1) {
-      wsLogger.info(
-        `[ws] [resp] Pagination detected (page ${page}), not streaming updates for ${this.username}`,
-      )
-      return
-    }
-
-    const poll = async () => {
-      try {
-        const current = await getLatestUpdateTime({ userid, filterText })
-        if (current && (!this.lastUpdateTime || current > this.lastUpdateTime)) {
-          const checkTime = this.lastUpdateTime ?? new Date(0)
-          const changedIds = await getBatchIdsWithRecentChanges(checkTime, {
-            userid,
-            filterText,
-          })
-          if (changedIds.length > 0) {
-            const changed = await getBatchesMinimal(changedIds)
-            if (changed.length > 0) {
-              const newTotal = await countBatches({ filterText, userid })
-              wsLogger.info(
-                `[ws] [resp] Updates detected for ${this.username}, sending incremental update`,
-              )
-              this.sender.send({
-                type: 'BATCHES_LIST',
-                data: { items: changed.map(toWsBatchItem), total: newTotal },
-                partial: true,
-                nonce: nonce(),
-              })
-            }
-          }
-          this.lastUpdateTime = current
-        }
-      } catch (e) {
-        wsLogger.error({ username: this.username, err: e }, 'Streaming error')
-      }
-      this.interval = setTimeout(poll, STREAM_INTERVAL_MS)
-    }
-    this.interval = setTimeout(poll, 0)
-  }
-
-  stopStreaming(): void {
-    if (this.interval) {
-      wsLogger.info(`[ws] [resp] Stopping optimized batch streaming for ${this.username}`)
-      clearTimeout(this.interval)
-      this.interval = null
-    }
   }
 }
 
@@ -663,29 +556,7 @@ export class Handler {
       if (wikidataQid) {
         try {
           const wd = new WikidataClient(this.user.access_token)
-          const entity = await wd.fetchItem(wikidataQid)
-          const existingClaims =
-            (entity.claims as Record<string, unknown[]>)?.[WIKIDATA_PROPERTY.CommonsCategory] ?? []
-          const categoryName = title.replace(/_/g, ' ')
-          const newClaim = {
-            mainsnak: {
-              snaktype: 'value',
-              property: WIKIDATA_PROPERTY.CommonsCategory,
-              datavalue: { type: 'string', value: categoryName },
-            },
-            type: 'statement',
-            rank: 'normal',
-          }
-          const alreadyExists = existingClaims.some(
-            (c) =>
-              (c as { mainsnak?: { datavalue?: { value?: unknown } } }).mainsnak?.datavalue
-                ?.value === categoryName,
-          )
-          const claims = alreadyExists ? existingClaims : [...existingClaims, newClaim]
-          const sitelinks = {
-            commonswiki: { site: 'commonswiki', title: `Category:${title}` },
-          }
-          await wd.editItem(wikidataQid, claims, sitelinks)
+          await wd.addCommonsCategory(wikidataQid, title)
           wsLogger.info(`[ws] Added P373 and sitelink for ${wikidataQid} → Category:${title}`)
         } catch (e) {
           wsLogger.error({ wikidataQid, err: e }, 'Wikidata edit failed')
