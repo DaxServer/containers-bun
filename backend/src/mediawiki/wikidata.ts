@@ -1,5 +1,6 @@
 import { config } from '@backend/config'
 import { buildAuthHeader } from '@backend/core/oauthClient'
+import { WIKIDATA_PROPERTY } from '@backend/mediawiki/sdc'
 
 const WIKIDATA_API = 'https://www.wikidata.org/w/api.php'
 
@@ -47,6 +48,30 @@ export class WikidataClient {
     if (!res.ok) throw new Error(`Wikidata fetchItem failed: ${res.status}`)
     const data = (await res.json()) as Record<string, unknown>
     return (data.entities as Record<string, unknown>)[qid] as Record<string, unknown>
+  }
+
+  async addCommonsCategory(qid: string, categoryTitle: string): Promise<void> {
+    const entity = await this.fetchItem(qid)
+    const existingClaims =
+      (entity.claims as Record<string, unknown[]>)?.[WIKIDATA_PROPERTY.CommonsCategory] ?? []
+    const categoryName = categoryTitle.replace(/_/g, ' ')
+    const alreadyExists = existingClaims.some(
+      (c) =>
+        (c as { mainsnak?: { datavalue?: { value?: unknown } } }).mainsnak?.datavalue?.value ===
+        categoryName,
+    )
+    const newClaim = {
+      mainsnak: {
+        snaktype: 'value',
+        property: WIKIDATA_PROPERTY.CommonsCategory,
+        datavalue: { type: 'string', value: categoryName },
+      },
+      type: 'statement',
+      rank: 'normal',
+    }
+    const claims = alreadyExists ? existingClaims : [...existingClaims, newClaim]
+    const sitelinks = { commonswiki: { site: 'commonswiki', title: `Category:${categoryTitle}` } }
+    await this.editItem(qid, claims, sitelinks)
   }
 
   async editItem(
