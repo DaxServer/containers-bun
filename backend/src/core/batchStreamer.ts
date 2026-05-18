@@ -92,7 +92,9 @@ export class OptimizedBatchStreamer {
       } catch (e) {
         wsLogger.error({ username: this.username, err: e }, 'Streaming error')
       }
-      this.interval = setTimeout(poll, STREAM_INTERVAL_MS)
+      if (this.interval !== null) {
+        this.interval = setTimeout(poll, STREAM_INTERVAL_MS)
+      }
     }
     this.interval = setTimeout(poll, 0)
   }
