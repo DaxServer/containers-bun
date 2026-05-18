@@ -1,6 +1,5 @@
 .claude/*
 !.claude/settings.json
-!.claude/hooks
 .code-review-graph
 .DS_Store
 .env
