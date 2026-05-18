@@ -162,10 +162,8 @@ describe('titleTemplate utils', () => {
   })
 
   describe('isValidExtension', () => {
-    VALID_EXTENSIONS.forEach((ext) => {
-      it(`returns true for valid extension ${ext}`, () => {
-        expect(isValidExtension(`image.${ext}`)).toBe(true)
-      })
+    it.each(VALID_EXTENSIONS)('returns true for .%s', (ext) => {
+      expect(isValidExtension(`image.${ext}`)).toBe(true)
     })
 
     it('returns false for empty string', () => {

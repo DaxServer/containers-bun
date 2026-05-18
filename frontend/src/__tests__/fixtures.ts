@@ -1,5 +1,5 @@
-import type { PresetItem } from '@backend/types/ws'
-import type { Item } from '@frontend/types/image'
+import type { BatchUploadItem, PresetItem, UploadStatus } from '@backend/types/ws'
+import { UPLOAD_STATUS, type Item } from '@frontend/types/image'
 
 export const makeItem = (
   index: number,
@@ -26,6 +26,27 @@ export const makeItem = (
     description: { language: 'en', value: '' },
     categories: '',
   },
+})
+
+export const createMockUploadItem = (
+  id: number,
+  status: UploadStatus = UPLOAD_STATUS.Queued,
+  error?: string,
+): BatchUploadItem => ({
+  id,
+  key: `key-${id}`,
+  status,
+  filename: `file-${id}.jpg`,
+  wikitext: `{{Some text for ${id}}}`,
+  labels: null,
+  result: null,
+  error: error ? { message: error, type: 'error' } : null,
+  success: status === UPLOAD_STATUS.Completed ? 'https://commons.wikimedia.org/wiki/File:Test.jpg' : null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  userid: '',
+  batchid: 1,
+  handler: 'mapillary',
 })
 
 export const makePreset = (overrides: Partial<PresetItem> = {}): PresetItem => ({
